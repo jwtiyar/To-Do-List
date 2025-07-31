@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Task Manager</string>
+    <string name="add_task">Add Task</string>
+    <string name="task_title">Task Title</string>
+    <string name="task_description">Task Description (Optional)</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+    <string name="clear_completed">Clear Completed</string>
+    <string name="reset_all">Reset All</string>
+    <string name="set_reminder">Set Reminder (Optional)</string>
+    <string name="set_reminder_checkbox">Set reminder</string>
+    <string name="select_date">Select Date</string>
+    <string name="select_time">Select Time</string>
+    <string name="date_label">Date:</string>
+    <string name="time_label">Time:</string>
+    <string name="reminder_set">Task added with reminder</string>
+    <string name="notification_permission_granted">Notification permission granted</string>
+    <string name="notification_permission_denied">Notification permission denied</string>
+</resources> 
