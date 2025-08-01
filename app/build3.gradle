@@ -1,0 +1,10 @@
+android {
+    // ... other configurations
+    defaultConfig {
+        // ... other configurations
+        minSdkVersion 26 // Or higher
+        // ... other configurations
+    }
+    // ... other configurations
+}
+    

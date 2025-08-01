@@ -20,4 +20,6 @@
     <!-- Background Colors -->
     <color name="background">#FFFAFAFA</color>
     <color name="surface">#FFFFFFFF</color>
+
+    <color name="ic_launcher_background">#FFFFFF</color>
 </resources> 

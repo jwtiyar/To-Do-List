@@ -1,3 +1,10 @@
 {
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.jdt.ls.java.home": "/usr/lib/jvm/java-24-openjdk",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-24",
+            "path": "/usr/lib/jvm/java-24-openjdk",
+            "default": true
+        }
+    ]
 }
