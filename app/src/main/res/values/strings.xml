@@ -16,4 +16,7 @@
     <string name="reminder_set">Task added with reminder</string>
     <string name="notification_permission_granted">Notification permission granted</string>
     <string name="notification_permission_denied">Notification permission denied</string>
+    <string name="date_format_string">%1$d/%2$d/%3$d</string>
+    <string name="time_format_string">%02d:%02d</string>
+    <string name="task_reminder_prefix">Reminder: %s</string>
 </resources> 
