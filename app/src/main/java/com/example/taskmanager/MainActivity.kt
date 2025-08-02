@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskmanager.databinding.ActivityMainBinding
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout // Added for TabLayout
 import com.google.android.material.textfield.TextInputEditText
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -29,10 +30,9 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-// import java.time.Instant // Unused import
 import java.time.ZoneId
-import java.util.Locale // Added for String.format
-import com.google.android.material.button.MaterialButton // Added for type shortening
+import java.util.Locale
+import com.google.android.material.button.MaterialButton
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -41,6 +41,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var db: TaskDatabase
     private lateinit var taskDao: TaskDao
     private val tasks = mutableListOf<Task>()
+
+    private var currentTaskFilter: TaskFilter = TaskFilter.PENDING // To store current filter
+
+    enum class TaskFilter {
+        PENDING,
+        COMPLETED
+    }
 
     companion object {
         private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
@@ -59,32 +66,53 @@ class MainActivity : AppCompatActivity() {
         checkAndRequestExactAlarmPermission()
 
         setupRecyclerView()
+        setupTabLayout() // Call setup for TabLayout
         setupButtons()
-        loadTasksFromDb()
+        loadTasksFromDb() // Initial load will use default PENDING filter
+    }
+
+    private fun setupTabLayout() {
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                currentTaskFilter = when (tab?.position) {
+                    0 -> TaskFilter.PENDING
+                    1 -> TaskFilter.COMPLETED
+                    else -> TaskFilter.PENDING
+                }
+                loadTasksFromDb()
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+        // Ensure the first tab is selected by default if needed (though addOnTabSelectedListener should trigger for the first tab initially)
+        // binding.tabLayout.getTabAt(0)?.select()
     }
 
     private fun loadTasksFromDb() {
         lifecycleScope.launch {
-            val dbTasks = withContext(Dispatchers.IO) { taskDao.getAllTasks() }
+            val dbTasks = withContext(Dispatchers.IO) {
+                when (currentTaskFilter) {
+                    TaskFilter.PENDING -> taskDao.getPendingTasks()
+                    TaskFilter.COMPLETED -> taskDao.getCompletedTasks()
+                }
+            }
             tasks.clear()
             tasks.addAll(dbTasks)
-            taskAdapter.notifyDataSetChanged() // Warning: It will always be more efficient to use more specific change events if you can. Rely on `notifyDataSetChanged` as a last resort.
+            taskAdapter.notifyDataSetChanged()
         }
     }
 
     private fun setupRecyclerView() {
         taskAdapter = TaskAdapter(tasks) { task ->
-            // Handle task completion
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) { taskDao.updateTask(task) }
-                 // After DB update, re-fetch and update adapter
-                loadTasksFromDb() // Added this to refresh the list from DB
+                loadTasksFromDb() // This will refresh the current list based on the active tab
             }
             if (task.isCompleted) {
                 Toast.makeText(this, "Task completed: ${task.title}", Toast.LENGTH_SHORT).show()
                 notificationHelper.cancelNotification(task)
             } else {
-                // If task was marked incomplete, and it has a scheduled time, reschedule it.
                 if (task.scheduledTimeMillis != null) {
                     notificationHelper.scheduleNotification(task)
                 }
@@ -102,30 +130,37 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnClearCompleted.setOnClickListener {
             lifecycleScope.launch {
-                val completedCount = tasks.count { it.isCompleted }
-                if (completedCount > 0) {
-                    tasks.filter { it.isCompleted }.forEach { task ->
+                // Only attempt to clear if on the completed tab and there are completed tasks
+                if (currentTaskFilter == TaskFilter.COMPLETED && tasks.any { it.isCompleted }) {
+                    val completedTasksToClear = tasks.filter { it.isCompleted }
+                    completedTasksToClear.forEach { task ->
                         notificationHelper.cancelNotification(task)
                     }
                     withContext(Dispatchers.IO) { taskDao.deleteCompletedTasks() }
-                    loadTasksFromDb()
-                    Toast.makeText(this@MainActivity, "Removed $completedCount completed tasks", Toast.LENGTH_SHORT).show()
+                    loadTasksFromDb() // Refresh the list
+                    Toast.makeText(this@MainActivity, "Removed ${completedTasksToClear.size} completed tasks", Toast.LENGTH_SHORT).show()
+                } else if (currentTaskFilter == TaskFilter.PENDING) {
+                    Toast.makeText(this@MainActivity, "Switch to 'Completed' tab to clear tasks", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this@MainActivity, "No completed tasks to remove", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "No completed tasks to remove on this tab", Toast.LENGTH_SHORT).show()
                 }
             }
         }
         binding.btnResetTasks.setOnClickListener {
             lifecycleScope.launch {
-                tasks.forEach { task ->
-                    task.isCompleted = false
-                    if (task.scheduledTimeMillis != null) {
-                        notificationHelper.scheduleNotification(task)
+                // Fetch all tasks from DB to ensure we are resetting everything, regardless of current filter
+                val allTasksFromDb = withContext(Dispatchers.IO) { taskDao.getAllTasks() }
+                allTasksFromDb.forEach { task ->
+                    if (task.isCompleted || task.scheduledTimeMillis != null) { // Only update if actually changing something
+                        task.isCompleted = false
+                        if (task.scheduledTimeMillis != null) {
+                            notificationHelper.scheduleNotification(task) // Re-schedule if it had a reminder
+                        }
+                        withContext(Dispatchers.IO) { taskDao.updateTask(task) }
                     }
-                    withContext(Dispatchers.IO) { taskDao.updateTask(task) }
                 }
-                loadTasksFromDb()
-                Toast.makeText(this@MainActivity, "All tasks reset", Toast.LENGTH_SHORT).show()
+                loadTasksFromDb() // Refresh the current tab's view
+                Toast.makeText(this@MainActivity, "All tasks have been reset to pending.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -136,8 +171,8 @@ class MainActivity : AppCompatActivity() {
         val descriptionInput = dialogView.findViewById<TextInputEditText>(R.id.editTextDescription)
         val reminderCheckBox = dialogView.findViewById<MaterialCheckBox>(R.id.checkBoxSetReminder)
         val reminderLayout = dialogView.findViewById<View>(R.id.reminderLayout)
-        val dateButton = dialogView.findViewById<MaterialButton>(R.id.btnDatePicker) // Shortened type
-        val timeButton = dialogView.findViewById<MaterialButton>(R.id.btnTimePicker) // Shortened type
+        val dateButton = dialogView.findViewById<MaterialButton>(R.id.btnDatePicker)
+        val timeButton = dialogView.findViewById<MaterialButton>(R.id.btnTimePicker)
 
         var selectedDate: LocalDateTime? = null
 
@@ -152,7 +187,6 @@ class MainActivity : AppCompatActivity() {
                 { _, year, month, dayOfMonth ->
                     val currentTime = LocalTime.now()
                     selectedDate = LocalDateTime.of(year, month + 1, dayOfMonth, currentTime.hour, currentTime.minute)
-                    // Warning: Do not concatenate text displayed with `setText`. Use resource string with placeholders.
                     dateButton.text = getString(R.string.date_format_string, month + 1, dayOfMonth, year)
                 },
                 calendar.get(Calendar.YEAR),
@@ -167,8 +201,6 @@ class MainActivity : AppCompatActivity() {
                 { _, hourOfDay, minute ->
                     selectedDate = selectedDate?.withHour(hourOfDay)?.withMinute(minute)
                         ?: LocalDateTime.now().withHour(hourOfDay).withMinute(minute)
-                     // Warning: Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead
-                    // Warning: Do not concatenate text displayed with `setText`. Use resource string with placeholders.
                     timeButton.text = String.format(Locale.getDefault(), getString(R.string.time_format_string), hourOfDay, minute)
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
@@ -190,23 +222,25 @@ class MainActivity : AppCompatActivity() {
                         title = title,
                         description = description,
                         scheduledTimeMillis = scheduledMillis
+                        // isCompleted will be false by default
                     )
                     lifecycleScope.launch {
                         val newTaskId = withContext(Dispatchers.IO) { taskDao.insertTask(newTask) }
-                        loadTasksFromDb() // Refresh the list in the UI
+                        // Ensure the new task appears on the 'Pending' tab if it's currently selected
+                        if (currentTaskFilter == TaskFilter.PENDING) {
+                            loadTasksFromDb()
+                        } else {
+                            // If on 'Completed' tab, new task won't show, which is fine.
+                            // Optionally, switch to pending: binding.tabLayout.getTabAt(0)?.select()
+                        }
                         if (scheduledMillis != null && newTaskId > 0) {
-                            // Re-fetch task to get the complete object with the generated ID
                             val insertedTask = withContext(Dispatchers.IO) { taskDao.getTaskById(newTaskId) }
                             insertedTask?.let {
                                 notificationHelper.scheduleNotification(it)
                                 Toast.makeText(this@MainActivity, "Task added with reminder", Toast.LENGTH_SHORT).show()
-                            } ?: run {
-                                Toast.makeText(this@MainActivity, "Error scheduling reminder for task", Toast.LENGTH_SHORT).show()
                             }
                         } else if (newTaskId > 0) {
                             Toast.makeText(this@MainActivity, "Task added successfully", Toast.LENGTH_SHORT).show()
-                        } else {
-                             Toast.makeText(this@MainActivity, "Error adding task to database", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } else {
@@ -232,7 +266,7 @@ class MainActivity : AppCompatActivity() {
                 )
             ) {
                 Snackbar.make(
-                    binding.root, // Using root view of the binding
+                    binding.root, 
                     "This app needs permission to post notifications for task reminders.",
                     Snackbar.LENGTH_INDEFINITE
                 ).setAction("Grant") {
@@ -266,7 +300,7 @@ class MainActivity : AppCompatActivity() {
                         }.also {
                             try {
                                 startActivity(it)
-                            } catch (_: Exception) { // Changed e to _
+                            } catch (_: Exception) { 
                                 startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
                             }
                         }
