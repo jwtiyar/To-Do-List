@@ -25,11 +25,10 @@ class TaskAdapter(
                 taskTitle.text = task.title
                 taskDescription.text = task.description
                
-                // Store original listener
-                val originalListener = taskCheckBox.onCheckedChangeListener
-                taskCheckBox.setOnCheckedChangeListener(null) // Temporarily remove listener
+                // Temporarily remove listener to prevent firing during programmatic update of isChecked
+                taskCheckBox.setOnCheckedChangeListener(null)
                 taskCheckBox.isChecked = task.isCompleted
-                taskCheckBox.setOnCheckedChangeListener(originalListener) // Re-attach original listener if any, or set new one
+                // The functional listener for user interactions is (re-)attached below
 
                 if (task.scheduledTimeMillis != null) {
                     val ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.scheduledTimeMillis!!), ZoneId.systemDefault())

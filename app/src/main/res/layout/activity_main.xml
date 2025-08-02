@@ -18,6 +18,27 @@
         android:layout_marginBottom="16dp"
         android:textColor="@color/primary_color" />
 
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:tabMode="fixed"
+        app:tabGravity="fill">
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tabPending"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pending" />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tabCompleted"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Completed" />
+    </com.google.android.material.tabs.TabLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
@@ -25,6 +46,7 @@
         android:layout_weight="1"
         android:layout_marginBottom="16dp" />
 
+    <!-- Rest of your buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -66,4 +88,4 @@
 
     </LinearLayout>
 
-</LinearLayout> 
+</LinearLayout>

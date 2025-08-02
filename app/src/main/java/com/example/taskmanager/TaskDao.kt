@@ -7,6 +7,12 @@ interface TaskDao {
     @Query("SELECT * FROM task ORDER BY id DESC")
     suspend fun getAllTasks(): List<Task>
 
+    @Query("SELECT * FROM task WHERE isCompleted = 0 ORDER BY id DESC")
+    suspend fun getPendingTasks(): List<Task>
+
+    @Query("SELECT * FROM task WHERE isCompleted = 1 ORDER BY id DESC")
+    suspend fun getCompletedTasks(): List<Task>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: Task): Long
 
