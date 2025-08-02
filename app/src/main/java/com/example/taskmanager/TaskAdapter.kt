@@ -13,7 +13,7 @@ import java.time.ZoneId
 
 class TaskAdapter(
     private val tasks: MutableList<Task>,
-    private val onTaskClick: (Task) -> Unit
+    private val onTaskClick: (Task) -> Unit // Callback to MainActivity
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
     private val timeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' HH:mm", Locale.getDefault())
@@ -24,18 +24,47 @@ class TaskAdapter(
             binding.apply {
                 taskTitle.text = task.title
                 taskDescription.text = task.description
+               
+                // Store original listener
+                val originalListener = taskCheckBox.onCheckedChangeListener
+                taskCheckBox.setOnCheckedChangeListener(null) // Temporarily remove listener
                 taskCheckBox.isChecked = task.isCompleted
-                
-                // Display scheduled time if available
+                taskCheckBox.setOnCheckedChangeListener(originalListener) // Re-attach original listener if any, or set new one
+
                 if (task.scheduledTimeMillis != null) {
                     val ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.scheduledTimeMillis!!), ZoneId.systemDefault())
-                    taskScheduledTime.text = "Reminder: ${ldt.format(timeFormatter)}"
+                    // Use string resource for concatenation and translation
+                    taskScheduledTime.text = itemView.context.getString(R.string.task_reminder_prefix, ldt.format(timeFormatter))
                     taskScheduledTime.visibility = View.VISIBLE
                 } else {
                     taskScheduledTime.visibility = View.GONE
                 }
                 
-                // Update visual state based on completion
+                updateVisualState(task) // Separate method for UI updates
+
+                taskCheckBox.setOnCheckedChangeListener { _, isChecked ->
+                    if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                        val currentTask = tasks[bindingAdapterPosition]
+                        currentTask.isCompleted = isChecked
+                        updateVisualState(currentTask)
+                        onTaskClick(currentTask) // Let MainActivity handle DB and broader UI refresh
+                    }
+                }
+                
+                root.setOnClickListener {
+                    if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                        val currentTask = tasks[bindingAdapterPosition]
+                        currentTask.isCompleted = !currentTask.isCompleted
+                        taskCheckBox.isChecked = currentTask.isCompleted // Sync checkbox
+                        updateVisualState(currentTask)
+                        onTaskClick(currentTask) // Let MainActivity handle DB and broader UI refresh
+                    }
+                }
+            }
+        }
+
+        private fun updateVisualState(task: Task) {
+            binding.apply {
                 if (task.isCompleted) {
                     taskTitle.alpha = 0.6f
                     taskDescription.alpha = 0.6f
@@ -46,21 +75,6 @@ class TaskAdapter(
                     taskDescription.alpha = 1.0f
                     taskScheduledTime.alpha = 1.0f
                     root.alpha = 1.0f
-                }
-                
-                // Handle checkbox click
-                taskCheckBox.setOnCheckedChangeListener { _, isChecked ->
-                    task.isCompleted = isChecked
-                    onTaskClick(task)
-                    notifyItemChanged(bindingAdapterPosition)
-                }
-                
-                // Handle item click
-                root.setOnClickListener {
-                    task.isCompleted = !task.isCompleted
-                    taskCheckBox.isChecked = task.isCompleted
-                    onTaskClick(task)
-                    notifyItemChanged(bindingAdapterPosition)
                 }
             }
         }
@@ -77,15 +91,6 @@ class TaskAdapter(
 
     override fun getItemCount(): Int = tasks.size
 
-    fun updateTasks(newTasks: List<Task>) {
-        tasks.clear()
-        tasks.addAll(newTasks)
-        notifyDataSetChanged()
-    }
-
-    fun removeCompletedTasks() {
-        val completedTasks = tasks.filter { it.isCompleted }
-        tasks.removeAll(completedTasks.toSet())
-        notifyDataSetChanged()
-    }
+    // Removed unused updateTasks function
+    // Removed unused removeCompletedTasks function
 }

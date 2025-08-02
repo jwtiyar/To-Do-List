@@ -6,11 +6,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
+import android.os.Build // Keep for VERSION_CODES.S
 import androidx.core.app.NotificationCompat
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
 
 class NotificationHelper(private val context: Context) {
     
@@ -28,16 +25,15 @@ class NotificationHelper(private val context: Context) {
     }
     
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = CHANNEL_DESCRIPTION
-            }
-            notificationManager.createNotificationChannel(channel)
+        // SDK_INT >= Build.VERSION_CODES.O check removed as minSdkVersion is 26
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = CHANNEL_DESCRIPTION
         }
+        notificationManager.createNotificationChannel(channel)
     }
     
     fun scheduleNotification(task: Task) {
@@ -73,7 +69,7 @@ class NotificationHelper(private val context: Context) {
                         )
                     }
                 } else {
-                    // For older Android versions
+                    // For older Android versions (but still >= O)
                     alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         scheduledMillis,
@@ -82,7 +78,7 @@ class NotificationHelper(private val context: Context) {
                 }
                 
                 task.notificationId = task.id
-            } catch (e: SecurityException) {
+            } catch (_: SecurityException) { // Changed e to _
                 // Handle the case where exact alarm permission is denied
                 try {
                     alarmManager.setAndAllowWhileIdle(
@@ -91,7 +87,7 @@ class NotificationHelper(private val context: Context) {
                         pendingIntent
                     )
                     task.notificationId = task.id
-                } catch (e2: Exception) {
+                } catch (_: Exception) { // Changed e2 to _
                     // If all else fails, just show a notification immediately
                     showNotification(task.id, task.title, task.description)
                 }
@@ -138,4 +134,4 @@ class NotificationHelper(private val context: Context) {
         
         notificationManager.notify(taskId, notification)
     }
-} 
+}

@@ -29,8 +29,10 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.Instant
+// import java.time.Instant // Unused import
 import java.time.ZoneId
+import java.util.Locale // Added for String.format
+import com.google.android.material.button.MaterialButton // Added for type shortening
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -66,7 +68,7 @@ class MainActivity : AppCompatActivity() {
             val dbTasks = withContext(Dispatchers.IO) { taskDao.getAllTasks() }
             tasks.clear()
             tasks.addAll(dbTasks)
-            taskAdapter.notifyDataSetChanged()
+            taskAdapter.notifyDataSetChanged() // Warning: It will always be more efficient to use more specific change events if you can. Rely on `notifyDataSetChanged` as a last resort.
         }
     }
 
@@ -75,10 +77,17 @@ class MainActivity : AppCompatActivity() {
             // Handle task completion
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) { taskDao.updateTask(task) }
+                 // After DB update, re-fetch and update adapter
+                loadTasksFromDb() // Added this to refresh the list from DB
             }
             if (task.isCompleted) {
                 Toast.makeText(this, "Task completed: ${task.title}", Toast.LENGTH_SHORT).show()
                 notificationHelper.cancelNotification(task)
+            } else {
+                // If task was marked incomplete, and it has a scheduled time, reschedule it.
+                if (task.scheduledTimeMillis != null) {
+                    notificationHelper.scheduleNotification(task)
+                }
             }
         }
         binding.recyclerView.apply {
@@ -127,8 +136,8 @@ class MainActivity : AppCompatActivity() {
         val descriptionInput = dialogView.findViewById<TextInputEditText>(R.id.editTextDescription)
         val reminderCheckBox = dialogView.findViewById<MaterialCheckBox>(R.id.checkBoxSetReminder)
         val reminderLayout = dialogView.findViewById<View>(R.id.reminderLayout)
-        val dateButton = dialogView.findViewById<View>(R.id.btnDatePicker)
-        val timeButton = dialogView.findViewById<View>(R.id.btnTimePicker)
+        val dateButton = dialogView.findViewById<MaterialButton>(R.id.btnDatePicker) // Shortened type
+        val timeButton = dialogView.findViewById<MaterialButton>(R.id.btnTimePicker) // Shortened type
 
         var selectedDate: LocalDateTime? = null
 
@@ -143,8 +152,8 @@ class MainActivity : AppCompatActivity() {
                 { _, year, month, dayOfMonth ->
                     val currentTime = LocalTime.now()
                     selectedDate = LocalDateTime.of(year, month + 1, dayOfMonth, currentTime.hour, currentTime.minute)
-                    dateButton.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDatePicker).text =
-                        "${month + 1}/${dayOfMonth}/${year}"
+                    // Warning: Do not concatenate text displayed with `setText`. Use resource string with placeholders.
+                    dateButton.text = getString(R.string.date_format_string, month + 1, dayOfMonth, year)
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
@@ -158,8 +167,9 @@ class MainActivity : AppCompatActivity() {
                 { _, hourOfDay, minute ->
                     selectedDate = selectedDate?.withHour(hourOfDay)?.withMinute(minute)
                         ?: LocalDateTime.now().withHour(hourOfDay).withMinute(minute)
-                    timeButton.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnTimePicker).text =
-                        String.format("%02d:%02d", hourOfDay, minute)
+                     // Warning: Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead
+                    // Warning: Do not concatenate text displayed with `setText`. Use resource string with placeholders.
+                    timeButton.text = String.format(Locale.getDefault(), getString(R.string.time_format_string), hourOfDay, minute)
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
@@ -256,7 +266,7 @@ class MainActivity : AppCompatActivity() {
                         }.also {
                             try {
                                 startActivity(it)
-                            } catch (e: Exception) {
+                            } catch (_: Exception) { // Changed e to _
                                 startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
                             }
                         }
