@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -40,7 +41,7 @@ class NotificationHelper(private val context: Context) {
     }
     
     fun scheduleNotification(task: Task) {
-        task.scheduledTime?.let { scheduledTime ->
+        task.scheduledTimeMillis?.let { scheduledMillis ->
             val intent = Intent(context, NotificationReceiver::class.java).apply {
                 putExtra("task_id", task.id)
                 putExtra("task_title", task.title)
@@ -54,15 +55,47 @@ class NotificationHelper(private val context: Context) {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             
-            val triggerTime = scheduledTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
-            )
-            
-            task.notificationId = task.id
+            try {
+                // Check if we can schedule exact alarms
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (alarmManager.canScheduleExactAlarms()) {
+                        alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            scheduledMillis,
+                            pendingIntent
+                        )
+                    } else {
+                        // Fallback to inexact alarm
+                        alarmManager.setAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            scheduledMillis,
+                            pendingIntent
+                        )
+                    }
+                } else {
+                    // For older Android versions
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        scheduledMillis,
+                        pendingIntent
+                    )
+                }
+                
+                task.notificationId = task.id
+            } catch (e: SecurityException) {
+                // Handle the case where exact alarm permission is denied
+                try {
+                    alarmManager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        scheduledMillis,
+                        pendingIntent
+                    )
+                    task.notificationId = task.id
+                } catch (e2: Exception) {
+                    // If all else fails, just show a notification immediately
+                    showNotification(task.id, task.title, task.description)
+                }
+            }
         }
     }
     

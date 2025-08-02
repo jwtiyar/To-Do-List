@@ -1,10 +1,18 @@
 {
-    "java.jdt.ls.java.home": "/usr/lib/jvm/java-24-openjdk",
+    "java.jdt.ls.java.home": "/usr/lib/jvm/java-21-openjdk",
     "java.configuration.runtimes": [
         {
-            "name": "JavaSE-24",
-            "path": "/usr/lib/jvm/java-24-openjdk",
+            "name": "JavaSE-17",
+            "path": "/usr/lib/jvm/java-17-openjdk",
             "default": true
+        },
+        {
+            "name": "JavaSE-21",
+            "path": "/usr/lib/jvm/java-21-openjdk"
         }
-    ]
+    ],
+    "terminal.integrated.env.linux": {
+        "JAVA_HOME": "/usr/lib/jvm/java-17-openjdk"
+    },
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

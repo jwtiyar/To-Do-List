@@ -1,12 +1,15 @@
 package com.example.taskmanager
 
-import java.time.LocalDateTime
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
+@Entity(tableName = "task")
 data class Task(
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val title: String,
     val description: String,
     var isCompleted: Boolean = false,
-    var scheduledTime: LocalDateTime? = null,
+    var scheduledTimeMillis: Long? = null,
     var notificationId: Int? = null
 ) 

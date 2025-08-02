@@ -7,6 +7,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.taskmanager.databinding.ItemTaskBinding
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 class TaskAdapter(
     private val tasks: MutableList<Task>,
@@ -24,8 +27,9 @@ class TaskAdapter(
                 taskCheckBox.isChecked = task.isCompleted
                 
                 // Display scheduled time if available
-                if (task.scheduledTime != null) {
-                    taskScheduledTime.text = "Reminder: ${task.scheduledTime!!.format(timeFormatter)}"
+                if (task.scheduledTimeMillis != null) {
+                    val ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.scheduledTimeMillis!!), ZoneId.systemDefault())
+                    taskScheduledTime.text = "Reminder: ${ldt.format(timeFormatter)}"
                     taskScheduledTime.visibility = View.VISIBLE
                 } else {
                     taskScheduledTime.visibility = View.GONE
@@ -48,7 +52,7 @@ class TaskAdapter(
                 taskCheckBox.setOnCheckedChangeListener { _, isChecked ->
                     task.isCompleted = isChecked
                     onTaskClick(task)
-                    notifyItemChanged(adapterPosition)
+                    notifyItemChanged(bindingAdapterPosition)
                 }
                 
                 // Handle item click
@@ -56,7 +60,7 @@ class TaskAdapter(
                     task.isCompleted = !task.isCompleted
                     taskCheckBox.isChecked = task.isCompleted
                     onTaskClick(task)
-                    notifyItemChanged(adapterPosition)
+                    notifyItemChanged(bindingAdapterPosition)
                 }
             }
         }
@@ -84,4 +88,4 @@ class TaskAdapter(
         tasks.removeAll(completedTasks.toSet())
         notifyDataSetChanged()
     }
-} 
+}
