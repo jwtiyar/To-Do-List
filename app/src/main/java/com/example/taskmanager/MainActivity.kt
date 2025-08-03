@@ -1,3 +1,4 @@
+
 package com.example.taskmanager
 
 import android.Manifest
@@ -18,10 +19,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.taskmanager.databinding.ActivityMainBinding
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.tabs.TabLayout // Added for TabLayout
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputEditText
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -68,7 +70,31 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         setupTabLayout() // Call setup for TabLayout
         setupButtons()
+        setupSearchBar()
         loadTasksFromDb() // Initial load will use default PENDING filter
+    }
+
+    private fun setupSearchBar() {
+        binding.searchBar.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val query = s?.toString()?.trim() ?: ""
+                filterTasks(query)
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+    }
+
+    private fun filterTasks(query: String) {
+        val filtered = if (query.isEmpty()) {
+            tasks
+        } else {
+            tasks.filter {
+                it.title.contains(query, ignoreCase = true) ||
+                it.description.contains(query, ignoreCase = true)
+            }
+        }
+        taskAdapter.updateTasks(filtered)
     }
 
     private fun setupTabLayout() {
@@ -99,7 +125,7 @@ class MainActivity : AppCompatActivity() {
             }
             tasks.clear()
             tasks.addAll(dbTasks)
-            taskAdapter.notifyDataSetChanged()
+            taskAdapter.updateTasks(tasks)
         }
     }
 
@@ -113,7 +139,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Task completed: ${task.title}", Toast.LENGTH_SHORT).show()
                 notificationHelper.cancelNotification(task)
             } else {
-                if (task.scheduledTimeMillis != null) {
+                if (task.dueDateMillis != null) {
                     notificationHelper.scheduleNotification(task)
                 }
             }
@@ -122,6 +148,23 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = taskAdapter
         }
+
+        // Swipe-to-delete
+        val itemTouchHelperCallback = object : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(0, androidx.recyclerview.widget.ItemTouchHelper.LEFT or androidx.recyclerview.widget.ItemTouchHelper.RIGHT) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.bindingAdapterPosition
+                val taskToDelete = tasks[position]
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) { taskDao.deleteTask(taskToDelete) }
+                    notificationHelper.cancelNotification(taskToDelete)
+                    loadTasksFromDb()
+                    Toast.makeText(this@MainActivity, "Task deleted", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        val itemTouchHelper = androidx.recyclerview.widget.ItemTouchHelper(itemTouchHelperCallback)
+        itemTouchHelper.attachToRecyclerView(binding.recyclerView)
     }
 
     private fun setupButtons() {
@@ -151,9 +194,9 @@ class MainActivity : AppCompatActivity() {
                 // Fetch all tasks from DB to ensure we are resetting everything, regardless of current filter
                 val allTasksFromDb = withContext(Dispatchers.IO) { taskDao.getAllTasks() }
                 allTasksFromDb.forEach { task ->
-                    if (task.isCompleted || task.scheduledTimeMillis != null) { // Only update if actually changing something
+                    if (task.isCompleted || task.dueDateMillis != null) { // Only update if actually changing something
                         task.isCompleted = false
-                        if (task.scheduledTimeMillis != null) {
+                        if (task.dueDateMillis != null) {
                             notificationHelper.scheduleNotification(task) // Re-schedule if it had a reminder
                         }
                         withContext(Dispatchers.IO) { taskDao.updateTask(task) }
@@ -221,7 +264,7 @@ class MainActivity : AppCompatActivity() {
                     val newTask = Task(
                         title = title,
                         description = description,
-                        scheduledTimeMillis = scheduledMillis
+                        dueDateMillis = scheduledMillis
                         // isCompleted will be false by default
                     )
                     lifecycleScope.launch {

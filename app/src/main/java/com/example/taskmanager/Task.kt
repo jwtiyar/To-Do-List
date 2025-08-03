@@ -10,6 +10,6 @@ data class Task(
     val title: String,
     val description: String,
     var isCompleted: Boolean = false,
-    var scheduledTimeMillis: Long? = null,
+    var dueDateMillis: Long? = null,
     var notificationId: Int? = null
 ) 

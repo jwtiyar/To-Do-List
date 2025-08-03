@@ -37,7 +37,7 @@ class NotificationHelper(private val context: Context) {
     }
     
     fun scheduleNotification(task: Task) {
-        task.scheduledTimeMillis?.let { scheduledMillis ->
+        task.dueDateMillis?.let { scheduledMillis ->
             val intent = Intent(context, NotificationReceiver::class.java).apply {
                 putExtra("task_id", task.id)
                 putExtra("task_title", task.title)

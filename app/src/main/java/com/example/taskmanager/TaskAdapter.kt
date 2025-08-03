@@ -12,9 +12,24 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 class TaskAdapter(
-    private val tasks: MutableList<Task>,
+    private var tasks: List<Task>,
     private val onTaskClick: (Task) -> Unit // Callback to MainActivity
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
+    fun updateTasks(newTasks: List<Task>) {
+        val diffCallback = object : androidx.recyclerview.widget.DiffUtil.Callback() {
+            override fun getOldListSize() = tasks.size
+            override fun getNewListSize() = newTasks.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return tasks[oldItemPosition].id == newTasks[newItemPosition].id
+            }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return tasks[oldItemPosition] == newTasks[newItemPosition]
+            }
+        }
+        val diffResult = androidx.recyclerview.widget.DiffUtil.calculateDiff(diffCallback)
+        tasks = newTasks
+        diffResult.dispatchUpdatesTo(this)
+    }
 
     private val timeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' HH:mm", Locale.getDefault())
 
@@ -24,39 +39,39 @@ class TaskAdapter(
             binding.apply {
                 taskTitle.text = task.title
                 taskDescription.text = task.description
-               
+
                 // Temporarily remove listener to prevent firing during programmatic update of isChecked
                 taskCheckBox.setOnCheckedChangeListener(null)
                 taskCheckBox.isChecked = task.isCompleted
-                // The functional listener for user interactions is (re-)attached below
 
-                if (task.scheduledTimeMillis != null) {
-                    val ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.scheduledTimeMillis!!), ZoneId.systemDefault())
-                    // Use string resource for concatenation and translation
-                    taskScheduledTime.text = itemView.context.getString(R.string.task_reminder_prefix, ldt.format(timeFormatter))
+                if (task.dueDateMillis != null) {
+                    val ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.dueDateMillis!!), ZoneId.systemDefault())
+                    taskScheduledTime.text = "Due: " + ldt.format(timeFormatter)
                     taskScheduledTime.visibility = View.VISIBLE
                 } else {
                     taskScheduledTime.visibility = View.GONE
                 }
-                
-                updateVisualState(task) // Separate method for UI updates
+
+                updateVisualState(task)
 
                 taskCheckBox.setOnCheckedChangeListener { _, isChecked ->
-                    if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
-                        val currentTask = tasks[bindingAdapterPosition]
+                    val pos = adapterPosition
+                    if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
+                        val currentTask = tasks[pos]
                         currentTask.isCompleted = isChecked
                         updateVisualState(currentTask)
-                        onTaskClick(currentTask) // Let MainActivity handle DB and broader UI refresh
+                        onTaskClick(currentTask)
                     }
                 }
-                
+
                 root.setOnClickListener {
-                    if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
-                        val currentTask = tasks[bindingAdapterPosition]
+                    val pos = adapterPosition
+                    if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
+                        val currentTask = tasks[pos]
                         currentTask.isCompleted = !currentTask.isCompleted
-                        taskCheckBox.isChecked = currentTask.isCompleted // Sync checkbox
+                        taskCheckBox.isChecked = currentTask.isCompleted
                         updateVisualState(currentTask)
-                        onTaskClick(currentTask) // Let MainActivity handle DB and broader UI refresh
+                        onTaskClick(currentTask)
                     }
                 }
             }
