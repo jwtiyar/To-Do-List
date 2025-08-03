@@ -12,8 +12,9 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 class TaskAdapter(
-    private var tasks: List<Task>,
-    private val onTaskClick: (Task) -> Unit // Callback to MainActivity
+private var tasks: List<Task>,
+    private val onTaskClick: (Task) -> Unit, // Callback to MainActivity
+    private val onEditClick: (Task) -> Unit // Edit callback
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
     fun updateTasks(newTasks: List<Task>) {
         val diffCallback = object : androidx.recyclerview.widget.DiffUtil.Callback() {
@@ -39,6 +40,20 @@ class TaskAdapter(
             binding.apply {
                 taskTitle.text = task.title
                 taskDescription.text = task.description
+
+                // Priority chip
+                chipPriority.text = when (task.priority) {
+                    Priority.LOW -> "Low"
+                    Priority.MEDIUM -> "Medium"
+                    Priority.HIGH -> "High"
+                }
+                val chipColor = when (task.priority) {
+                    Priority.LOW -> R.color.priority_low
+                    Priority.MEDIUM -> R.color.priority_medium
+                    Priority.HIGH -> R.color.priority_high
+                }
+                chipPriority.setBackgroundResource(R.drawable.chip_priority_bg)
+                chipPriority.background.setTint(root.context.getColor(chipColor))
 
                 // Temporarily remove listener to prevent firing during programmatic update of isChecked
                 taskCheckBox.setOnCheckedChangeListener(null)
@@ -72,6 +87,13 @@ class TaskAdapter(
                         taskCheckBox.isChecked = currentTask.isCompleted
                         updateVisualState(currentTask)
                         onTaskClick(currentTask)
+                    }
+                }
+                btnEditTask.setOnClickListener {
+                    val pos = adapterPosition
+                    if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
+                        val currentTask = tasks[pos]
+                        onEditClick(currentTask)
                     }
                 }
             }

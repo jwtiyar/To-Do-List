@@ -33,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.ZoneId
+import java.time.Instant
 import java.util.Locale
 import com.google.android.material.button.MaterialButton
 
@@ -42,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var db: TaskDatabase
     private lateinit var taskDao: TaskDao
-    private val tasks = mutableListOf<Task>()
+    private var tasks: List<Task> = emptyList()
 
     private var currentTaskFilter: TaskFilter = TaskFilter.PENDING // To store current filter
 
@@ -57,6 +58,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        supportActionBar?.hide()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -64,11 +66,8 @@ class MainActivity : AppCompatActivity() {
         taskDao = db.taskDao()
         notificationHelper = NotificationHelper(this)
 
-        // Clear all tasks on startup to fix lingering data issues
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) { taskDao.deleteAllTasks() }
-            loadTasksFromDb()
-        }
+        // Initial load will use default PENDING filter
+        loadTasksFromDb()
 
         checkAndRequestPostNotificationPermission()
         checkAndRequestExactAlarmPermission()
@@ -129,52 +128,132 @@ class MainActivity : AppCompatActivity() {
                     TaskFilter.COMPLETED -> taskDao.getCompletedTasks()
                 }
             }
-            tasks.clear()
-            tasks.addAll(dbTasks)
+            tasks = dbTasks
             taskAdapter.updateTasks(tasks)
         }
     }
 
     private fun setupRecyclerView() {
-        taskAdapter = TaskAdapter(tasks) { task ->
-            lifecycleScope.launch {
-                withContext(Dispatchers.IO) { taskDao.updateTask(task) }
-                loadTasksFromDb() // This will refresh the current list based on the active tab
-            }
-            if (task.isCompleted) {
-                Toast.makeText(this, "Task completed: ${task.title}", Toast.LENGTH_SHORT).show()
-                notificationHelper.cancelNotification(task)
-            } else {
-                if (task.dueDateMillis != null) {
-                    notificationHelper.scheduleNotification(task)
+        taskAdapter = TaskAdapter(
+            tasks,
+            onTaskClick = { task ->
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) { taskDao.updateTask(task) }
+                    loadTasksFromDb() // Always reload after update
                 }
+                if (task.isCompleted) {
+                    Toast.makeText(this, "Task completed: ${task.title}", Toast.LENGTH_SHORT).show()
+                    notificationHelper.cancelNotification(task)
+                } else {
+                    if (task.dueDateMillis != null) {
+                        notificationHelper.scheduleNotification(task)
+                    }
+                }
+            },
+            onEditClick = { task ->
+                showEditTaskDialog(task)
             }
-        }
-        binding.recyclerView.apply {
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = taskAdapter
+        )
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = taskAdapter
+    }
+
+    private fun showEditTaskDialog(task: Task) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_add_task, null)
+        val titleInput = dialogView.findViewById<TextInputEditText>(R.id.editTextTitle)
+        val descriptionInput = dialogView.findViewById<TextInputEditText>(R.id.editTextDescription)
+        val reminderCheckBox = dialogView.findViewById<MaterialCheckBox>(R.id.checkBoxSetReminder)
+        val reminderLayout = dialogView.findViewById<View>(R.id.reminderLayout)
+        val dateButton = dialogView.findViewById<MaterialButton>(R.id.btnDatePicker)
+        val timeButton = dialogView.findViewById<MaterialButton>(R.id.btnTimePicker)
+        val radioGroupPriority = dialogView.findViewById<android.widget.RadioGroup>(R.id.radioGroupPriority)
+
+        titleInput.setText(task.title)
+        descriptionInput.setText(task.description)
+        when (task.priority) {
+            Priority.LOW -> radioGroupPriority.check(R.id.radioLow)
+            Priority.MEDIUM -> radioGroupPriority.check(R.id.radioMedium)
+            Priority.HIGH -> radioGroupPriority.check(R.id.radioHigh)
         }
 
-        // Swipe-to-delete
-        val itemTouchHelperCallback = object : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(0, androidx.recyclerview.widget.ItemTouchHelper.LEFT or androidx.recyclerview.widget.ItemTouchHelper.RIGHT) {
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.bindingAdapterPosition
-                val taskToDelete = tasks[position]
+        // Reminder and due date
+        var selectedDate: LocalDateTime? = null
+        if (task.dueDateMillis != null) {
+            selectedDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.dueDateMillis!!), ZoneId.systemDefault())
+            reminderCheckBox.isChecked = true
+            reminderLayout.visibility = View.VISIBLE
+            dateButton.text = selectedDate.toLocalDate().toString()
+            timeButton.text = selectedDate.toLocalTime().toString()
+        } else {
+            reminderCheckBox.isChecked = false
+            reminderLayout.visibility = View.GONE
+        }
+
+        reminderCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            reminderLayout.visibility = if (isChecked) View.VISIBLE else View.GONE
+            if (!isChecked) selectedDate = null
+        }
+        dateButton.setOnClickListener {
+            val calendar = Calendar.getInstance()
+            DatePickerDialog(
+                this,
+                { _, year, month, dayOfMonth ->
+                    val currentTime = LocalTime.now()
+                    selectedDate = LocalDateTime.of(year, month + 1, dayOfMonth, currentTime.hour, currentTime.minute)
+                    dateButton.text = getString(R.string.date_format_string, month + 1, dayOfMonth, year)
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+        timeButton.setOnClickListener {
+            val calendar = Calendar.getInstance()
+            TimePickerDialog(
+                this,
+                { _, hourOfDay, minute ->
+                    selectedDate = selectedDate?.withHour(hourOfDay)?.withMinute(minute)
+                        ?: LocalDateTime.now().withHour(hourOfDay).withMinute(minute)
+                    timeButton.text = String.format(Locale.getDefault(), getString(R.string.time_format_string), hourOfDay, minute)
+                },
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                true
+            ).show()
+        }
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Edit Task")
+            .setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                val newTitle = titleInput.text.toString().trim()
+                val newDescription = descriptionInput.text.toString().trim()
+                val newPriority = when (radioGroupPriority.checkedRadioButtonId) {
+                    R.id.radioLow -> Priority.LOW
+                    R.id.radioMedium -> Priority.MEDIUM
+                    R.id.radioHigh -> Priority.HIGH
+                    else -> Priority.MEDIUM
+                }
+                val scheduledMillis = if (reminderCheckBox.isChecked && selectedDate != null) {
+                    selectedDate!!.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                } else null
+                val updatedTask = task.copy(
+                    title = newTitle,
+                    description = newDescription,
+                    priority = newPriority,
+                    dueDateMillis = scheduledMillis
+                )
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { taskDao.deleteTask(taskToDelete) }
-                    notificationHelper.cancelNotification(taskToDelete)
+                    withContext(Dispatchers.IO) { taskDao.updateTask(updatedTask) }
                     loadTasksFromDb()
-                    Toast.makeText(this@MainActivity, "Task deleted", Toast.LENGTH_SHORT).show()
                 }
             }
-        }
-        val itemTouchHelper = androidx.recyclerview.widget.ItemTouchHelper(itemTouchHelperCallback)
-        itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+            .setNegativeButton("Cancel", null)
+            .create()
+        dialog.show()
     }
 
     private fun setupButtons() {
-        binding.btnAddTask.setOnClickListener {
+        binding.fabAddTask.setOnClickListener {
             showAddTaskDialog()
         }
         binding.btnClearCompleted.setOnClickListener {
@@ -222,6 +301,7 @@ class MainActivity : AppCompatActivity() {
         val reminderLayout = dialogView.findViewById<View>(R.id.reminderLayout)
         val dateButton = dialogView.findViewById<MaterialButton>(R.id.btnDatePicker)
         val timeButton = dialogView.findViewById<MaterialButton>(R.id.btnTimePicker)
+        val radioGroupPriority = dialogView.findViewById<android.widget.RadioGroup>(R.id.radioGroupPriority)
 
         var selectedDate: LocalDateTime? = null
 
@@ -263,6 +343,12 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Add") { _, _ ->
                 val title = titleInput.text.toString().trim()
                 val description = descriptionInput.text.toString().trim()
+                val priority = when (radioGroupPriority.checkedRadioButtonId) {
+                    R.id.radioLow -> Priority.LOW
+                    R.id.radioMedium -> Priority.MEDIUM
+                    R.id.radioHigh -> Priority.HIGH
+                    else -> Priority.MEDIUM
+                }
                 if (title.isNotEmpty()) {
                     val scheduledMillis = if (reminderCheckBox.isChecked && selectedDate != null) {
                         selectedDate!!.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
@@ -270,12 +356,15 @@ class MainActivity : AppCompatActivity() {
                     val newTask = Task(
                         title = title,
                         description = description,
-                        dueDateMillis = scheduledMillis
-                        // isCompleted will be false by default
+                        dueDateMillis = scheduledMillis,
+                        isCompleted = false,
+                        priority = priority
                     )
                     lifecycleScope.launch {
                         val newTaskId = withContext(Dispatchers.IO) { taskDao.insertTask(newTask) }
                         // Always reload tasks after insert to ensure UI is up-to-date
+                        // Automatically select the Pending tab so new tasks are visible
+                        binding.tabLayout.getTabAt(0)?.select()
                         loadTasksFromDb()
                         if (scheduledMillis != null && newTaskId > 0) {
                             val insertedTask = withContext(Dispatchers.IO) { taskDao.getTaskById(newTaskId) }

@@ -5,20 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    tools:context=".MainActivity">
-
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="My Tasks"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="16dp"
-        android:textColor="@color/primary_color" />
-
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingBottom="16dp"
+    android:paddingTop="56dp">
     <EditText
         android:id="@+id/searchBar"
         android:layout_width="match_parent"
@@ -27,14 +17,26 @@
         android:inputType="text"
         android:drawableStart="@android:drawable/ic_menu_search"
         android:background="@android:color/white"
-        android:padding="12dp"
-        android:layout_marginBottom="8dp" />
+        android:padding="8dp"
+        android:layout_marginBottom="4dp" />
+    tools:context=".MainActivity">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="My Tasks"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="2dp"
+        android:textColor="@color/primary_color"
+        android:visibility="visible" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
+        android:background="@android:color/transparent"
         app:tabMode="fixed"
         app:tabGravity="fill">
 
@@ -55,7 +57,18 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_gradient" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddTask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="24dp"
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/primary_color"
+        app:tint="@android:color/white" />
 
     <!-- Rest of your buttons -->
     <LinearLayout
@@ -65,13 +78,6 @@
         android:gravity="center"
         android:layout_marginBottom="8dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnAddTask"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add Task"
-            android:layout_marginEnd="8dp"
-            style="@style/Widget.MaterialComponents.Button" />
 
     </LinearLayout>
 

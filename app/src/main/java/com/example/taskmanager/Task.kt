@@ -11,5 +11,10 @@ data class Task(
     val description: String,
     var isCompleted: Boolean = false,
     var dueDateMillis: Long? = null,
-    var notificationId: Int? = null
-) 
+    var notificationId: Int? = null,
+    var priority: Priority = Priority.MEDIUM
+)
+
+enum class Priority {
+    LOW, MEDIUM, HIGH
+}
