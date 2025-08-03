@@ -275,13 +275,8 @@ class MainActivity : AppCompatActivity() {
                     )
                     lifecycleScope.launch {
                         val newTaskId = withContext(Dispatchers.IO) { taskDao.insertTask(newTask) }
-                        // Ensure the new task appears on the 'Pending' tab if it's currently selected
-                        if (currentTaskFilter == TaskFilter.PENDING) {
-                            loadTasksFromDb()
-                        } else {
-                            // If on 'Completed' tab, new task won't show, which is fine.
-                            // Optionally, switch to pending: binding.tabLayout.getTabAt(0)?.select()
-                        }
+                        // Always reload tasks after insert to ensure UI is up-to-date
+                        loadTasksFromDb()
                         if (scheduledMillis != null && newTaskId > 0) {
                             val insertedTask = withContext(Dispatchers.IO) { taskDao.getTaskById(newTaskId) }
                             insertedTask?.let {
