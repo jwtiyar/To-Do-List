@@ -64,6 +64,12 @@ class MainActivity : AppCompatActivity() {
         taskDao = db.taskDao()
         notificationHelper = NotificationHelper(this)
 
+        // Clear all tasks on startup to fix lingering data issues
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) { taskDao.deleteAllTasks() }
+            loadTasksFromDb()
+        }
+
         checkAndRequestPostNotificationPermission()
         checkAndRequestExactAlarmPermission()
 
@@ -71,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         setupTabLayout() // Call setup for TabLayout
         setupButtons()
         setupSearchBar()
-        loadTasksFromDb() // Initial load will use default PENDING filter
+        // loadTasksFromDb() // Initial load will use default PENDING filter (already called above)
     }
 
     private fun setupSearchBar() {
