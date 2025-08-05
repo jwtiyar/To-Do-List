@@ -43,8 +43,34 @@
                 android:paddingEnd="16dp"
                 android:paddingBottom="16dp">
 
-                <com.google.android.material.search.SearchBar
-                    android:id="@+id/searchBar"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/searchInputLayout"
+                    app:startIconDrawable="@android:drawable/ic_menu_search"
+                    app:startIconTint="@color/on_surface_variant"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
+                    app:boxBackgroundMode="filled"
+                    app:boxBackgroundColor="@color/surface_variant"
+                    app:boxStrokeColor="@android:color/transparent"
+                    app:boxStrokeWidth="0dp"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/searchEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/search_tasks"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:textColor="@color/on_surface"
+                        android:textColorHint="@color/outline" />
+                </com.google.android.material.textfield.TextInputLayout>
                     style="@style/Widget.Material3.SearchBar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -201,30 +227,48 @@
         android:background="@android:color/transparent"
         android:elevation="4dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnClearCompleted"
-            style="@style/Widget.Material3.Button.OutlinedButton"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardClearCompleted"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/clear_completed"
-            android:layout_marginEnd="16dp"
-            app:icon="@drawable/ic_completed_24dp"
-            app:iconGravity="textStart"
-            app:iconPadding="8dp"
-            app:iconTint="@color/on_surface_variant"
-            android:textColor="@color/on_surface" />
+            app:cardCornerRadius="24dp"
+            app:cardBackgroundColor="@color/surface_variant"
+            app:cardElevation="4dp"
+            android:layout_marginEnd="16dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnResetTasks"
-            style="@style/Widget.Material3.Button.OutlinedButton"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnClearCompleted"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/clear_completed"
+                app:icon="@drawable/ic_completed_24dp"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="@color/on_surface_variant"
+                android:textColor="@color/on_surface" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardResetTasks"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/reset_tasks"
-            app:icon="@drawable/ic_sort_24dp"
-            app:iconGravity="textStart"
-            app:iconPadding="8dp"
-            app:iconTint="@color/on_surface_variant"
-            android:textColor="@color/on_surface" />
+            app:cardCornerRadius="24dp"
+            app:cardBackgroundColor="@color/surface_variant"
+            app:cardElevation="4dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnResetTasks"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset_tasks"
+                app:icon="@drawable/ic_sort_24dp"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="@color/on_surface_variant"
+                android:textColor="@color/on_surface" />
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

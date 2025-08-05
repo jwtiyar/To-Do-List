@@ -15,7 +15,13 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
     }
 }
 
-@Database(entities = [Task::class], version = 2, exportSchema = false)
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // No schema changes, just update the version to match identity hash
+    }
+}
+
+@Database(entities = [Task::class], version = 3, exportSchema = false)
 abstract class TaskDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
 
@@ -29,7 +35,7 @@ abstract class TaskDatabase : RoomDatabase() {
                     context.applicationContext,
                     TaskDatabase::class.java,
                     "task_database"
-                ).addMigrations(MIGRATION_1_2).build()
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
                 INSTANCE = instance
                 instance
             }

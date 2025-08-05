@@ -11,6 +11,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import androidx.core.view.doOnPreDraw
 import android.provider.Settings
 import android.view.View
 import android.widget.Toast
@@ -77,13 +78,21 @@ class MainActivity : AppCompatActivity() {
         setupButtons()
         setupSearchBar()
         // loadTasksFromDb() // Initial load will use default PENDING filter (already called above)
+
+        animateCardGrowth(binding.cardClearCompleted)
+        animateCardGrowth(binding.cardResetTasks)
     }
 
     private fun setupSearchBar() {
-        // com.google.android.material.search.SearchBar does not support addTextChangedListener.
-// To enable search, consider using a TextInputEditText for text input, or handle search action via menu or button.
-// Example: Use a TextInputEditText instead of SearchBar, or listen for query submission from SearchBar if supported.
-// filterTasks("") // Optionally, filter with empty query on setup.
+        val searchEditText = binding.searchEditText
+        // Filter as user types
+        searchEditText.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterTasks(s?.toString() ?: "")
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
     }
 
     private fun filterTasks(query: String) {
@@ -114,6 +123,21 @@ class MainActivity : AppCompatActivity() {
         })
         // Ensure the first tab is selected by default if needed (though addOnTabSelectedListener should trigger for the first tab initially)
         // binding.tabLayout.getTabAt(0)?.select()
+    }
+
+    private fun animateCardGrowth(card: View) {
+        card.layoutParams.width = 0
+        card.requestLayout()
+        card.doOnPreDraw {
+            val targetWidth = card.measuredWidth
+            val animator = android.animation.ValueAnimator.ofInt(0, targetWidth)
+            animator.addUpdateListener {
+                card.layoutParams.width = it.animatedValue as Int
+                card.requestLayout()
+            }
+            animator.duration = 400
+            animator.start()
+        }
     }
 
     private fun loadTasksFromDb() {
