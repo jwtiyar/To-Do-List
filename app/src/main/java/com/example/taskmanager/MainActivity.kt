@@ -353,6 +353,10 @@ class MainActivity : AppCompatActivity() {
                     val scheduledMillis = if (reminderCheckBox.isChecked && selectedDate != null) {
                         selectedDate!!.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                     } else null
+                    if (scheduledMillis != null && scheduledMillis < System.currentTimeMillis()) {
+                        Toast.makeText(this, "Selected reminder time is in the past. Please choose a future time.", Toast.LENGTH_SHORT).show()
+                        return@setPositiveButton
+                    }
                     val newTask = Task(
                         title = title,
                         description = description,

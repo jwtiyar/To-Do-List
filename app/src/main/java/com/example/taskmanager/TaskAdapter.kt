@@ -70,7 +70,7 @@ private var tasks: List<Task>,
                 updateVisualState(task)
 
                 taskCheckBox.setOnCheckedChangeListener { _, isChecked ->
-                    val pos = adapterPosition
+                    val pos = bindingAdapterPosition
                     if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
                         val currentTask = tasks[pos]
                         currentTask.isCompleted = isChecked
@@ -80,7 +80,7 @@ private var tasks: List<Task>,
                 }
 
                 root.setOnClickListener {
-                    val pos = adapterPosition
+                    val pos = bindingAdapterPosition
                     if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
                         val currentTask = tasks[pos]
                         currentTask.isCompleted = !currentTask.isCompleted
@@ -90,7 +90,7 @@ private var tasks: List<Task>,
                     }
                 }
                 btnEditTask.setOnClickListener {
-                    val pos = adapterPosition
+                    val pos = bindingAdapterPosition
                     if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
                         val currentTask = tasks[pos]
                         onEditClick(currentTask)
