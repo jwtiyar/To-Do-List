@@ -40,6 +40,9 @@ private var tasks: List<Task>,
             binding.apply {
                 taskTitle.text = task.title
                 taskDescription.text = task.description
+                // Always use black text for visibility
+                taskTitle.setTextColor(root.context.getColor(R.color.black))
+                taskDescription.setTextColor(root.context.getColor(R.color.black))
 
                 // Priority chip
                 chipPriority.text = when (task.priority) {
@@ -67,14 +70,14 @@ private var tasks: List<Task>,
                     taskScheduledTime.visibility = View.GONE
                 }
 
-                updateVisualState(task)
+                updateVisualState()
 
                 taskCheckBox.setOnCheckedChangeListener { _, isChecked ->
                     val pos = bindingAdapterPosition
                     if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
                         val currentTask = tasks[pos]
                         currentTask.isCompleted = isChecked
-                        updateVisualState(currentTask)
+                        updateVisualState()
                         onTaskClick(currentTask)
                     }
                 }
@@ -85,7 +88,7 @@ private var tasks: List<Task>,
                         val currentTask = tasks[pos]
                         currentTask.isCompleted = !currentTask.isCompleted
                         taskCheckBox.isChecked = currentTask.isCompleted
-                        updateVisualState(currentTask)
+                        updateVisualState()
                         onTaskClick(currentTask)
                     }
                 }
@@ -99,19 +102,12 @@ private var tasks: List<Task>,
             }
         }
 
-        private fun updateVisualState(task: Task) {
+        private fun updateVisualState() {
             binding.apply {
-                if (task.isCompleted) {
-                    taskTitle.alpha = 0.6f
-                    taskDescription.alpha = 0.6f
-                    taskScheduledTime.alpha = 0.6f
-                    root.alpha = 0.8f
-                } else {
-                    taskTitle.alpha = 1.0f
-                    taskDescription.alpha = 1.0f
-                    taskScheduledTime.alpha = 1.0f
-                    root.alpha = 1.0f
-                }
+                taskTitle.alpha = 1.0f
+                taskDescription.alpha = 1.0f
+                taskScheduledTime.alpha = 1.0f
+                root.alpha = 1.0f
             }
         }
     }
