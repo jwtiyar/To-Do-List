@@ -80,14 +80,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSearchBar() {
-        binding.searchBar.addTextChangedListener(object : android.text.TextWatcher {
-            override fun afterTextChanged(s: android.text.Editable?) {
-                val query = s?.toString()?.trim() ?: ""
-                filterTasks(query)
-            }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
+        // com.google.android.material.search.SearchBar does not support addTextChangedListener.
+// To enable search, consider using a TextInputEditText for text input, or handle search action via menu or button.
+// Example: Use a TextInputEditText instead of SearchBar, or listen for query submission from SearchBar if supported.
+// filterTasks("") // Optionally, filter with empty query on setup.
     }
 
     private fun filterTasks(query: String) {

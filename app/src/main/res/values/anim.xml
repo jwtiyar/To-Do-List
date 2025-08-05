@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Activity open/close animations -->
+    <integer name="config_activityDefaultDur">@android:integer/config_mediumAnimTime</integer>
+    <integer name="config_activityShortDur">@android:integer/config_shortAnimTime</integer>
+    
+    <!-- Window animation styles -->
+    <style name="WindowAnimationTransition" parent="@android:style/Animation">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
+</resources>

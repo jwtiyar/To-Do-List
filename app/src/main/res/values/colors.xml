@@ -1,27 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="card_completed_bg">#F5F5F5</color>
-    <color name="primary_dark">#121212</color>
-    <color name="secondary_dark">#3700B3</color>
+    <!-- Primary Colors -->
+    <color name="primary">#6750A4</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="primary_container">#EADDFF</color>
+    <color name="on_primary_container">#21005D</color>
+    <color name="primary_light">#EADDFF</color>
+    <color name="primary_dark">#4F378B</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondary">#625B71</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="secondary_container">#E8DEF8</color>
+    <color name="on_secondary_container">#1D192B</color>
+    <color name="secondary_light">#E8DEF8</color>
+    <color name="secondary_dark">#4A4458</color>
+
+    <!-- Tertiary Colors -->
+    <color name="tertiary">#7D5260</color>
+    <color name="on_tertiary">#FFFFFF</color>
+    <color name="tertiary_container">#FFD8E4</color>
+    <color name="on_tertiary_container">#31111D</color>
+    <color name="tertiary_light">#FFD8E4</color>
+    <color name="tertiary_dark">#633B48</color>
+
+    <!-- Error Colors -->
+    <color name="error">#B3261E</color>
+    <color name="on_error">#FFFFFF</color>
+    <color name="error_container">#F9DEDC</color>
+    <color name="on_error_container">#410E0B</color>
+
+    <!-- Background Colors -->
+    <color name="background">#F6F6F6</color>
+    <color name="on_background">#1C1B1F</color>
+    <color name="surface">#FFFBFE</color>
+    <color name="on_surface">#1C1B1F</color>
+    <color name="surface_variant">#E7E0EC</color>
+    <color name="on_surface_variant">#49454F</color>
+    <color name="outline">#79747E</color>
+    <color name="outline_variant">#CAC4D0</color>
+    
+    <!-- Surface Tint -->
+    <color name="surface_tint">#6750A4</color>
+    <color name="surface_tint_color">#6750A4</color>
+    
+    <!-- Scrim -->
+    <color name="scrim">#000000</color>
+    <color name="scrim_light">#73000000</color>
+    
+    <!-- Inverse Surface -->
+    <color name="inverse_surface">#313033</color>
+    <color name="inverse_on_surface">#F4EFF4</color>
+    <color name="inverse_primary">#D0BCFF</color>
+
+    <!-- Common Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <!-- App Colors -->
-    <color name="primary_color">#FF6200EE</color>
-    <color name="primary_variant">#FF3700B3</color>
-    <color name="secondary_color">#FF03DAC5</color>
-    <color name="secondary_variant">#FF018786</color>
-    
-    <!-- Text Colors -->
-    <color name="text_primary">#DE000000</color>
-    <color name="text_secondary">#99000000</color>
+    <color name="transparent">#00000000</color>
 
     <!-- Card Colors -->
     <color name="card_stroke">#1F000000</color>
-    <color name="checkbox_color">#FF6200EE</color>
+    <color name="card_completed_bg">#F5F5F5</color>
+    <color name="checkbox_color">#6750A4</color>
     
-    <!-- Background Colors -->
-    <color name="background">#FFFAFAFA</color>
-    <color name="surface">#FFFFFFFF</color>
+    <!-- State Layer Colors -->
+    <color name="state_layer">#1F000000</color>
+    <color name="state_layer_primary">#146750A4</color>
+    <color name="state_layer_on_primary">#29FFFFFF</color>
+    <color name="state_layer_secondary">#14625B71</color>
+    <color name="state_layer_on_secondary">#29FFFFFF</color>
+    <color name="state_layer_tertiary">#147D5260</color>
+    <color name="state_layer_on_tertiary">#29FFFFFF</color>
+    <color name="state_layer_error">#14B3261E</color>
+    <color name="state_layer_on_error">#29FFFFFF</color>
+    <color name="state_layer_surface">#1479747E</color>
+    <color name="state_layer_on_surface">#1F1C1B1F</color>
+    <color name="state_layer_surface_variant">#1F49454F</color>
+    <color name="state_layer_on_surface_variant">#1F49454F</color>
 
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- Highlight Colors -->
+    <color name="highlight">#1F000000</color>
+    <color name="highlight_primary">#1F6750A4</color>
+    <color name="highlight_secondary">#1F625B71</color>
+    <color name="highlight_tertiary">#1F7D5260</color>
+    <color name="highlight_error">#1FB3261E</color>
+    <color name="highlight_surface">#1F79747E</color>
+
+    <!-- Launcher Background -->
+    <color name="ic_launcher_background">#6750A4</color>
+    
+    <!-- Material 3 System Colors -->
+    <color name="system_background">@color/background</color>
+    <color name="system_on_background">@color/on_background</color>
+    <color name="system_surface">@color/surface</color>
+    <color name="system_on_surface">@color/on_surface</color>
+    <color name="system_surface_variant">@color/surface_variant</color>
+    <color name="system_on_surface_variant">@color/on_surface_variant</color>
+    
+    <!-- Material 3 Elevation Overlay -->
+    <color name="elevation_overlay">#1F000000</color>
+    <color name="elevation_overlay_accent">#0DFFFFFF</color>
+    
+    <!-- Material 3 Text Colors -->
+    <color name="text_primary">@color/on_background</color>
+    <color name="text_secondary">@color/on_surface_variant</color>
+    <color name="text_hint">#99000000</color>
+    <color name="text_disabled">#61000000</color>
+    <color name="text_primary_inverse">@color/on_primary</color>
+    <color name="text_secondary_inverse">#B3FFFFFF</color>
+    <color name="text_hint_inverse">#80FFFFFF</color>
+    <color name="text_disabled_inverse">#4DFFFFFF</color>
 </resources> 

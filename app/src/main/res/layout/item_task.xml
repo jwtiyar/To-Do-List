@@ -8,7 +8,7 @@
     app:cardElevation="8dp"
     app:strokeWidth="3dp"
     app:strokeColor="@color/card_stroke"
-    app:cardBackgroundColor="@color/card_completed_bg">
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -41,7 +41,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/chip_priority_bg"
                     android:text="Medium"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/colorOnSurface"
                     android:paddingLeft="12dp"
                     android:paddingRight="12dp"
                     android:paddingTop="4dp"
@@ -55,14 +55,14 @@
                     android:text="Task Title"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:layout_marginEnd="8dp" />
                 <ImageView
                     android:id="@+id/btnEditTask"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_edit"
-                    android:tint="@color/primary_color"
+                    app:tint="?attr/colorPrimary"
                     android:contentDescription="Edit Task" />
             </LinearLayout>
 
@@ -83,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textSize="12sp"
-                android:textColor="@color/text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:visibility="gone" />
 
         </LinearLayout>
