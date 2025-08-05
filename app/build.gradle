@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = 'com.example.taskmanager'
+    namespace = 'com.example.simplertask'
     compileSdk = 35 // Latest stable Android SDK version
 
     defaultConfig {
-        applicationId = "com.example.taskmanager"
+        applicationId = "com.example.simplertask"
         minSdk = 26
         targetSdk = 35 // Latest stable Android SDK version
         versionCode = 1

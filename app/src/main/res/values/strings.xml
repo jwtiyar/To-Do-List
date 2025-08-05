@@ -1,7 +1,7 @@
 
 <resources>
     <!-- App name and general -->
-    <string name="app_name">Task Manager</string>
+    <string name="app_name">Simpler Task</string>
     <string name="add_task">Add Task</string>
     
     <!-- Task related -->
