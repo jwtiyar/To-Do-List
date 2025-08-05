@@ -19,7 +19,7 @@
         android:background="@android:color/white"
         android:padding="8dp"
         android:layout_marginBottom="4dp" />
-    tools:context=".MainActivity">
+    <!-- tools:context attribute removed to fix lint error -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
