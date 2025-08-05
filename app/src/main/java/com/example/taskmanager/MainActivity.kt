@@ -51,6 +51,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.first
 import java.time.ZoneId
 import java.time.Instant
 import java.util.Locale
@@ -131,12 +133,17 @@ class MainActivity : AppCompatActivity() {
     private fun setupTabLayout() {
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                currentTaskFilter = when (tab?.position) {
+                val newFilter = when (tab?.position) {
                     0 -> TaskFilter.PENDING
                     1 -> TaskFilter.COMPLETED
                     else -> TaskFilter.PENDING
                 }
-                loadTasksFromDb()
+                
+                // Only load if filter actually changed
+                if (newFilter != currentTaskFilter) {
+                    currentTaskFilter = newFilter
+                    loadTasksFromDb()
+                }
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
@@ -173,31 +180,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadTasksFromDb() {
-        lifecycleScope.launch {
-            when (currentTaskFilter) {
-                TaskFilter.PENDING -> {
-                    taskDao.getPendingTasks().collect { taskList ->
-                        tasks = taskList
-                        taskAdapter.updateTasks(tasks)
-                    }
+        // Cancel the previous job if it's still running
+        loadTasksJob?.cancel()
+        
+        // Start a new job immediately
+        loadTasksJob = lifecycleScope.launch {
+            try {
+                val taskList = when (currentTaskFilter) {
+                    TaskFilter.PENDING -> taskDao.getPendingTasks().first()
+                    TaskFilter.COMPLETED -> taskDao.getCompletedTasks().first()
+                    TaskFilter.SAVED -> taskDao.getSavedTasks().first()
+                    TaskFilter.ARCHIVED -> taskDao.getArchivedTasks().first()
                 }
-                TaskFilter.COMPLETED -> {
-                    taskDao.getCompletedTasks().collect { taskList ->
-                        tasks = taskList
-                        taskAdapter.updateTasks(tasks)
-                    }
-                }
-                TaskFilter.SAVED -> {
-                    taskDao.getSavedTasks().collect { taskList ->
-                        tasks = taskList
-                        taskAdapter.updateTasks(tasks)
-                    }
-                }
-                TaskFilter.ARCHIVED -> {
-                    taskDao.getArchivedTasks().collect { taskList ->
-                        tasks = taskList
-                        taskAdapter.updateTasks(tasks)
-                    }
+                
+                tasks = taskList
+                taskAdapter.updateTasks(tasks)
+            } catch (e: Exception) {
+                // Handle cancellation gracefully
+                if (e !is kotlinx.coroutines.CancellationException) {
+                    Log.e("MainActivity", "Error loading tasks", e)
                 }
             }
         }
