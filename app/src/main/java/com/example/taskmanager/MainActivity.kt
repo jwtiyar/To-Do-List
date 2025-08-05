@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.RadioGroup
 import android.widget.RadioButton
-import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import androidx.core.view.GravityCompat
 import androidx.activity.OnBackPressedCallback
@@ -22,12 +21,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
-import android.text.TextWatcher
-import android.widget.EditText
-import com.google.android.material.search.SearchBar
-import androidx.core.view.doOnPreDraw
 import android.provider.Settings
 import android.view.View
 import android.widget.Toast
@@ -36,7 +29,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.taskmanager.databinding.ActivityMainBinding
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.snackbar.Snackbar
@@ -50,8 +42,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.first
 import java.time.ZoneId
 import java.time.Instant
@@ -66,7 +56,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var taskDao: TaskDao
     private var tasks: List<Task> = emptyList()
     private var loadTasksJob: Job? = null
-    private var lastTabSwitchTime = 0L
 
     private var currentTaskFilter: TaskFilter = TaskFilter.PENDING // To store current filter
 
@@ -118,17 +107,6 @@ class MainActivity : AppCompatActivity() {
         // than the traditional EditText-based search
     }
 
-    private fun filterTasks(query: String) {
-        val filtered = if (query.isEmpty()) {
-            tasks
-        } else {
-            tasks.filter {
-                it.title.contains(query, ignoreCase = true) ||
-                it.description.contains(query, ignoreCase = true)
-            }
-        }
-        taskAdapter.updateTasks(filtered)
-    }
 
     private fun setupTabLayout() {
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -153,31 +131,6 @@ class MainActivity : AppCompatActivity() {
         // binding.tabLayout.getTabAt(0)?.select()
     }
 
-    private fun animateCardGrowth(card: View) {
-        card.post {
-            val originalWidth = card.width
-            if (originalWidth == 0) {
-                // If not yet measured, force measure
-                card.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
-            }
-            val targetWidth = if (card.measuredWidth > 0) card.measuredWidth else card.width
-            // Set width to 0, then animate to targetWidth
-            val lp = card.layoutParams
-            lp.width = 0
-            card.layoutParams = lp
-            card.requestLayout()
-            card.post {
-                val animator = android.animation.ValueAnimator.ofInt(0, targetWidth)
-                animator.addUpdateListener {
-                    lp.width = it.animatedValue as Int
-                    card.layoutParams = lp
-                    card.requestLayout()
-                }
-                animator.duration = 400
-                animator.start()
-            }
-        }
-    }
 
     private fun loadTasksFromDb() {
         // Cancel the previous job if it's still running
