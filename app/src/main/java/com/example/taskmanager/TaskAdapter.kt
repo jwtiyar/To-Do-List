@@ -12,9 +12,10 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 class TaskAdapter(
-private var tasks: List<Task>,
-    private val onTaskClick: (Task) -> Unit, // Callback to MainActivity
-    private val onEditClick: (Task) -> Unit // Edit callback
+    private var tasks: List<Task>,
+    private val onTaskClick: (Task) -> Unit, // Callback for task completion toggle
+    private val onEditClick: (Task) -> Unit, // Callback for edit action
+    private val onTaskAction: (Task, String) -> Unit // Callback for save/archive actions
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
     fun updateTasks(newTasks: List<Task>) {
         val diffCallback = object : androidx.recyclerview.widget.DiffUtil.Callback() {
@@ -40,9 +41,6 @@ private var tasks: List<Task>,
             binding.apply {
                 taskTitle.text = task.title
                 taskDescription.text = task.description
-                // Always use black text for visibility
-                taskTitle.setTextColor(root.context.getColor(R.color.black))
-                taskDescription.setTextColor(root.context.getColor(R.color.black))
 
                 // Priority chip
                 chipPriority.text = when (task.priority) {
@@ -92,6 +90,17 @@ private var tasks: List<Task>,
                         onTaskClick(currentTask)
                     }
                 }
+                
+                root.setOnLongClickListener {
+                    val pos = bindingAdapterPosition
+                    if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
+                        val currentTask = tasks[pos]
+                        showTaskActions(currentTask)
+                        true
+                    } else {
+                        false
+                    }
+                }
                 btnEditTask.setOnClickListener {
                     val pos = bindingAdapterPosition
                     if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
@@ -102,12 +111,55 @@ private var tasks: List<Task>,
             }
         }
 
+        private fun showTaskActions(task: Task) {
+            val actions = arrayOf(
+                if (task.isSaved) "Remove from Saved" else "Save Task",
+                if (task.isArchived) "Unarchive" else "Archive"
+            )
+            
+            androidx.appcompat.app.AlertDialog.Builder(binding.root.context)
+                .setTitle("Task Actions")
+                .setItems(actions) { _, which ->
+                    when (which) {
+                        0 -> onTaskAction(task, "TOGGLE_SAVE")
+                        1 -> onTaskAction(task, "TOGGLE_ARCHIVE")
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
         private fun updateVisualState() {
             binding.apply {
-                taskTitle.alpha = 1.0f
-                taskDescription.alpha = 1.0f
-                taskScheduledTime.alpha = 1.0f
-                root.alpha = 1.0f
+                // Update visual state based on completion
+                if (taskCheckBox.isChecked) {
+                    // Task is completed
+                    taskTitle.paintFlags = taskTitle.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                    taskDescription.paintFlags = taskDescription.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                    root.alpha = 0.6f
+                } else {
+                    // Task is not completed
+                    taskTitle.paintFlags = taskTitle.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    taskDescription.paintFlags = taskDescription.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    root.alpha = 1.0f
+                }
+                
+                // Update save icon visibility based on task state
+                val saveIconRes = if (bindingAdapterPosition != RecyclerView.NO_POSITION && 
+                    bindingAdapterPosition < tasks.size) {
+                    val currentTask = tasks[bindingAdapterPosition]
+                    if (currentTask.isSaved) {
+                        R.drawable.ic_bookmark_24
+                    } else {
+                        R.drawable.ic_bookmark_border_24
+                    }
+                } else {
+                    R.drawable.ic_bookmark_border_24
+                }
+                
+                // If you have a save icon in your layout, uncomment these lines
+                // btnSave.setImageResource(saveIconRes)
+                // btnSave.contentDescription = if (saveIconRes == R.drawable.ic_bookmark_24) "Unsave task" else "Save task"
             }
         }
     }

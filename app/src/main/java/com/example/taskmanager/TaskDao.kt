@@ -1,17 +1,24 @@
 package com.example.taskmanager
 
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
-    @Query("SELECT * FROM task ORDER BY id DESC")
-    suspend fun getAllTasks(): List<Task>
+    @Query("SELECT * FROM task WHERE isArchived = 0 ORDER BY id DESC")
+    fun getAllTasks(): Flow<List<Task>>
 
-    @Query("SELECT * FROM task WHERE isCompleted = 0 ORDER BY id DESC")
-    suspend fun getPendingTasks(): List<Task>
+    @Query("SELECT * FROM task WHERE isCompleted = 0 AND isArchived = 0 ORDER BY id DESC")
+    fun getPendingTasks(): Flow<List<Task>>
 
-    @Query("SELECT * FROM task WHERE isCompleted = 1 ORDER BY id DESC")
-    suspend fun getCompletedTasks(): List<Task>
+    @Query("SELECT * FROM task WHERE isCompleted = 1 AND isArchived = 0 ORDER BY id DESC")
+    fun getCompletedTasks(): Flow<List<Task>>
+    
+    @Query("SELECT * FROM task WHERE isSaved = 1 AND isArchived = 0 ORDER BY id DESC")
+    fun getSavedTasks(): Flow<List<Task>>
+    
+    @Query("SELECT * FROM task WHERE isArchived = 1 ORDER BY id DESC")
+    fun getArchivedTasks(): Flow<List<Task>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: Task): Long

@@ -1,6 +1,16 @@
 
 package com.example.taskmanager
 
+import androidx.appcompat.app.AppCompatDelegate
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.RadioGroup
+import android.widget.RadioButton
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
+import androidx.core.view.GravityCompat
+import androidx.activity.OnBackPressedCallback
+
 import android.Manifest
 import android.app.AlarmManager
 import android.app.DatePickerDialog
@@ -11,6 +21,12 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import android.text.TextWatcher
+import android.widget.EditText
+import com.google.android.material.search.SearchBar
 import androidx.core.view.doOnPreDraw
 import android.provider.Settings
 import android.view.View
@@ -33,6 +49,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import java.time.ZoneId
 import java.time.Instant
 import java.util.Locale
@@ -45,12 +63,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var db: TaskDatabase
     private lateinit var taskDao: TaskDao
     private var tasks: List<Task> = emptyList()
+    private var loadTasksJob: Job? = null
+    private var lastTabSwitchTime = 0L
 
     private var currentTaskFilter: TaskFilter = TaskFilter.PENDING // To store current filter
 
     enum class TaskFilter {
         PENDING,
-        COMPLETED
+        COMPLETED,
+        SAVED,
+        ARCHIVED
     }
 
     companion object {
@@ -59,9 +81,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        supportActionBar?.hide()
+        // supportActionBar?.hide()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.topAppBar)
 
         db = TaskDatabase.getDatabase(this)
         taskDao = db.taskDao()
@@ -77,22 +100,20 @@ class MainActivity : AppCompatActivity() {
         setupTabLayout() // Call setup for TabLayout
         setupButtons()
         setupSearchBar()
+        setupNavigationDrawer()
+        setupBackPressHandler()
         // loadTasksFromDb() // Initial load will use default PENDING filter (already called above)
 
-        animateCardGrowth(binding.cardClearCompleted)
-        animateCardGrowth(binding.cardResetTasks)
+        // animateCardGrowth(binding.bottomActionCard)
+
+    // Optionally show theme dialog on first launch or via menu
+
     }
 
     private fun setupSearchBar() {
-        val searchEditText = binding.searchEditText
-        // Filter as user types
-        searchEditText.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                filterTasks(s?.toString() ?: "")
-            }
-            override fun afterTextChanged(s: android.text.Editable?) {}
-        })
+        // TODO: Implement search functionality with Material SearchBar
+        // The Material SearchBar component requires a different implementation approach
+        // than the traditional EditText-based search
     }
 
     private fun filterTasks(query: String) {
@@ -126,30 +147,59 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun animateCardGrowth(card: View) {
-        card.layoutParams.width = 0
-        card.requestLayout()
-        card.doOnPreDraw {
-            val targetWidth = card.measuredWidth
-            val animator = android.animation.ValueAnimator.ofInt(0, targetWidth)
-            animator.addUpdateListener {
-                card.layoutParams.width = it.animatedValue as Int
-                card.requestLayout()
+        card.post {
+            val originalWidth = card.width
+            if (originalWidth == 0) {
+                // If not yet measured, force measure
+                card.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
             }
-            animator.duration = 400
-            animator.start()
+            val targetWidth = if (card.measuredWidth > 0) card.measuredWidth else card.width
+            // Set width to 0, then animate to targetWidth
+            val lp = card.layoutParams
+            lp.width = 0
+            card.layoutParams = lp
+            card.requestLayout()
+            card.post {
+                val animator = android.animation.ValueAnimator.ofInt(0, targetWidth)
+                animator.addUpdateListener {
+                    lp.width = it.animatedValue as Int
+                    card.layoutParams = lp
+                    card.requestLayout()
+                }
+                animator.duration = 400
+                animator.start()
+            }
         }
     }
 
     private fun loadTasksFromDb() {
         lifecycleScope.launch {
-            val dbTasks = withContext(Dispatchers.IO) {
-                when (currentTaskFilter) {
-                    TaskFilter.PENDING -> taskDao.getPendingTasks()
-                    TaskFilter.COMPLETED -> taskDao.getCompletedTasks()
+            when (currentTaskFilter) {
+                TaskFilter.PENDING -> {
+                    taskDao.getPendingTasks().collect { taskList ->
+                        tasks = taskList
+                        taskAdapter.updateTasks(tasks)
+                    }
+                }
+                TaskFilter.COMPLETED -> {
+                    taskDao.getCompletedTasks().collect { taskList ->
+                        tasks = taskList
+                        taskAdapter.updateTasks(tasks)
+                    }
+                }
+                TaskFilter.SAVED -> {
+                    taskDao.getSavedTasks().collect { taskList ->
+                        tasks = taskList
+                        taskAdapter.updateTasks(tasks)
+                    }
+                }
+                TaskFilter.ARCHIVED -> {
+                    taskDao.getArchivedTasks().collect { taskList ->
+                        tasks = taskList
+                        taskAdapter.updateTasks(tasks)
+                    }
                 }
             }
-            tasks = dbTasks
-            taskAdapter.updateTasks(tasks)
         }
     }
 
@@ -172,6 +222,16 @@ class MainActivity : AppCompatActivity() {
             },
             onEditClick = { task ->
                 showEditTaskDialog(task)
+            },
+            onTaskAction = { task, action ->
+                lifecycleScope.launch {
+                    val updatedTask = when (action) {
+                        TOGGLE_SAVE -> task.copy(isSaved = !task.isSaved)
+                        TOGGLE_ARCHIVE -> task.copy(isArchived = !task.isArchived)
+                        else -> task
+                    }
+                    withContext(Dispatchers.IO) { taskDao.updateTask(updatedTask) }
+                }
             }
         )
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -296,19 +356,40 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnResetTasks.setOnClickListener {
             lifecycleScope.launch {
-                // Fetch all tasks from DB to ensure we are resetting everything, regardless of current filter
-                val allTasksFromDb = withContext(Dispatchers.IO) { taskDao.getAllTasks() }
-                allTasksFromDb.forEach { task ->
-                    if (task.isCompleted || task.dueDateMillis != null) { // Only update if actually changing something
-                        task.isCompleted = false
-                        if (task.dueDateMillis != null) {
-                            notificationHelper.scheduleNotification(task) // Re-schedule if it had a reminder
+                try {
+                    // Collect all tasks from the Flow
+                    taskDao.getAllTasks().collect { taskList ->
+                        // Process each task in the list
+                        taskList.forEach { task ->
+                            if (task.isCompleted || task.dueDateMillis != null) {
+                                // Create an updated task with isCompleted = false
+                                val updatedTask = task.copy(isCompleted = false)
+                                // Update in database
+                                withContext(Dispatchers.IO) {
+                                    taskDao.updateTask(updatedTask)
+                                    // Re-schedule notification if needed
+                                    if (updatedTask.dueDateMillis != null) {
+                                        notificationHelper.scheduleNotification(updatedTask)
+                                    }
+                                }
+                            }
                         }
-                        withContext(Dispatchers.IO) { taskDao.updateTask(task) }
+                        // Refresh the current view
+                        loadTasksFromDb()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "All tasks have been reset to pending.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
+                } catch (e: Exception) {
+                    Log.e("MainActivity", "Error resetting tasks", e)
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Error resetting tasks: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-                loadTasksFromDb() // Refresh the current tab's view
-                Toast.makeText(this@MainActivity, "All tasks have been reset to pending.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -484,5 +565,137 @@ class MainActivity : AppCompatActivity() {
                 Snackbar.make(binding.root, "Notification permission denied. Task reminders might not work.", Snackbar.LENGTH_LONG).show()
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_theme -> {
+                showThemeSelectionDialog()
+                true
+            }
+            R.id.action_about -> {
+                showAboutDialog()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun showAboutDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_about, null)
+        AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setTitle("About")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    private fun showThemeSelectionDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_theme_selection, null)
+        val radioGroup = dialogView.findViewById<RadioGroup>(R.id.radioGroupTheme)
+        val radioLight = dialogView.findViewById<RadioButton>(R.id.radioLight)
+        val radioDark = dialogView.findViewById<RadioButton>(R.id.radioDark)
+        val radioSystem = dialogView.findViewById<RadioButton>(R.id.radioSystem)
+
+        // Set current selection
+        when (AppCompatDelegate.getDefaultNightMode()) {
+            AppCompatDelegate.MODE_NIGHT_NO -> radioLight.isChecked = true
+            AppCompatDelegate.MODE_NIGHT_YES -> radioDark.isChecked = true
+            else -> radioSystem.isChecked = true
+        }
+
+        AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setTitle("Choose App Theme")
+            .setPositiveButton("OK") { _, _ ->
+                when (radioGroup.checkedRadioButtonId) {
+                    R.id.radioLight -> {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                        Toast.makeText(this, "Light theme selected", Toast.LENGTH_SHORT).show()
+                    }
+                    R.id.radioDark -> {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                        Toast.makeText(this, "Dark theme selected", Toast.LENGTH_SHORT).show()
+                    }
+                    R.id.radioSystem -> {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                        Toast.makeText(this, "System theme selected", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun setupNavigationDrawer() {
+        val drawerLayout = binding.drawerLayout
+        val navigationView = binding.navigationView
+        
+        // Set up the hamburger menu button to open the drawer
+        binding.topAppBar.setNavigationOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+        
+        // Set default checked item
+        navigationView.setCheckedItem(R.id.nav_all_tasks)
+        
+        // Handle navigation menu item clicks
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_all_tasks -> {
+                    currentTaskFilter = TaskFilter.PENDING
+                    binding.tabLayout.getTabAt(0)?.select()
+                    loadTasksFromDb()
+                    updateUI("All Tasks")
+                    navigationView.setCheckedItem(R.id.nav_all_tasks)
+                }
+                R.id.nav_saved_tasks -> {
+                    currentTaskFilter = TaskFilter.SAVED
+                    loadTasksFromDb()
+                    updateUI("Saved Tasks")
+                    navigationView.setCheckedItem(R.id.nav_saved_tasks)
+                }
+                R.id.nav_archive -> {
+                    currentTaskFilter = TaskFilter.ARCHIVED
+                    loadTasksFromDb()
+                    updateUI("Archive")
+                    navigationView.setCheckedItem(R.id.nav_archive)
+                }
+            }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
+        }
+    }
+    
+    private fun updateUI(title: String) {
+        binding.topAppBar.title = title
+        
+        // Hide/show tabs based on the current filter
+        when (currentTaskFilter) {
+            TaskFilter.PENDING, TaskFilter.COMPLETED -> {
+                binding.tabLayout.visibility = View.VISIBLE
+            }
+            TaskFilter.SAVED, TaskFilter.ARCHIVED -> {
+                binding.tabLayout.visibility = View.GONE
+            }
+        }
+    }
+    
+    private fun setupBackPressHandler() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val drawerLayout = binding.drawerLayout
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                } else {
+                    finish()
+                }
+            }
+        })
     }
 }

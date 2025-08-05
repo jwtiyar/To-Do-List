@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/surface">
 
     <com.google.android.material.textfield.TextInputLayout
+        app:boxBackgroundColor="@color/surface"
+        app:boxStrokeColor="#79747E"
+        app:hintTextColor="@color/on_surface"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Task Title">
 
         <com.google.android.material.textfield.TextInputEditText
+        android:textColor="@color/on_surface"
+        android:textColorHint="@color/on_surface_variant"
             android:id="@+id/editTextTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -22,13 +29,18 @@
 
 
     <com.google.android.material.textfield.TextInputLayout
+        app:boxBackgroundColor="@color/surface"
+        app:boxStrokeColor="#79747E"
+        app:hintTextColor="@color/on_surface"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Task Description (Optional)">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editTextDescription"
+        android:textColor="@color/on_surface"
+        android:textColorHint="@color/on_surface_variant"
+        android:id="@+id/editTextDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textMultiLine"
@@ -116,6 +128,8 @@
                 android:layout_marginEnd="8dp" />
 
             <com.google.android.material.button.MaterialButton
+        app:backgroundTint="@color/surface_variant"
+        android:textColor="@color/on_surface"
                 android:id="@+id/btnDatePicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -138,6 +152,8 @@
                 android:layout_marginEnd="8dp" />
 
             <com.google.android.material.button.MaterialButton
+        app:backgroundTint="@color/surface_variant"
+        android:textColor="@color/on_surface"
                 android:id="@+id/btnTimePicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
