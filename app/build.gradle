@@ -1,17 +1,17 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.devtools.ksp' version '1.9.22-1.0.16' // KSP version compatible with Kotlin 1.9.22
+    id 'com.google.devtools.ksp' version '2.0.0-1.0.21'
 }
 
 android {
     namespace = 'com.example.simplertask'
-    compileSdk = 35 // Latest stable Android SDK version
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.simplertask"
         minSdk = 26
-        targetSdk = 35 // Latest stable Android SDK version
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -43,41 +43,41 @@ kotlin {
 
 dependencies {
     // Core Android KTX
-    implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core-ktx:1.16.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
     
     // Material 3
-    implementation 'com.google.android.material:material:1.12.0'  // Latest stable version with Material 3 support
+    implementation 'com.google.android.material:material:1.12.0'
     
     // ConstraintLayout
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     
-    // RecyclerView with Material 3 support
-    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    // RecyclerView
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
     
     // CardView (deprecated in favor of MaterialCardView)
     implementation 'androidx.cardview:cardview:1.0.0'
     
     // Lifecycle components
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.9.2'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.9.2'
     
     // Coroutines
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2'
     
     // Navigation Component
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.7'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.7.7'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.9.3'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.9.3'
     
     // Splash Screen API
     implementation 'androidx.core:core-splashscreen:1.0.1'
-    testImplementation 'junit:junit:4.13.2' // No update indicated, kept as is
-    androidTestImplementation 'androidx.test.ext:junit:1.3.0' // Updated
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0' // Updated
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 
     // Room components
-    implementation 'androidx.room:room-runtime:2.6.1' // Downgraded
-    implementation 'androidx.room:room-ktx:2.6.1' // Downgraded
-    ksp 'androidx.room:room-compiler:2.6.1' // Downgraded
+    implementation 'androidx.room:room-runtime:2.7.2'
+    implementation 'androidx.room:room-ktx:2.7.2'
+    ksp 'androidx.room:room-compiler:2.7.2'
 }

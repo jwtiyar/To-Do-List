@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_all_tasks"
+            android:title="All Tasks"
+            android:icon="@drawable/ic_menu_all_tasks" />
+        <item
+            android:id="@+id/nav_saved_tasks"
+            android:title="Saved Tasks"
+            android:icon="@drawable/ic_menu_saved_tasks" />
+        <item
+            android:id="@+id/nav_archive"
+            android:title="Archive"
+            android:icon="@drawable/ic_menu_archive" />
+    </group>
+</menu>
