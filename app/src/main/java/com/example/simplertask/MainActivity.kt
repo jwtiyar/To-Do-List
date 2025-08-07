@@ -164,7 +164,7 @@ class MainActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 this@MainActivity, 
-                                "Error updating task: ${e.message}", 
+                                getString(R.string.task_update_error), 
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -413,7 +413,7 @@ class MainActivity : AppCompatActivity() {
                     Log.e("TaskUpdate", "Error updating task", e)
                     Toast.makeText(
                         this@MainActivity, 
-                        "Error updating task: ${e.message}", 
+                        getString(R.string.task_update_error), 
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -492,8 +492,7 @@ class MainActivity : AppCompatActivity() {
                 }
             },
             onEditClick = { task ->
-                // TODO: Implement edit task dialog
-                Toast.makeText(this@MainActivity, "Edit task: ${task.title}", Toast.LENGTH_SHORT).show()
+                showEditTaskDialog(task)
             },
             onTaskAction = { task, action ->
                 lifecycleScope.launch(Dispatchers.IO) {
@@ -646,6 +645,12 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(R.string.button_save) { _, _ ->
                 val newTitle = titleInput.text.toString().trim()
                 val newDescription = descriptionInput.text.toString().trim()
+                
+                if (newTitle.isEmpty()) {
+                    Toast.makeText(this@MainActivity, getString(R.string.enter_task_title), Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                
                 val newPriority = when (radioGroupPriority.checkedRadioButtonId) {
                     R.id.radioLow -> Priority.LOW
                     R.id.radioMedium -> Priority.MEDIUM
@@ -662,8 +667,18 @@ class MainActivity : AppCompatActivity() {
                     dueDateMillis = scheduledMillis
                 )
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { taskDao.updateTask(updatedTask) }
-                    loadTasksFromDb()
+                    try {
+                        val rowsUpdated = withContext(Dispatchers.IO) { taskDao.updateTask(updatedTask) }
+                        if (rowsUpdated > 0) {
+                            Toast.makeText(this@MainActivity, getString(R.string.task_updated_successfully), Toast.LENGTH_SHORT).show()
+                            loadTasksFromDb()
+                        } else {
+                            Toast.makeText(this@MainActivity, getString(R.string.task_update_failed), Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Log.e("EditTask", "Error updating task: ${e.message}")
+                        Toast.makeText(this@MainActivity, getString(R.string.task_update_error), Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             .setNegativeButton(R.string.cancel, null)
@@ -809,19 +824,26 @@ class MainActivity : AppCompatActivity() {
                         priority = priority
                     )
                     lifecycleScope.launch {
-                        val newTaskId = withContext(Dispatchers.IO) { taskDao.insertTask(newTask) }
-                        // Always reload tasks after insert to ensure UI is up-to-date
-                        // Automatically select the Pending tab so new tasks are visible
-                        binding.tabLayout.getTabAt(0)?.select()
-                        loadTasksFromDb()
-                        if (scheduledMillis != null && newTaskId > 0) {
-                            val insertedTask = withContext(Dispatchers.IO) { taskDao.getTaskById(newTaskId) }
-                            insertedTask?.let {
-                                notificationHelper.scheduleNotification(it)
-                                Toast.makeText(this@MainActivity, getString(R.string.task_added_with_reminder), Toast.LENGTH_SHORT).show()
+                        try {
+                            val newTaskId = withContext(Dispatchers.IO) { taskDao.insertTask(newTask) }
+                            // Always reload tasks after insert to ensure UI is up-to-date
+                            // Automatically select the Pending tab so new tasks are visible
+                            binding.tabLayout.getTabAt(0)?.select()
+                            loadTasksFromDb()
+                            if (scheduledMillis != null && newTaskId > 0) {
+                                val insertedTask = withContext(Dispatchers.IO) { taskDao.getTaskById(newTaskId) }
+                                insertedTask?.let {
+                                    notificationHelper.scheduleNotification(it)
+                                    Toast.makeText(this@MainActivity, getString(R.string.task_added_with_reminder), Toast.LENGTH_SHORT).show()
+                                }
+                            } else if (newTaskId > 0) {
+                                Toast.makeText(this@MainActivity, getString(R.string.task_added_successfully), Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this@MainActivity, getString(R.string.task_add_failed), Toast.LENGTH_SHORT).show()
                             }
-                        } else if (newTaskId > 0) {
-                            Toast.makeText(this@MainActivity, getString(R.string.task_added_successfully), Toast.LENGTH_SHORT).show()
+                        } catch (e: Exception) {
+                            Log.e("AddTask", "Error adding task: ${e.message}")
+                            Toast.makeText(this@MainActivity, getString(R.string.task_add_error), Toast.LENGTH_SHORT).show()
                         }
                     }
                 } else {

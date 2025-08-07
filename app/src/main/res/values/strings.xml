@@ -1,4 +1,3 @@
-
 <resources>
     <!-- App name and general -->
     <string name="app_name">Simpler Task</string>
@@ -78,6 +77,11 @@
     <!-- Toast messages -->
     <string name="task_added_with_reminder">Task added with reminder</string>
     <string name="task_added_successfully">Task added successfully</string>
+    <string name="task_updated_successfully">Task updated successfully</string>
+    <string name="task_update_failed">Failed to update task</string>
+    <string name="task_update_error">Error updating task</string>
+    <string name="task_add_failed">Failed to add task</string>
+    <string name="task_add_error">Error adding task</string>
     <string name="enter_task_title">Please enter a task title</string>
     <string name="reminder_time_past">Selected reminder time is in the past. Please choose a future time.</string>
     <string name="all_tasks_reset">All tasks have been reset to pending.</string>
@@ -91,4 +95,7 @@
     <string name="exact_alarm_permission_title">Exact Alarm Permission Needed</string>
     <string name="exact_alarm_permission_message">To ensure timely task reminders, this app needs permission to schedule exact alarms. Please grant this permission in the app settings.</string>
     <string name="exact_alarm_not_granted">Exact alarm permission not granted. Reminders may be less precise.</string>
+    
+    <!-- Search string -->
+    <string name="search">Search</string>
 </resources>

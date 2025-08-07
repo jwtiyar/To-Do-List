@@ -114,12 +114,7 @@ class TaskAdapter(
                 }
 
                 // Handle task item clicks (excluding the checkbox)
-                root.setOnClickListener {
-                    // Only toggle if the click is not on the checkbox
-                    if (!isClickOnCheckbox(it, taskCheckBox)) {
-                        taskCheckBox.toggle()
-                    }
-                }
+                // Removed item click toggling for completion; only checkbox marks as completed
                 
                 root.setOnLongClickListener {
                     val pos = bindingAdapterPosition

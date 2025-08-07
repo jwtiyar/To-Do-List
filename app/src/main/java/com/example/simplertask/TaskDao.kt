@@ -5,6 +5,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
+    @Query("SELECT * FROM task WHERE (title LIKE :query OR description LIKE :query) AND isArchived = 0 ORDER BY id DESC")
+    fun searchTasks(query: String): Flow<List<Task>>
+
+    @Query("UPDATE task SET isCompleted = 0 WHERE isCompleted = 1")
+    suspend fun resetAllTasksToPending()
     @Query("SELECT * FROM task WHERE isArchived = 0 ORDER BY id DESC")
     fun getAllTasks(): Flow<List<Task>>
 
