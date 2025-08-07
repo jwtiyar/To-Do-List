@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">シンプルタスク</string>
+    <string name="add_task">タスクを追加</string>
+    <string name="task_title">タスクのタイトル</string>
+    <string name="task_description">タスクの説明（オプション）</string>
+    <string name="add">追加</string>
+    <string name="cancel">キャンセル</string>
+    <string name="clear_completed">完了済みをクリア</string>
+    <string name="reset_all">すべてリセット</string>
+    <string name="set_reminder">リマインダーを設定（オプション）</string>
+    <string name="set_reminder_checkbox">リマインダーを設定</string>
+    <string name="select_date">日付を選択</string>
+    <string name="select_time">時間を選択</string>
+    <string name="date_label">日付：</string>
+    <string name="time_label">時間：</string>
+    <string name="reminder_set">リマインダー付きでタスクが追加されました</string>
+    <string name="notification_permission_granted">通知の許可が付与されました</string>
+    <string name="notification_permission_denied">通知の許可が拒否されました</string>
+    <string name="date_format_string">%3$d/%1$d/%2$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">リマインダー：%s</string>
+    <string name="search_tasks">タスクを検索…</string>
+    <string name="tab_pending">保留中</string>
+    <string name="tab_completed">完了済み</string>
+    <string name="empty_state_description">タスクなし</string>
+    <string name="no_tasks">まだタスクがありません</string>
+    <string name="add_your_first_task">+ をタップして最初のタスクを追加</string>
+    <string name="menu_settings">設定</string>
+    <string name="menu_about">このアプリについて</string>
+    <string name="menu_theme">テーマ</string>
+    <string name="menu_sort">並べ替え</string>
+    <string name="sort_by_date">日付</string>
+    <string name="sort_by_priority">優先度</string>
+    <string name="sort_by_name">名前</string>
+    <string name="reset_tasks">タスクをリセット</string>
+
+    <!-- Priority strings -->
+    <string name="priority">優先度</string>
+    <string name="priority_low">低</string>
+    <string name="priority_medium">中</string>
+    <string name="priority_high">高</string>
+    <string name="language">言語</string>
+    <string name="select_language">言語を選択</string>
+    <string name="language_english">英語</string>
+    <string name="language_arabic">アラビア語</string>
+    <string name="language_chinese_simplified">中国語（簡体字）</string>
+    <string name="language_chinese_traditional">中国語（繁体字）</string>
+    <string name="language_dutch">オランダ語</string>
+    <string name="language_french">フランス語</string>
+    <string name="language_german">ドイツ語</string>
+    <string name="language_hindi">ヒンディー語</string>
+    <string name="language_italian">イタリア語</string>
+    <string name="language_japanese">日本語</string>
+    <string name="language_korean">韓国語</string>
+    <string name="language_kurdish">クルド語</string>
+    <string name="language_portuguese">ポルトガル語</string>
+    <string name="language_russian">ロシア語</string>
+    <string name="language_spanish">スペイン語</string>
+    <string name="language_turkish">トルコ語</string>
+    <string name="language_ukrainian">ウクライナ語</string>
+    <string name="language_changed">言語が変更されました</string>
+    
+    <!-- Essential missing strings -->
+    <string name="dialog_add_task_title">新しいタスクを追加</string>
+    <string name="dialog_edit_task_title">タスクを編集</string>
+    <string name="button_save">保存</string>
+    <string name="nav_all_tasks">すべてのタスク</string>
+    <string name="nav_saved_tasks">保存されたタスク</string>
+    <string name="nav_archive">アーカイブ</string>
+    <string name="task_added_with_reminder">リマインダー付きでタスクを追加しました</string>
+    <string name="task_added_successfully">タスクを正常に追加しました</string>
+    <string name="enter_task_title">タスクのタイトルを入力してください</string>
+    <string name="reminder_time_past">選択したリマインダー時刻が過去の時刻です。未来の時刻を選択してください。</string>
+    <string name="all_tasks_reset">すべてのタスクが保留中にリセットされました。</string>
+    <string name="error_resetting_tasks">タスクのリセット中にエラーが発生しました：%s</string>
+    <string name="removed_completed_tasks">%d個の完了したタスクを削除しました</string>
+    <string name="switch_to_completed_tab">タスクをクリアするには「完了」タブに切り替えてください</string>
+    <string name="no_completed_tasks">このタブには削除する完了したタスクがありません</string>
+    
+    <!-- Missing dialog and button strings -->
+    <string name="dialog_about_title">このアプリについて</string>
+    <string name="dialog_theme_title">アプリテーマを選択</string>
+    <string name="button_ok">OK</string>
+    <string name="button_grant">許可</string>
+    <string name="button_open_settings">設定を開く</string>
+    
+    <!-- About dialog strings -->
+    <string name="about_title">シンプルタスクについて</string>
+    <string name="about_summary">シンプルタスクは日常のタスク整理、リマインダー設定、生産性向上をサポートします。美しいダーク/ライトテーマ、直感的なタブナビゲーション、重要なタスクの継続通知機能を含んでいます。</string>
+    <string name="about_developer">開発者: Jwtyar Nariman</string>
+    <string name="about_email">メール: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+
+    <!-- Theme selection strings -->
+    <string name="theme_dialog_title">アプリテーマを選択</string>
+    <string name="theme_light">ライト</string>
+    <string name="theme_dark">ダーク</string>
+    <string name="theme_system">システムテーマが選択されました</string>
+    <string name="theme_system_default">システムデフォルト</string>
+    
+    <!-- Missing permission strings -->
+    <string name="notification_permission_needed">このアプリはタスクリマインダーの通知を送信するために許可が必要です。</string>
+    <string name="exact_alarm_permission_title">正確なアラームの許可が必要</string>
+    <string name="exact_alarm_permission_message">タスクの正確なリマインダーを保証するため、このアプリは正確なアラームをスケジュールする許可が必要です。アプリの設定でこの許可を付与してください。</string>
+    <string name="exact_alarm_not_granted">正確なアラームの許可が付与されませんでした。リマインダーが正確でない可能性があります。</string>
+</resources>

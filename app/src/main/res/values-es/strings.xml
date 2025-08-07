@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tareas Simples</string>
+    <string name="add_task">Agregar Tarea</string>
+    <string name="task_title">Título de la Tarea</string>
+    <string name="task_description">Descripción de la Tarea (Opcional)</string>
+    <string name="add">Agregar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="clear_completed">Limpiar Completadas</string>
+    <string name="reset_all">Reiniciar Todo</string>
+    <string name="set_reminder">Establecer Recordatorio (Opcional)</string>
+    <string name="set_reminder_checkbox">Establecer recordatorio</string>
+    <string name="select_date">Seleccionar Fecha</string>
+    <string name="select_time">Seleccionar Hora</string>
+    <string name="date_label">Fecha:</string>
+    <string name="time_label">Hora:</string>
+    <string name="reminder_set">Tarea agregada con recordatorio</string>
+    <string name="notification_permission_granted">Permiso de notificaciones concedido</string>
+    <string name="notification_permission_denied">Permiso de notificaciones denegado</string>
+    <string name="date_format_string">%2\$d/%1\$d/%3\$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">Recordatorio: %s</string>
+    <string name="search_tasks">Buscar tareas…</string>
+    <string name="tab_pending">PENDIENTE</string>
+    <string name="tab_completed">COMPLETADO</string>
+    <string name="empty_state_description">Sin tareas</string>
+    <string name="no_tasks">No hay tareas aún</string>
+    <string name="add_your_first_task">Toca + para agregar tu primera tarea</string>
+    <string name="menu_settings">Ajustes</string>
+    <string name="menu_about">Acerca de</string>
+    <string name="menu_theme">Tema</string>
+    <string name="menu_sort">Ordenar por</string>
+    <string name="sort_by_date">Fecha</string>
+    <string name="sort_by_priority">Prioridad</string>
+    <string name="sort_by_name">Nombre</string>
+    <string name="reset_tasks">Reiniciar Tareas</string>
+    
+    <!-- Priority strings -->
+    <string name="priority">Prioridad</string>
+    <string name="priority_low">Baja</string>
+    <string name="priority_medium">Media</string>
+    <string name="priority_high">Alta</string>
+    <string name="language">Idioma</string>
+    <string name="select_language">Seleccionar Idioma</string>
+    <string name="language_english">Inglés</string>
+    <string name="language_arabic">Árabe</string>
+    <string name="language_chinese_simplified">Chino (Simplificado)</string>
+    <string name="language_chinese_traditional">Chino (Tradicional)</string>
+    <string name="language_dutch">Holandés</string>
+    <string name="language_french">Francés</string>
+    <string name="language_german">Alemán</string>
+    <string name="language_hindi">Hindi</string>
+    <string name="language_italian">Italiano</string>
+    <string name="language_japanese">Japonés</string>
+    <string name="language_korean">Coreano</string>
+    <string name="language_kurdish">Kurdo</string>
+    <string name="language_portuguese">Portugués</string>
+    <string name="language_russian">Ruso</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_turkish">Turco</string>
+    <string name="language_ukrainian">Ucraniano</string>
+    <string name="language_changed">Idioma cambiado</string>
+    
+    <!-- Dialog strings -->
+    <string name="dialog_add_task_title">Agregar Nueva Tarea</string>
+    <string name="dialog_edit_task_title">Editar Tarea</string>
+    <string name="button_save">Guardar</string>
+    
+    <!-- Navigation drawer strings -->
+    <string name="nav_all_tasks">Todas las Tareas</string>
+    <string name="nav_saved_tasks">Tareas Guardadas</string>
+    <string name="nav_archive">Archivo</string>
+    
+    <!-- Toast messages -->
+    <string name="task_added_with_reminder">Tarea agregada con recordatorio</string>
+    <string name="task_added_successfully">Tarea agregada exitosamente</string>
+    <string name="enter_task_title">Por favor ingresa un título para la tarea</string>
+    <string name="reminder_time_past">El tiempo del recordatorio seleccionado está en el pasado. Por favor elige un tiempo futuro.</string>
+    <string name="all_tasks_reset">Todas las tareas han sido reiniciadas a pendientes.</string>
+    <string name="error_resetting_tasks">Error reiniciando tareas: %s</string>
+    <string name="removed_completed_tasks">Se eliminaron %d tareas completadas</string>
+    <string name="switch_to_completed_tab">Cambia a la pestaña \'Completado\' para limpiar tareas</string>
+    <string name="no_completed_tasks">No hay tareas completadas para eliminar en esta pestaña</string>
+    
+    <!-- Missing dialog and button strings -->
+    <string name="dialog_about_title">Acerca de</string>
+    <string name="theme_dialog_title">Elegir Tema de la App</string>
+    <string name="dialog_theme_title">Elegir Tema de la App</string>
+    <string name="button_ok">OK</string>
+    <string name="button_grant">Conceder</string>
+    <string name="button_open_settings">Abrir Ajustes</string>
+    
+    <!-- About dialog strings -->
+    <string name="about_title">Acerca de Tareas Simples</string>
+    <string name="about_summary">Tareas Simples te ayuda a organizar tus tareas diarias, establecer recordatorios y mantenerte productivo. Las características incluyen hermosos temas oscuro/claro, navegación por pestañas intuitiva y notificaciones persistentes para tus tareas importantes.</string>
+    <string name="about_developer">Desarrollado por: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+    
+    <!-- Missing theme strings -->
+    <string name="theme_light">Tema claro seleccionado</string>
+    <string name="theme_dark">Tema oscuro seleccionado</string>
+    <string name="theme_system_default">Sistema por defecto</string>
+    <string name="theme_system">Tema del sistema seleccionado</string>
+    
+    <!-- Missing permission strings -->
+    <string name="notification_permission_needed">Esta aplicación necesita permiso para enviar notificaciones de recordatorios de tareas.</string>
+    <string name="exact_alarm_permission_title">Permiso de Alarma Exacta Necesario</string>
+    <string name="exact_alarm_permission_message">Para garantizar recordatorios puntuales de tareas, esta aplicación necesita permiso para programar alarmas exactas. Por favor concede este permiso en los ajustes de la aplicación.</string>
+    <string name="exact_alarm_not_granted">Permiso de alarma exacta no concedido. Los recordatorios pueden ser menos precisos.</string>
+</resources>

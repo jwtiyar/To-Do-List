@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:hint="Task Title">
+        android:hint="@string/task_title">
 
         <com.google.android.material.textfield.TextInputEditText
         android:textColor="@color/on_surface"
@@ -35,7 +35,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:hint="Task Description (Optional)">
+        android:hint="@string/task_description">
 
         <com.google.android.material.textfield.TextInputEditText
         android:textColor="@color/on_surface"
@@ -51,7 +51,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Priority"
+        android:text="@string/priority"
         android:textSize="16sp"
         android:layout_marginBottom="8dp" />
 
@@ -65,26 +65,26 @@
             android:id="@+id/radioLow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Low"
+            android:text="@string/priority_low"
             android:textColor="@color/priority_low" />
         <RadioButton
             android:id="@+id/radioMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Medium"
+            android:text="@string/priority_medium"
             android:textColor="@color/priority_medium" />
         <RadioButton
             android:id="@+id/radioHigh"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="High"
+            android:text="@string/priority_high"
             android:textColor="@color/priority_high" />
     </RadioGroup>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Set Reminder (Optional)"
+        android:text="@string/set_reminder"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"
@@ -101,7 +101,7 @@
             android:id="@+id/checkBoxSetReminder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Set reminder"
+            android:text="@string/set_reminder_checkbox"
             android:layout_marginEnd="8dp" />
 
     </LinearLayout>
@@ -123,7 +123,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Date:"
+                android:text="@string/date_label"
                 android:textSize="14sp"
                 android:layout_marginEnd="8dp" />
 
@@ -133,7 +133,7 @@
                 android:id="@+id/btnDatePicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Select Date"
+                android:text="@string/select_date"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
         </LinearLayout>
@@ -147,7 +147,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Time:"
+                android:text="@string/time_label"
                 android:textSize="14sp"
                 android:layout_marginEnd="8dp" />
 
@@ -157,7 +157,7 @@
                 android:id="@+id/btnTimePicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Select Time"
+                android:text="@string/select_time"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
         </LinearLayout>

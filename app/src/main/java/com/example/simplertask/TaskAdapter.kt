@@ -1,5 +1,7 @@
 package com.example.simplertask
 
+import android.annotation.SuppressLint
+import android.graphics.Rect
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,19 +19,40 @@ class TaskAdapter(
     private val onEditClick: (Task) -> Unit, // Callback for edit action
     private val onTaskAction: (Task, String) -> Unit // Callback for save/archive actions
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
+    /**
+     * Returns a copy of the current tasks list
+     */
+    fun getTasks(): List<Task> = tasks.toList()
+    
+    /**
+     * Updates the tasks list using DiffUtil for efficient RecyclerView updates
+     * @param newTasks The new list of tasks to display
+     */
     fun updateTasks(newTasks: List<Task>) {
         val diffCallback = object : androidx.recyclerview.widget.DiffUtil.Callback() {
-            override fun getOldListSize() = tasks.size
-            override fun getNewListSize() = newTasks.size
+            override fun getOldListSize(): Int = tasks.size
+            
+            override fun getNewListSize(): Int = newTasks.size
+            
             override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
                 return tasks[oldItemPosition].id == newTasks[newItemPosition].id
             }
+            
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                return tasks[oldItemPosition] == newTasks[newItemPosition]
+                val oldItem = tasks[oldItemPosition]
+                val newItem = newTasks[newItemPosition]
+                return oldItem == newItem
+            }
+            
+            @SuppressLint("DiffUtilEquals")
+            override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+                // You can return specific change payloads here if needed for more granular updates
+                return super.getChangePayload(oldItemPosition, newItemPosition)
             }
         }
+        
         val diffResult = androidx.recyclerview.widget.DiffUtil.calculateDiff(diffCallback)
-        tasks = newTasks
+        tasks = newTasks.toList() // Create a new list to ensure immutability
         diffResult.dispatchUpdatesTo(this)
     }
 
@@ -70,24 +93,31 @@ class TaskAdapter(
 
                 updateVisualState()
 
+                // Store the previous checked state to prevent multiple callbacks
+                var previousCheckedState = taskCheckBox.isChecked
+                
+                // Handle task completion when clicking the checkbox
+                taskCheckBox.setOnCheckedChangeListener(null) // Clear any existing listeners
+                taskCheckBox.isChecked = task.isCompleted // Set initial state
+                
                 taskCheckBox.setOnCheckedChangeListener { _, isChecked ->
-                    val pos = bindingAdapterPosition
-                    if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
-                        val currentTask = tasks[pos]
-                        currentTask.isCompleted = isChecked
-                        updateVisualState()
-                        onTaskClick(currentTask)
+                    // Only proceed if the state actually changed
+                    if (isChecked != previousCheckedState) {
+                        previousCheckedState = isChecked
+                        val pos = bindingAdapterPosition
+                        if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
+                            val currentTask = tasks[pos].copy(isCompleted = isChecked)
+                            updateVisualState()
+                            onTaskClick(currentTask)
+                        }
                     }
                 }
 
+                // Handle task item clicks (excluding the checkbox)
                 root.setOnClickListener {
-                    val pos = bindingAdapterPosition
-                    if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
-                        val currentTask = tasks[pos]
-                        currentTask.isCompleted = !currentTask.isCompleted
-                        taskCheckBox.isChecked = currentTask.isCompleted
-                        updateVisualState()
-                        onTaskClick(currentTask)
+                    // Only toggle if the click is not on the checkbox
+                    if (!isClickOnCheckbox(it, taskCheckBox)) {
+                        taskCheckBox.toggle()
                     }
                 }
                 
@@ -114,15 +144,17 @@ class TaskAdapter(
         private fun showTaskActions(task: Task) {
             val actions = arrayOf(
                 if (task.isSaved) "Remove from Saved" else "Save Task",
-                if (task.isArchived) "Unarchive" else "Archive"
+                if (task.isArchived) "Unarchive" else "Archive",
+                "Cancel"
             )
             
             androidx.appcompat.app.AlertDialog.Builder(binding.root.context)
                 .setTitle("Task Actions")
                 .setItems(actions) { _, which ->
                     when (which) {
-                        0 -> onTaskAction(task, "TOGGLE_SAVE")
-                        1 -> onTaskAction(task, "TOGGLE_ARCHIVE")
+                        0 -> onTaskAction(task, if (task.isSaved) "unsave" else "save")
+                        1 -> onTaskAction(task, if (task.isArchived) "unarchive" else "archive")
+                        // 2 is Cancel, do nothing
                     }
                 }
                 .setNegativeButton("Cancel", null)
@@ -174,6 +206,25 @@ class TaskAdapter(
     }
 
     override fun getItemCount(): Int = tasks.size
+    
+    /**
+     * Helper function to check if a click is on the checkbox
+     */
+    private fun isClickOnCheckbox(view: View, checkbox: View): Boolean {
+        val checkboxRect = Rect()
+        checkbox.getHitRect(checkboxRect)
+        // Convert checkbox coordinates to the parent view's coordinate system
+        val location = IntArray(2)
+        view.getLocationOnScreen(location)
+        checkboxRect.offset(-location[0], -location[1])
+        
+        // Get the click coordinates relative to the view
+        val x = view.width / 2
+        val y = view.height / 2
+        
+        // Check if the click was inside the checkbox bounds
+        return checkboxRect.contains(x, y)
+    }
 
     // Removed unused updateTasks function
     // Removed unused removeCompletedTasks function

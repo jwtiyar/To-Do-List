@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose App Theme"
+        android:text="@string/theme_dialog_title"
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_gravity="center_horizontal"
@@ -23,18 +23,18 @@
             android:id="@+id/radioLight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Light" />
+            android:text="@string/theme_light" />
 
         <RadioButton
             android:id="@+id/radioDark"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Dark" />
+            android:text="@string/theme_dark" />
 
         <RadioButton
             android:id="@+id/radioSystem"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="System Default" />
+            android:text="@string/theme_system_default" />
     </RadioGroup>
 </LinearLayout>

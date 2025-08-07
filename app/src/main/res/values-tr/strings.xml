@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Basit Görev</string>
+    <string name="add_task">Görev Ekle</string>
+    <string name="task_title">Görev Başlığı</string>
+    <string name="task_description">Görev Açıklaması (İsteğe Bağlı)</string>
+    <string name="add">Ekle</string>
+    <string name="cancel">İptal</string>
+    <string name="clear_completed">Tamamlananları Temizle</string>
+    <string name="reset_all">Tümünü Sıfırla</string>
+    <string name="set_reminder">Hatırlatıcı Ayarla (İsteğe Bağlı)</string>
+    <string name="set_reminder_checkbox">Hatırlatıcı ayarla</string>
+    <string name="select_date">Tarih Seç</string>
+    <string name="select_time">Saat Seç</string>
+    <string name="date_label">Tarih:</string>
+    <string name="time_label">Saat:</string>
+    <string name="reminder_set">Görev hatırlatıcıyla eklendi</string>
+    <string name="notification_permission_granted">Bildirim izni verildi</string>
+    <string name="notification_permission_denied">Bildirim izni reddedildi</string>
+    <string name="date_format_string">%2$d/%1$d/%3$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">Hatırlatıcı: %s</string>
+    <string name="search_tasks">Görevleri ara…</string>
+    <string name="tab_pending">BEKLİYOR</string>
+    <string name="tab_completed">TAMAMLANDI</string>
+    <string name="empty_state_description">Görev yok</string>
+    <string name="no_tasks">Henüz görev yok</string>
+    <string name="add_your_first_task">İlk görevinizi eklemek için + \'ya dokunun</string>
+    <string name="menu_settings">Ayarlar</string>
+    <string name="menu_about">Hakkında</string>
+    <string name="menu_theme">Tema</string>
+    <string name="menu_sort">Sıralama</string>
+    <string name="sort_by_date">Tarih</string>
+    <string name="sort_by_priority">Öncelik</string>
+    <string name="sort_by_name">İsim</string>
+
+    <!-- Priority strings -->
+    <string name="priority">Öncelik</string>
+    <string name="priority_low">Düşük</string>
+    <string name="priority_medium">Orta</string>
+    <string name="priority_high">Yüksek</string>
+    <string name="reset_tasks">Görevleri Sıfırla</string>
+
+    <!-- Language strings -->
+    <string name="language">Dil</string>
+    <string name="select_language">Dil Seç</string>
+    <string name="language_english">İngilizce</string>
+    <string name="language_arabic">Arapça</string>
+    <string name="language_chinese_simplified">Çince (Basitleştirilmiş)</string>
+    <string name="language_chinese_traditional">Çince (Geleneksel)</string>
+    <string name="language_dutch">Felemenkçe</string>
+    <string name="language_french">Fransızca</string>
+    <string name="language_german">Almanca</string>
+    <string name="language_hindi">Hintçe</string>
+    <string name="language_italian">İtalyanca</string>
+    <string name="language_japanese">Japonca</string>
+    <string name="language_korean">Korece</string>
+    <string name="language_kurdish">Kürtçe</string>
+    <string name="language_portuguese">Portekizce</string>
+    <string name="language_russian">Rusça</string>
+    <string name="language_spanish">İspanyolca</string>
+    <string name="language_turkish">Türkçe</string>
+    <string name="language_ukrainian">Ukraynaca</string>
+    <string name="language_changed">Dil değiştirildi. Değişiklikleri uygulamak için uygulamayı yeniden başlatın.</string>
+    
+    <!-- Dialog strings -->
+    <string name="dialog_add_task_title">Yeni Görev Ekle</string>
+    <string name="dialog_edit_task_title">Görevi Düzenle</string>
+    <string name="dialog_about_title">Hakkında</string>
+    <string name="dialog_theme_title">Uygulama Teması Seç</string>
+
+    <!-- About dialog strings -->
+    <string name="about_title">Basit Görev Hakkında</string>
+    <string name="about_summary">Basit Görev günlük görevlerinizi organize etmenize, hatırlatıcılar ayarlamanıza ve verimli kalmanıza yardımcı olur. Güzel koyu/açık temalar, sezgisel sekme navigasyonu ve önemli görevleriniz için kalıcı bildirimler içerir.</string>
+    <string name="about_developer">Geliştirici: Jwtyar Nariman</string>
+    <string name="about_email">E-posta: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+    
+    <!-- Button strings -->
+    <string name="button_save">Kaydet</string>
+    <string name="button_ok">Tamam</string>
+    <string name="button_grant">Ver</string>
+    <string name="button_open_settings">Ayarları Aç</string>
+    
+    <!-- Navigation strings -->
+    <string name="nav_all_tasks">Tüm Görevler</string>
+    <string name="nav_saved_tasks">Kaydedilen Görevler</string>
+    <string name="nav_archive">Arşiv</string>
+    
+    <!-- Theme strings -->
+    <string name="theme_dialog_title">Uygulama Teması Seç</string>
+    <string name="theme_light">Açık</string>
+    <string name="theme_dark">Koyu</string>
+    <string name="theme_system">Sistem teması seçildi</string>
+    <string name="theme_system_default">Sistem Varsayılanı</string>
+    
+    <!-- Task action messages -->
+    <string name="task_added_with_reminder">Görev hatırlatıcıyla eklendi</string>
+    <string name="task_added_successfully">Görev başarıyla eklendi</string>
+    <string name="enter_task_title">Lütfen bir görev başlığı girin</string>
+    <string name="reminder_time_past">Seçilen hatırlatıcı zamanı geçmişte. Lütfen gelecek bir zaman seçin.</string>
+    <string name="all_tasks_reset">Tüm görevler beklemeye sıfırlandı.</string>
+    <string name="error_resetting_tasks">Görevler sıfırlanırken hata: %s</string>
+    <string name="removed_completed_tasks">%d tamamlanmış görev kaldırıldı</string>
+    <string name="switch_to_completed_tab">Görevleri temizlemek için \'Tamamlandı\' sekmesine geçin</string>
+    <string name="no_completed_tasks">Bu sekmede kaldırılacak tamamlanmış görev yok</string>
+    
+    <!-- Permission strings -->
+    <string name="notification_permission_needed">Bu uygulama görev hatırlatıcıları için bildirim gönderme izni gerektiriyor.</string>
+    <string name="exact_alarm_permission_title">Kesin Alarm İzni Gerekli</string>
+    <string name="exact_alarm_permission_message">Zamanında görev hatırlatıcıları sağlamak için, bu uygulama kesin alarmlar ayarlama izni gerektiriyor. Lütfen uygulama ayarlarında bu izni verin.</string>
+    <string name="exact_alarm_not_granted">Kesin alarm izni verilmedi. Hatırlatıcılar daha az kesin olabilir.</string>
+</resources>

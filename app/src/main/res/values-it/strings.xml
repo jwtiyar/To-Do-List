@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Attività Semplice</string>
+    <string name="add_task">Aggiungi Attività</string>
+    <string name="task_title">Titolo Attività</string>
+    <string name="task_description">Descrizione Attività (Opzionale)</string>
+    <string name="add">Aggiungi</string>
+    <string name="cancel">Annulla</string>
+    <string name="clear_completed">Cancella Completate</string>
+    <string name="reset_all">Ripristina Tutto</string>
+    <string name="set_reminder">Imposta Promemoria (Opzionale)</string>
+    <string name="set_reminder_checkbox">Imposta promemoria</string>
+    <string name="select_date">Seleziona Data</string>
+    <string name="select_time">Seleziona Orario</string>
+    <string name="date_label">Data:</string>
+    <string name="time_label">Orario:</string>
+    <string name="reminder_set">Attività aggiunta con promemoria</string>
+    <string name="notification_permission_granted">Permesso notifiche concesso</string>
+    <string name="notification_permission_denied">Permesso notifiche negato</string>
+    <string name="date_format_string">%2$d/%1$d/%3$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">Promemoria: %s</string>
+    <string name="search_tasks">Cerca attività…</string>
+    <string name="tab_pending">IN SOSPESO</string>
+    <string name="tab_completed">COMPLETATO</string>
+    <string name="empty_state_description">Nessuna attività</string>
+    <string name="no_tasks">Nessuna attività ancora</string>
+    <string name="add_your_first_task">Tocca + per aggiungere la tua prima attività</string>
+    <string name="menu_settings">Impostazioni</string>
+    <string name="menu_about">Informazioni</string>
+    <string name="menu_theme">Tema</string>
+    <string name="menu_sort">Ordina per</string>
+    <string name="sort_by_date">Data</string>
+    <string name="sort_by_priority">Priorità</string>
+    <string name="sort_by_name">Nome</string>
+    <string name="reset_tasks">Ripristina Attività</string>
+    
+    <!-- Priority strings -->
+    <string name="priority">Priorità</string>
+    <string name="priority_low">Bassa</string>
+    <string name="priority_medium">Media</string>
+    <string name="priority_high">Alta</string>
+    <string name="language">Lingua</string>
+    <string name="select_language">Seleziona Lingua</string>
+    <string name="language_english">Inglese</string>
+    <string name="language_arabic">Arabo</string>
+    <string name="language_chinese_simplified">Cinese (Semplificato)</string>
+    <string name="language_chinese_traditional">Cinese (Tradizionale)</string>
+    <string name="language_dutch">Olandese</string>
+    <string name="language_french">Francese</string>
+    <string name="language_german">Tedesco</string>
+    <string name="language_hindi">Hindi</string>
+    <string name="language_italian">Italiano</string>
+    <string name="language_japanese">Giapponese</string>
+    <string name="language_korean">Coreano</string>
+    <string name="language_kurdish">Curdo</string>
+    <string name="language_portuguese">Portoghese</string>
+    <string name="language_russian">Russo</string>
+    <string name="language_spanish">Spagnolo</string>
+    <string name="language_turkish">Turco</string>
+    <string name="language_ukrainian">Ucraino</string>
+    <string name="language_changed">Lingua cambiata. Riavvia l\'app per applicare le modifiche.</string>
+    
+    <!-- Dialog strings -->
+    <string name="dialog_add_task_title">Aggiungi Nuova Attività</string>
+    <string name="dialog_edit_task_title">Modifica Attività</string>
+    <string name="dialog_about_title">Informazioni</string>
+    <string name="dialog_theme_title">Scegli Tema App</string>
+    
+    <!-- Button strings -->
+    <string name="button_save">Salva</string>
+    <string name="button_ok">OK</string>
+    <string name="button_grant">Concedi</string>
+    <string name="button_open_settings">Apri Impostazioni</string>
+    
+    <!-- Navigation strings -->
+    <string name="nav_all_tasks">Tutte le Attività</string>
+    <string name="nav_saved_tasks">Attività Salvate</string>
+    <string name="nav_archive">Archivio</string>
+    
+    <!-- Theme strings -->
+    <string name="theme_light">Tema chiaro selezionato</string>
+    <string name="theme_dark">Tema scuro selezionato</string>
+    <string name="theme_system">Tema di sistema selezionato</string>
+    
+    <!-- Task action messages -->
+    <string name="task_added_with_reminder">Attività aggiunta con promemoria</string>
+    <string name="task_added_successfully">Attività aggiunta con successo</string>
+    <string name="enter_task_title">Per favore inserisci un titolo per l\'attività</string>
+    <string name="reminder_time_past">L\'orario del promemoria selezionato è nel passato. Per favore scegli un orario futuro.</string>
+    <string name="all_tasks_reset">Tutte le attività sono state ripristinate a in sospeso.</string>
+    <string name="error_resetting_tasks">Errore nel ripristino delle attività: %s</string>
+    <string name="removed_completed_tasks">Rimosse %d attività completate</string>
+    <string name="switch_to_completed_tab">Passa alla scheda \'Completato\' per cancellare le attività</string>
+    <string name="no_completed_tasks">Nessuna attività completata da rimuovere in questa scheda</string>
+    
+    <!-- About dialog strings -->
+    <string name="about_title">Informazioni su Attività Semplice</string>
+    <string name="about_summary">Attività Semplice ti aiuta a organizzare le tue attività quotidiane, impostare promemoria e rimanere produttivo. Le funzionalità includono bellissimi temi scuro/chiaro, navigazione intuitiva a schede e notifiche persistenti per le tue attività importanti.</string>
+    <string name="about_developer">Sviluppato da: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+
+    <!-- Theme dialog strings -->
+    <string name="theme_dialog_title">Scegli Tema App</string>
+    <string name="theme_system_default">Predefinito Sistema</string>
+
+    <!-- Permission strings -->
+    <string name="notification_permission_needed">Questa app ha bisogno del permesso per inviare notifiche per i promemoria delle attività.</string>
+    <string name="exact_alarm_permission_title">Permesso Allarme Esatto Necessario</string>
+    <string name="exact_alarm_permission_message">Per garantire promemoria puntuali delle attività, questa app ha bisogno del permesso per programmare allarmi esatti. Per favore concedi questo permesso nelle impostazioni dell\'app.</string>
+    <string name="exact_alarm_not_granted">Permesso allarme esatto non concesso. I promemoria potrebbero essere meno precisi.</string>
+</resources>

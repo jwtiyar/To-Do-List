@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Simpler Task</string>
+    <string name="add_task">کارێک زیادبکە</string>
+    <string name="task_title">ناونیشانی کار</string>
+    <string name="task_description">وەسفی کار (ئارەزوومەندە)</string>
+    <string name="add">زیادبکە</string>
+    <string name="cancel">ڕەتبکەوە</string>
+    <string name="clear_completed">تەواوبووەکان پاکبکەوە</string>
+    <string name="reset_all">هەمووی دوبارە ڕێکبخە</string>
+    <string name="set_reminder">یادەوەری دابنێ (ئارەزوومەندە)</string>
+    <string name="set_reminder_checkbox">یادەوەری دابنێ</string>
+    <string name="select_date">بەرواری هەڵبژێرە</string>
+    <string name="select_time">کاتی هەڵبژێرە</string>
+    <string name="date_label">بەرواری:</string>
+    <string name="time_label">کاتی:</string>
+    <string name="reminder_set">کار زیادکرا لەگەڵ یادەوەری</string>
+    <string name="notification_permission_granted">ڕێپێدانی ئاگاداری درا</string>
+    <string name="notification_permission_denied">ڕێپێدانی ئاگاداری ڕەتکرایەوە</string>
+    <string name="date_format_string">%1$d/%2$d/%3$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">یادەوەری: %s</string>
+    <string name="search_tasks">گەڕان لە کارەکان…</string>
+    <string name="tab_pending">چاوەڕواو</string>
+    <string name="tab_completed">تەواوبوو</string>
+    <string name="empty_state_description">کارێک نییە</string>
+    <string name="no_tasks">کارێک نییە تا ئێستا</string>
+    <string name="add_your_first_task">لە + بدە بۆ زیادکردنی یەکەم کارەکەت</string>
+    <string name="menu_settings">ڕێکخستنەکان</string>
+    <string name="menu_about">دەربارە</string>
+    <string name="menu_theme">شێواز</string>
+    <string name="menu_sort">ڕیزبەندی بە</string>
+    <string name="sort_by_date">بەرواری</string>
+    <string name="sort_by_priority">گرنگی</string>
+    <string name="sort_by_name">ناوی</string>
+
+    <!-- Priority strings -->
+    <string name="priority">گرنگی</string>
+    <string name="priority_low">نزم</string>
+    <string name="priority_medium">مامناوەند</string>
+    <string name="priority_high">بەرز</string>
+    <string name="reset_tasks">کارەکان دوبارە ڕێکبخە</string>
+    
+    <!-- Dialog strings -->
+    <string name="dialog_add_task_title">کاری نوێ زیادبکە</string>
+    <string name="dialog_edit_task_title">کار دەستکاریبکە</string>
+    <string name="dialog_about_title">دەربارە</string>
+    <string name="dialog_theme_title">شێوازی ئەپ هەڵبژێرە</string>
+
+    <!-- About dialog strings -->
+    <string name="about_title">دەربارەی Simpler Task</string>
+    <string name="about_summary">Simpler Task یارمەتیت دەدات لە ڕێکخستنی کارە ڕۆژانەکانت، یادەوەری دانان وە بەرهەمبوون مانەوە. تایبەتمەندییەکان شێوازی جوانی تاریک/ڕووناک، گەڕانی زیرەکی با تابەکان وە ئاگاداری بەردەوام بۆ کارە گرنگەکانت لەخۆی دەگریت.</string>
+    <string name="about_developer">دروستکراو لەلایەن: جوتیار ناریمان</string>
+    <string name="about_email">ئیمەیڵ: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+
+    <string name="button_save">پاشەکەوتبکە</string>
+    <string name="button_ok">باشە</string>
+    <string name="button_grant">درابدە</string>
+    <string name="button_open_settings">ڕێکخستنەکان بکەوە</string>
+    
+    <!-- Navigation drawer strings -->
+    <string name="nav_all_tasks">هەموو کارەکان</string>
+    <string name="nav_saved_tasks">کارە پاشەکەوتکراوەکان</string>
+    <string name="nav_archive">ئەرشیف</string>
+    
+    <!-- Theme selection strings -->
+    <string name="theme_dialog_title">شێوازی ئەپ هەڵبژێرە</string>
+    <string name="theme_light">ڕووناک</string>
+    <string name="theme_dark">تاریک</string>
+    <string name="theme_system">Tema sîstemê hilbijartî</string>
+    <string name="theme_system_default">بنەڕەتی سیستەم</string>
+    
+    <!-- Toast messages -->
+    <string name="task_added_with_reminder">کار زیادکرا لەگەڵ یادەوەری</string>
+    <string name="task_added_successfully">کار بە سەرکەوتوویی زیادکرا</string>
+    <string name="enter_task_title">تکایە ناونیشانێک بۆ کار بنووسە</string>
+    <string name="reminder_time_past">کاتی یادەوەری هەڵبژێردراو لە ڕابردوودایە. تکایە کاتێکی داهاتوو هەڵبژێرە.</string>
+    <string name="all_tasks_reset">هەموو کارەکان گەڕانەوە بۆ چاوەڕواو.</string>
+    <string name="error_resetting_tasks">هەڵەیەک لە دووبارە ڕێکخستنی کارەکان: %s</string>
+    <string name="removed_completed_tasks">%d کاری تەواوبوو لابرا</string>
+    <string name="switch_to_completed_tab">بچۆ بۆ تابی \'تەواوبوو\' بۆ پاککردنەوەی کارەکان</string>
+    <string name="no_completed_tasks">کاری تەواوبوو نییە بۆ لابردن لەم تابە</string>
+    
+    <!-- Permission strings -->
+    <string name="notification_permission_needed">ئەم ئەپە پێویستی بە ڕێپێدان هەیە بۆ ناردنی ئاگاداری بۆ یادەوەری کارەکان.</string>
+    <string name="exact_alarm_permission_title">پێویستی بە ڕێپێدانی ئاگادارکردنەوەی وردە</string>
+    <string name="exact_alarm_permission_message">بۆ دڵنیابوون لە یادەوەری بە کات، ئەم ئەپە پێویستی بە ڕێپێدان هەیە بۆ ڕێکخستنی ئاگادارکردنەوەی وردەکان. تکایە ئەم ڕێپێدانە بدە لە ڕێکخستنەکانی ئەپ.</string>
+    <string name="exact_alarm_not_granted">ڕێپێدانی ئاگادارکردنەوەی ورد نەدراوە. یادەوەریەکان ڕەنگە وردتر نەبن.</string>
+</resources>

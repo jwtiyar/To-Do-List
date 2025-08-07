@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Простая Задача</string>
+    <string name="add_task">Добавить Задачу</string>
+    <string name="task_title">Название Задачи</string>
+    <string name="task_description">Описание Задачи (Опционально)</string>
+    <string name="add">Добавить</string>
+    <string name="cancel">Отмена</string>
+    <string name="clear_completed">Очистить Выполненные</string>
+    <string name="reset_all">Сбросить Всё</string>
+    <string name="set_reminder">Установить Напоминание (Опционально)</string>
+    <string name="set_reminder_checkbox">Установить напоминание</string>
+    <string name="select_date">Выберите Дату</string>
+    <string name="select_time">Выберите Время</string>
+    <string name="date_label">Дата:</string>
+    <string name="time_label">Время:</string>
+    <string name="reminder_set">Задача добавлена с напоминанием</string>
+    <string name="notification_permission_granted">Разрешение на уведомления предоставлено</string>
+    <string name="notification_permission_denied">Разрешение на уведомления отклонено</string>
+    <string name="date_format_string">%2$d/%1$d/%3$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">Напоминание: %s</string>
+    <string name="search_tasks">Поиск задач…</string>
+    <string name="tab_pending">В ОЖИДАНИИ</string>
+    <string name="tab_completed">ЗАВЕРШЕНО</string>
+    <string name="empty_state_description">Нет задач</string>
+    <string name="no_tasks">Пока нет задач</string>
+    <string name="add_your_first_task">Нажмите + чтобы добавить первую задачу</string>
+    <string name="menu_settings">Настройки</string>
+    <string name="menu_about">О программе</string>
+    <string name="menu_theme">Тема</string>
+    <string name="menu_sort">Сортировать по</string>
+    <string name="sort_by_date">Дата</string>
+    <string name="sort_by_priority">Приоритет</string>
+    <string name="sort_by_name">Имя</string>
+    <string name="reset_tasks">Сбросить Задачи</string>
+
+    <!-- Priority strings -->
+    <string name="priority">Priority</string>
+    <string name="priority_low">Low</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_high">High</string>
+    <string name="language">Язык</string>
+    <string name="select_language">Выберите Язык</string>
+    <string name="language_english">Английский</string>
+    <string name="language_arabic">Арабский</string>
+    <string name="language_chinese_simplified">Китайский (Упрощённый)</string>
+    <string name="language_chinese_traditional">Китайский (Традиционный)</string>
+    <string name="language_dutch">Голландский</string>
+    <string name="language_french">Французский</string>
+    <string name="language_german">Немецкий</string>
+    <string name="language_hindi">Хинди</string>
+    <string name="language_italian">Итальянский</string>
+    <string name="language_japanese">Японский</string>
+    <string name="language_korean">Корейский</string>
+    <string name="language_kurdish">Курдский</string>
+    <string name="language_portuguese">Португальский</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_spanish">Испанский</string>
+    <string name="language_turkish">Турецкий</string>
+    <string name="language_ukrainian">Украинский</string>
+    <string name="language_changed">Язык изменён</string>
+    
+    <!-- Dialog strings -->
+    <string name="dialog_add_task_title">Добавить Новую Задачу</string>
+    <string name="dialog_edit_task_title">Редактировать Задачу</string>
+    <string name="dialog_about_title">О программе</string>
+    <string name="theme_dialog_title">Выбрать Тему Приложения</string>
+    <string name="dialog_theme_title">Выбрать Тему Приложения</string>
+    
+    <!-- About dialog strings -->
+    <string name="about_title">О Простой Задаче</string>
+    <string name="about_summary">Простая Задача поможет вам организовать ваши ежедневные задачи, устанавливать напоминания и оставаться продуктивными. Функции включают красивые тёмную/светлую темы, интуитивную навигацию по вкладкам и постоянные уведомления для важных задач.</string>
+    <string name="about_developer">Разработчик: Jwtyar Nariman</string>
+    <string name="about_email">Электронная почта: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+    <string name="button_save">Сохранить</string>
+    <string name="button_ok">ОК</string>
+    <string name="button_grant">Предоставить</string>
+    <string name="button_open_settings">Открыть Настройки</string>
+    
+    <!-- Navigation drawer strings -->
+    <string name="nav_all_tasks">Все Задачи</string>
+    <string name="nav_saved_tasks">Сохранённые Задачи</string>
+    <string name="nav_archive">Архив</string>
+    
+    <!-- Theme selection strings -->
+    <string name="theme_light">Светлая тема выбрана</string>
+    <string name="theme_dark">Тёмная тема выбрана</string>
+    <string name="theme_system_default">По умолчанию системы</string>
+    <string name="theme_system">Системная тема выбрана</string>
+    
+    <!-- Toast messages -->
+    <string name="task_added_with_reminder">Задача добавлена с напоминанием</string>
+    <string name="task_added_successfully">Задача успешно добавлена</string>
+    <string name="enter_task_title">Пожалуйста, введите название задачи</string>
+    <string name="reminder_time_past">Выбранное время напоминания в прошлом. Пожалуйста, выберите будущее время.</string>
+    <string name="all_tasks_reset">Все задачи были сброшены до ожидающих.</string>
+    <string name="error_resetting_tasks">Ошибка сброса задач: %s</string>
+    <string name="removed_completed_tasks">Удалено %d выполненных задач</string>
+    <string name="switch_to_completed_tab">Перейдите на вкладку \'Завершёно\' для очистки задач</string>
+    <string name="no_completed_tasks">На этой вкладке нет выполненных задач для удаления</string>
+    
+    <!-- Permission strings -->
+    <string name="notification_permission_needed">Этому приложению нужно разрешение для отправки уведомлений для напоминаний о задачах.</string>
+    <string name="exact_alarm_permission_title">Нужно разрешение точного будильника</string>
+    <string name="exact_alarm_permission_message">Для своевременных напоминаний о задачах, этому приложению нужно разрешение на планирование точных сигналов. Пожалуйста, предоставьте это разрешение в настройках приложения.</string>
+    <string name="exact_alarm_not_granted">Разрешение на точные сигналы не предоставлено. Напоминания могут быть менее точными.</string>
+</resources>

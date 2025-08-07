@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Eenvoudige Taak</string>
+    <string name="add_task">Taak toevoegen</string>
+    <string name="task_title">Taaktitel</string>
+    <string name="task_description">Taakbeschrijving (Optioneel)</string>
+    <string name="add">Toevoegen</string>
+    <string name="cancel">Annuleren</string>
+    <string name="clear_completed">Voltooide wissen</string>
+    <string name="reset_all">Alles resetten</string>
+    <string name="set_reminder">Herinnering instellen (Optioneel)</string>
+    <string name="set_reminder_checkbox">Herinnering instellen</string>
+    <string name="select_date">Datum selecteren</string>
+    <string name="select_time">Tijd selecteren</string>
+    <string name="date_label">Datum:</string>
+    <string name="time_label">Tijd:</string>
+    <string name="reminder_set">Taak toegevoegd met herinnering</string>
+    <string name="notification_permission_granted">Meldingentoestemming verleend</string>
+    <string name="notification_permission_denied">Meldingentoestemming geweigerd</string>
+    <string name="date_format_string">%2$d/%1$d/%3$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">Herinnering: %s</string>
+    <string name="search_tasks">Taken zoeken…</string>
+    <string name="tab_pending">IN BEHANDELING</string>
+    <string name="tab_completed">VOLTOOID</string>
+    <string name="empty_state_description">Geen taken</string>
+    <string name="no_tasks">Nog geen taken</string>
+    <string name="add_your_first_task">Tik op + om je eerste taak toe te voegen</string>
+    <string name="menu_settings">Instellingen</string>
+    <string name="menu_about">Over</string>
+    <string name="menu_theme">Thema</string>
+    <string name="menu_sort">Sorteren op</string>
+    <string name="sort_by_date">Datum</string>
+    <string name="sort_by_priority">Prioriteit</string>
+    <string name="sort_by_name">Naam</string>
+
+    <!-- Priority strings -->
+    <string name="priority">Prioriteit</string>
+    <string name="priority_low">Laag</string>
+    <string name="priority_medium">Gemiddeld</string>
+    <string name="priority_high">Hoog</string>
+    <string name="reset_tasks">Taken resetten</string>
+
+    <!-- Language strings -->
+    <string name="language">Taal</string>
+    <string name="select_language">Taal selecteren</string>
+    <string name="language_english">Engels</string>
+    <string name="language_arabic">Arabisch</string>
+    <string name="language_chinese_simplified">Chinees (Vereenvoudigd)</string>
+    <string name="language_chinese_traditional">Chinees (Traditioneel)</string>
+    <string name="language_dutch">Nederlands</string>
+    <string name="language_french">Frans</string>
+    <string name="language_german">Duits</string>
+    <string name="language_hindi">Hindi</string>
+    <string name="language_italian">Italiaans</string>
+    <string name="language_japanese">Japans</string>
+    <string name="language_korean">Koreaans</string>
+    <string name="language_kurdish">Koerdisch</string>
+    <string name="language_portuguese">Portugees</string>
+    <string name="language_russian">Russisch</string>
+    <string name="language_spanish">Spaans</string>
+    <string name="language_turkish">Turks</string>
+    <string name="language_ukrainian">Oekraïens</string>
+    <string name="language_changed">Taal gewijzigd. Herstart de app om wijzigingen toe te passen.</string>
+    
+    <!-- Dialog strings -->
+    <string name="dialog_add_task_title">Nieuwe Taak Toevoegen</string>
+    <string name="dialog_edit_task_title">Taak Bewerken</string>
+    <string name="dialog_about_title">Over</string>
+    <string name="dialog_theme_title">App Thema Kiezen</string>
+
+    <!-- About dialog strings -->
+    <string name="about_title">Over Eenvoudige Taak</string>
+    <string name="about_summary">Eenvoudige Taak helpt je bij het organiseren van je dagelijkse taken, het instellen van herinneringen en productief blijven. Bevat mooie donkere/lichte thema\'s, intuitieve tabnavigatie en persistente meldingen voor je belangrijke taken.</string>
+    <string name="about_developer">Ontwikkeld door: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+    
+    <!-- Button strings -->
+    <string name="button_save">Opslaan</string>
+    <string name="button_ok">OK</string>
+    <string name="button_grant">Verlenen</string>
+    <string name="button_open_settings">Instellingen Openen</string>
+    
+    <!-- Navigation strings -->
+    <string name="nav_all_tasks">Alle Taken</string>
+    <string name="nav_saved_tasks">Opgeslagen Taken</string>
+    <string name="nav_archive">Archief</string>
+    
+    <!-- Theme strings -->
+    <string name="theme_dialog_title">App Thema Kiezen</string>
+    <string name="theme_light">Licht</string>
+    <string name="theme_dark">Donker</string>
+    <string name="theme_system">Systeemthema geselecteerd</string>
+    <string name="theme_system_default">Systeemstandaard</string>
+    
+    <!-- Task action messages -->
+    <string name="task_added_with_reminder">Taak toegevoegd met herinnering</string>
+    <string name="task_added_successfully">Taak succesvol toegevoegd</string>
+    <string name="enter_task_title">Voer een taaknaam in</string>
+    <string name="reminder_time_past">De geselecteerde herinneringstijd ligt in het verleden. Kies een toekomstige tijd.</string>
+    <string name="all_tasks_reset">Alle taken zijn gereset naar in behandeling.</string>
+    <string name="error_resetting_tasks">Fout bij het resetten van taken: %s</string>
+    <string name="removed_completed_tasks">%d voltooide taken verwijderd</string>
+    <string name="switch_to_completed_tab">Ga naar de \'Voltooid\' tab om taken te wissen</string>
+    <string name="no_completed_tasks">Geen voltooide taken om te verwijderen op dit tabblad</string>
+    
+    <!-- Permission strings -->
+    <string name="notification_permission_needed">Deze app heeft toestemming nodig om meldingen te posten voor taakherinneringen.</string>
+    <string name="exact_alarm_permission_title">Exacte Alarmtoestemming Nodig</string>
+    <string name="exact_alarm_permission_message">Om tijdige taakherinneringen te garanderen, heeft deze app toestemming nodig om exacte alarmen in te stellen. Verleen deze toestemming in de app-instellingen.</string>
+    <string name="exact_alarm_not_granted">Exacte alarmtoestemming niet verleend. Herinneringen kunnen minder nauwkeurig zijn.</string>
+</resources>

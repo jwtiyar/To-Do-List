@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">مهام بسيطة</string>
+    <string name="add_task">إضافة مهمة</string>
+    <string name="task_title">عنوان المهمة</string>
+    <string name="task_description">وصف المهمة (اختياري)</string>
+    <string name="add">إضافة</string>
+    <string name="cancel">إلغاء</string>
+    <string name="clear_completed">مسح المكتملة</string>
+    <string name="reset_all">إعادة تعيين الكل</string>
+    <string name="set_reminder">تعيين تذكير (اختياري)</string>
+    <string name="set_reminder_checkbox">تعيين تذكير</string>
+    <string name="select_date">اختر التاريخ</string>
+    <string name="select_time">اختر الوقت</string>
+    <string name="date_label">التاريخ:</string>
+    <string name="time_label">الوقت:</string>
+    <string name="reminder_set">تمت إضافة المهمة مع تذكير</string>
+    <string name="notification_permission_granted">تم منح إذن الإشعارات</string>
+    <string name="notification_permission_denied">تم رفض إذن الإشعارات</string>
+    <string name="date_format_string">%3\$d/%2\$d/%1\$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">تذكير: %s</string>
+    <string name="search_tasks">ابحث في المهام…</string>
+    <string name="tab_pending">قيد الانتظار</string>
+    <string name="tab_completed">مكتمل</string>
+    <string name="empty_state_description">لا توجد مهام</string>
+    <string name="no_tasks">لا توجد مهام بعد</string>
+    <string name="add_your_first_task">اضغط + لإضافة مهمتك الأولى</string>
+    <string name="menu_settings">الإعدادات</string>
+    <string name="menu_about">حول</string>
+    <string name="menu_theme">السمة</string>
+    <string name="menu_sort">ترتيب حسب</string>
+    <string name="sort_by_date">التاريخ</string>
+    <string name="sort_by_priority">الأولوية</string>
+    <string name="sort_by_name">الاسم</string>
+    <!-- Priority strings -->
+    <string name="priority">الأولوية</string>
+    <string name="priority_low">منخفض</string>
+    <string name="priority_medium">متوسط</string>
+    <string name="priority_high">عالي</string>
+    <string name="reset_tasks">إعادة تعيين المهام</string>
+
+    <!-- Language strings -->
+    <string name="language">اللغة</string>
+    <string name="select_language">اختر اللغة</string>
+    <string name="language_english">الإنجليزية</string>
+    <string name="language_arabic">العربية</string>
+    <string name="language_chinese_simplified">الصينية (المبسطة)</string>
+    <string name="language_chinese_traditional">الصينية (التقليدية)</string>
+    <string name="language_dutch">الهولندية</string>
+    <string name="language_french">الفرنسية</string>
+    <string name="language_german">الألمانية</string>
+    <string name="language_hindi">الهندية</string>
+    <string name="language_italian">الإيطالية</string>
+    <string name="language_japanese">اليابانية</string>
+    <string name="language_korean">الكورية</string>
+    <string name="language_kurdish">الكردية</string>
+    <string name="language_portuguese">البرتغالية</string>
+    <string name="language_russian">الروسية</string>
+    <string name="language_spanish">الإسبانية</string>
+    <string name="language_turkish">التركية</string>
+    <string name="language_ukrainian">الأوكرانية</string>
+    <string name="language_changed">تم تغيير اللغة</string>
+    
+    <!-- Dialog strings -->
+    <string name="dialog_add_task_title">إضافة مهمة جديدة</string>
+    <string name="dialog_edit_task_title">تعديل المهمة</string>
+    <string name="dialog_about_title">حول</string>
+    <string name="dialog_theme_title">اختر سمة التطبيق</string>
+    <string name="button_save">حفظ</string>
+    <string name="button_ok">موافق</string>
+    <string name="button_grant">منح</string>
+    <string name="button_open_settings">فتح الإعدادات</string>
+    
+    <!-- Navigation drawer strings -->
+    <string name="nav_all_tasks">جميع المهام</string>
+    <string name="nav_saved_tasks">المهام المحفوظة</string>
+    <string name="nav_archive">الأرشيف</string>
+    
+    <!-- About dialog strings -->
+    <string name="about_title">حول المهام البسيطة</string>
+    <string name="about_summary">المهام البسيطة تساعدك على تنظيم مهامك اليومية، وتعيين التذكيرات، والبقاء منتجاً. تشمل الميزات سمات جميلة مظلمة/فاتحة، وتنقل بديهي بالتبويبات، وإشعارات مستمرة لمهامك المهمة.</string>
+    <string name="about_developer">طور بواسطة: جوتيار نريمان</string>
+    <string name="about_email">البريد الإلكتروني: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+
+    <!-- Theme selection strings -->
+    <string name="theme_dialog_title">اختر سمة التطبيق</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+    <string name="theme_system">تم النظام المحدد</string>
+    <string name="theme_system_default">افتراضي النظام</string>
+    
+    <!-- Toast messages -->
+    <string name="task_added_with_reminder">تمت إضافة المهمة مع تذكير</string>
+    <string name="task_added_successfully">تمت إضافة المهمة بنجاح</string>
+    <string name="enter_task_title">يرجى إدخال عنوان للمهمة</string>
+    <string name="reminder_time_past">وقت التذكير المحدد في الماضي. يرجى اختيار وقت مستقبلي.</string>
+    <string name="all_tasks_reset">تمت إعادة تعيين جميع المهام إلى قيد الانتظار.</string>
+    <string name="error_resetting_tasks">خطأ في إعادة تعيين المهام: %s</string>
+    <string name="removed_completed_tasks">تم إزالة %d مهام مكتملة</string>
+    <string name="switch_to_completed_tab">انتقل إلى علامة التبويب \'مكتمل\' لمسح المهام</string>
+    <string name="no_completed_tasks">لا توجد مهام مكتملة لإزالتها في هذه العلامة</string>
+    
+    <!-- Permission strings -->
+    <string name="notification_permission_needed">يحتاج هذا التطبيق إلى إذن لإرسال إشعارات لتذكيرات المهام.</string>
+    <string name="exact_alarm_permission_title">مطلوب إذن المنبه الدقيق</string>
+    <string name="exact_alarm_permission_message">لضمان تذكيرات المهام في الوقت المناسب، يحتاج هذا التطبيق إلى إذن لجدولة المنبهات الدقيقة. يرجى منح هذا الإذن في إعدادات التطبيق.</string>
+    <string name="exact_alarm_not_granted">لم يتم منح إذن المنبه الدقيق. قد تكون التذكيرات أقل دقة.</string>
+</resources>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">간단한 작업</string>
+    <string name="add_task">작업 추가</string>
+    <string name="task_title">작업 제목</string>
+    <string name="task_description">작업 설명 (선택사항)</string>
+    <string name="add">추가</string>
+    <string name="cancel">취소</string>
+    <string name="clear_completed">완료된 항목 지우기</string>
+    <string name="reset_all">모두 재설정</string>
+    <string name="set_reminder">알림 설정 (선택사항)</string>
+    <string name="set_reminder_checkbox">알림 설정</string>
+    <string name="select_date">날짜 선택</string>
+    <string name="select_time">시간 선택</string>
+    <string name="date_label">날짜:</string>
+    <string name="time_label">시간:</string>
+    <string name="reminder_set">알림과 함께 작업이 추가됨</string>
+    <string name="notification_permission_granted">알림 권한이 허용됨</string>
+    <string name="notification_permission_denied">알림 권한이 거부됨</string>
+    <string name="date_format_string">%3$d/%1$d/%2$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">알림: %s</string>
+    <string name="search_tasks">작업 검색…</string>
+    <string name="tab_pending">대기 중</string>
+    <string name="tab_completed">완료됨</string>
+    <string name="empty_state_description">작업 없음</string>
+    <string name="no_tasks">아직 작업이 없습니다</string>
+    <string name="add_your_first_task">+ 를 눌러 첫 번째 작업을 추가하세요</string>
+    <string name="menu_settings">설정</string>
+    <string name="menu_about">정보</string>
+    <string name="menu_theme">테마</string>
+    <string name="menu_sort">정렬 기준</string>
+    <string name="sort_by_date">날짜</string>
+    <string name="sort_by_priority">우선순위</string>
+    <string name="sort_by_name">이름</string>
+    <string name="reset_tasks">작업 재설정</string>
+
+    <!-- Priority strings -->
+    <string name="priority">Priority</string>
+    <string name="priority_low">Low</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_high">High</string>
+    <string name="language">언어</string>
+    <string name="select_language">언어 선택</string>
+    <string name="language_english">영어</string>
+    <string name="language_arabic">아랍어</string>
+    <string name="language_chinese_simplified">중국어 (간체)</string>
+    <string name="language_chinese_traditional">중국어 (번체)</string>
+    <string name="language_dutch">네덜란드어</string>
+    <string name="language_french">프랑스어</string>
+    <string name="language_german">독일어</string>
+    <string name="language_hindi">힌디어</string>
+    <string name="language_italian">이탈리아어</string>
+    <string name="language_japanese">일본어</string>
+    <string name="language_korean">한국어</string>
+    <string name="language_kurdish">쿠르드어</string>
+    <string name="language_portuguese">포르투갈어</string>
+    <string name="language_russian">러시아어</string>
+    <string name="language_spanish">스페인어</string>
+    <string name="language_turkish">터키어</string>
+    <string name="language_ukrainian">우크라이나어</string>
+    <string name="language_changed">언어가 변경되었습니다</string>
+    
+    <!-- Essential missing strings -->
+    <string name="dialog_add_task_title">새 작업 추가</string>
+    <string name="dialog_edit_task_title">작업 편집</string>
+    <string name="button_save">저장</string>
+    <string name="nav_all_tasks">모든 작업</string>
+    <string name="nav_saved_tasks">저장된 작업</string>
+    <string name="nav_archive">보관함</string>
+    <string name="task_added_with_reminder">알림과 함께 작업이 추가되었습니다</string>
+    <string name="task_added_successfully">작업이 성공적으로 추가되었습니다</string>
+    <string name="enter_task_title">작업 제목을 입력하세요</string>
+    <string name="reminder_time_past">선택한 알림 시간이 과거입니다. 미래 시간을 선택하세요.</string>
+    <string name="all_tasks_reset">모든 작업이 대기 중으로 재설정되었습니다.</string>
+    <string name="error_resetting_tasks">작업 재설정 중 오류 발생: %s</string>
+    <string name="removed_completed_tasks">%d개의 완료된 작업을 제거했습니다</string>
+    <string name="switch_to_completed_tab">작업을 지우려면 \'완료\' 탭으로 전환하세요</string>
+    <string name="no_completed_tasks">이 탭에는 제거할 완료된 작업이 없습니다</string>
+    
+    <!-- Missing dialog and button strings -->
+    <string name="dialog_about_title">정보</string>
+    <string name="theme_dialog_title">앱 테마 선택</string>
+    <string name="dialog_theme_title">앱 테마 선택</string>
+    <string name="button_ok">확인</string>
+    <string name="button_grant">허용</string>
+    <string name="button_open_settings">설정 열기</string>
+    
+    <!-- About dialog strings -->
+    <string name="about_title">간단한 작업에 대하여</string>
+    <string name="about_summary">간단한 작업은 일상 작업을 정리하고 알림을 설정하며 생산성을 유지하는 데 도움을 줍니다. 아름다운 다크/라이트 테마, 직관적인 탭 내비게이션, 중요한 작업에 대한 지속적인 알림 기능이 포함되어 있습니다.</string>
+    <string name="about_developer">개발자: Jwtyar Nariman</string>
+    <string name="about_email">이메일: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+    
+    <!-- Missing theme strings -->
+    <string name="theme_light">밝은 테마가 선택되었습니다</string>
+    <string name="theme_dark">어두운 테마가 선택되었습니다</string>
+    <string name="theme_system_default">시스템 기본값</string>
+    <string name="theme_system">시스템 테마가 선택되었습니다</string>
+    
+    <!-- Missing permission strings -->
+    <string name="notification_permission_needed">이 앱은 작업 알림을 위해 알림 권한이 필요합니다.</string>
+    <string name="exact_alarm_permission_title">정확한 알람 권한 필요</string>
+    <string name="exact_alarm_permission_message">정시 작업 알림을 보장하기 위해 이 앱은 정확한 알람을 설정할 권한이 필요합니다. 앱 설정에서 이 권한을 허용해 주세요.</string>
+    <string name="exact_alarm_not_granted">정확한 알람 권한이 허용되지 않았습니다. 알림이 덜 정확할 수 있습니다.</string>
+</resources>

@@ -13,7 +13,7 @@
             android:id="@+id/aboutTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="About Simpler Task"
+            android:text="@string/about_title"
             android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
             android:textStyle="bold"
             android:paddingBottom="8dp" />
@@ -22,7 +22,7 @@
             android:id="@+id/aboutSummary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Simpler Task helps you organize your daily tasks, set reminders, and stay productive. Features include beautiful dark/light themes, intuitive tab navigation, and persistent notifications for your important tasks."
+            android:text="@string/about_summary"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:paddingBottom="16dp" />
 
@@ -30,7 +30,7 @@
             android:id="@+id/aboutAuthor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Developed by: Jwtyar Nariman"
+            android:text="@string/about_developer"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:paddingBottom="4dp" />
 
@@ -38,7 +38,7 @@
             android:id="@+id/aboutEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Email: jwtiyar@gmail.com"
+            android:text="@string/about_email"
             android:autoLink="email"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:paddingBottom="4dp" />
@@ -47,7 +47,7 @@
             android:id="@+id/aboutGithub"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="GitHub: https://github.com/jwtiyar"
+            android:text="@string/about_github"
             android:autoLink="web"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
     </LinearLayout>

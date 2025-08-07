@@ -24,6 +24,7 @@ import android.util.Log
 import android.provider.Settings
 import android.view.View
 import android.widget.Toast
+import com.example.simplertask.dialogs.LanguageSelectionDialog
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -36,6 +37,8 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputEditText
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.Instant
+import java.time.ZoneId
 import java.util.Calendar
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
@@ -43,10 +46,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
-import java.time.ZoneId
-import java.time.Instant
-import java.util.Locale
 import com.google.android.material.button.MaterialButton
+import com.example.simplertask.utils.LocaleManager
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -54,6 +56,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var db: TaskDatabase
     private lateinit var taskDao: TaskDao
+    private lateinit var localeManager: LocaleManager
     private var tasks: List<Task> = emptyList()
     private var loadTasksJob: Job? = null
 
@@ -68,11 +71,14 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
+        private const val MENU_ITEM_LANGUAGE = 1002
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // supportActionBar?.hide()
+        localeManager = LocaleManager(applicationContext)
+        // Apply saved language at startup
+        localeManager.setAppLocale()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.topAppBar)
@@ -133,58 +139,257 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun loadTasksFromDb() {
-        // Cancel the previous job if it's still running
+        // Cancel the previous job
         loadTasksJob?.cancel()
-        
-        // Start a new job immediately
         loadTasksJob = lifecycleScope.launch {
             try {
+                Log.d("TaskLoad", "Loading tasks for filter: $currentTaskFilter")
+                
                 val taskList = when (currentTaskFilter) {
-                    TaskFilter.PENDING -> taskDao.getPendingTasks().first()
-                    TaskFilter.COMPLETED -> taskDao.getCompletedTasks().first()
-                    TaskFilter.SAVED -> taskDao.getSavedTasks().first()
-                    TaskFilter.ARCHIVED -> taskDao.getArchivedTasks().first()
+                    TaskFilter.PENDING -> {
+                        Log.d("TaskLoad", "Loading pending tasks (not completed, not archived)")
+                        taskDao.getPendingTasks().first()
+                    }
+                    TaskFilter.COMPLETED -> {
+                        Log.d("TaskLoad", "Loading completed tasks (completed, not archived)")
+                        taskDao.getCompletedTasks().first()
+                    }
+                    TaskFilter.SAVED -> {
+                        Log.d("TaskLoad", "Loading saved tasks (saved, not archived)")
+                        taskDao.getSavedTasks().first()
+                    }
+                    TaskFilter.ARCHIVED -> {
+                        Log.d("TaskLoad", "Loading archived tasks (archived)")
+                        taskDao.getArchivedTasks().first()
+                    }
                 }
                 
+                Log.d("TaskLoad", "Loaded ${taskList.size} tasks for $currentTaskFilter")
                 tasks = taskList
-                taskAdapter.updateTasks(tasks)
+                
+                withContext(Dispatchers.Main) {
+                    taskAdapter.updateTasks(tasks)
+                }
+                
             } catch (e: Exception) {
                 // Handle cancellation gracefully
                 if (e !is kotlinx.coroutines.CancellationException) {
                     Log.e("MainActivity", "Error loading tasks", e)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Error loading tasks: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
     }
 
+    private fun updateTaskInDatabaseAndUI(
+        updatedTask: Task,
+        shouldRemovePredicate: () -> Boolean = { false }
+    ) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Update in database
+                taskDao.updateTask(updatedTask)
+                
+                withContext(Dispatchers.Main) {
+                    val currentList = taskAdapter.getTasks().toMutableList()
+                    val index = currentList.indexOfFirst { it.id == updatedTask.id }
+                    
+                    // Check if the task should be in the current filter
+                    val shouldBeInCurrentView = shouldShowInCurrentFilter(updatedTask)
+                    val shouldRemove = shouldRemovePredicate()
+                    
+                    if (index != -1) {
+                        if (shouldRemove || !shouldBeInCurrentView) {
+                            // Remove the task from the current list
+                            currentList.removeAt(index)
+                            taskAdapter.updateTasks(currentList)
+                        } else {
+                            // Update the task in place
+                            currentList[index] = updatedTask
+                            taskAdapter.updateTasks(currentList)
+                        }
+                    } else if (shouldBeInCurrentView) {
+                        // Task should be in this filter but isn't (e.g., unarchived or uncompleted task)
+                        currentList.add(updatedTask)
+                        taskAdapter.updateTasks(currentList)
+                    }
+                    
+                    // Log for debugging
+                    Log.d("TaskUpdate", "Updated task: ${updatedTask.id}, " +
+                            "completed: ${updatedTask.isCompleted}, " +
+                            "archived: ${updatedTask.isArchived}, " +
+                            "filter: $currentTaskFilter, " +
+                            "inView: $shouldBeInCurrentView, " +
+                            "removed: ${shouldRemove || !shouldBeInCurrentView}")
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e("TaskUpdate", "Error updating task", e)
+                    Toast.makeText(
+                        this@MainActivity, 
+                        "Error updating task: ${e.message}", 
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+    
+    private fun shouldShowInCurrentFilter(task: Task): Boolean {
+        // First check if the task is archived - archived tasks only show in ARCHIVED filter
+        if (task.isArchived) {
+            val show = currentTaskFilter == TaskFilter.ARCHIVED
+            Log.d("TaskFilter", "Task ${task.id} is archived - showing in $currentTaskFilter: $show")
+            return show
+        }
+        
+        // For non-archived tasks, check the current filter
+        val matchesFilter = when (currentTaskFilter) {
+            TaskFilter.PENDING -> !task.isCompleted
+            TaskFilter.COMPLETED -> task.isCompleted
+            TaskFilter.SAVED -> task.isSaved
+            TaskFilter.ARCHIVED -> false // Should never reach here for archived tasks (handled above)
+        }
+        
+        Log.d("TaskFilter", "Task ${task.id} in $currentTaskFilter: $matchesFilter " +
+                "(completed: ${task.isCompleted}, archived: ${task.isArchived}, saved: ${task.isSaved})")
+        return matchesFilter
+    }
+    
     private fun setupRecyclerView() {
         taskAdapter = TaskAdapter(
             tasks,
             onTaskClick = { task ->
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { taskDao.updateTask(task) }
-                    loadTasksFromDb() // Always reload after update
-                }
-                if (task.isCompleted) {
-                    Toast.makeText(this, "Task completed: ${task.title}", Toast.LENGTH_SHORT).show()
-                    notificationHelper.cancelNotification(task)
-                } else {
-                    if (task.dueDateMillis != null) {
-                        notificationHelper.scheduleNotification(task)
+                    try {
+                        // Use the task with updated completion status from the adapter
+                        Log.d("TaskClick", "Updating task ${task.id} with completion=${task.isCompleted}")
+                        
+                        // Update the task in the database and UI
+                        updateTaskInDatabaseAndUI(task) {
+                            // Should remove if:
+                            // 1. Task is completed and we're in PENDING view
+                            // 2. Task is uncompleted and we're in COMPLETED view
+                            // 3. Task is archived and we're not in ARCHIVED view
+                            (currentTaskFilter == TaskFilter.PENDING && task.isCompleted) ||
+                            (currentTaskFilter == TaskFilter.COMPLETED && !task.isCompleted) ||
+                            (currentTaskFilter != TaskFilter.ARCHIVED && task.isArchived)
+                        }
+                        
+                        // Show toast message for completion state change
+                        withContext(Dispatchers.Main) {
+                            val message = if (task.isCompleted) {
+                                notificationHelper.cancelNotification(task)
+                                "Task completed: ${task.title}"
+                            } else {
+                                if (task.dueDateMillis != null) {
+                                    notificationHelper.scheduleNotification(task)
+                                }
+                                "Task marked as pending: ${task.title}"
+                            }
+                            Toast.makeText(
+                                this@MainActivity, 
+                                message, 
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } catch (e: Exception) {
+                        Log.e("TaskClick", "Error toggling task completion", e)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@MainActivity, 
+                                "Error updating task: ${e.message}", 
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             },
             onEditClick = { task ->
-                showEditTaskDialog(task)
+                // TODO: Implement edit task dialog
+                Toast.makeText(this@MainActivity, "Edit task: ${task.title}", Toast.LENGTH_SHORT).show()
             },
             onTaskAction = { task, action ->
-                lifecycleScope.launch {
-                    val updatedTask = when (action) {
-                        TOGGLE_SAVE -> task.copy(isSaved = !task.isSaved)
-                        TOGGLE_ARCHIVE -> task.copy(isArchived = !task.isArchived)
-                        else -> task
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        val updatedTask = when (action) {
+                            "save" -> task.copy(isSaved = true)
+                            "unsave" -> task.copy(isSaved = false)
+                            "archive" -> task.copy(isArchived = true, isSaved = false) // Unsave when archiving
+                            "unarchive" -> task.copy(isArchived = false)
+                            else -> task
+                        }
+                        
+                        Log.d("TaskAction", "Action: $action on task ${task.id}")
+                        
+                        // Update in database
+                        taskDao.updateTask(updatedTask)
+                        
+                        // Determine if task should be removed from current view
+                        val shouldRemove = when {
+                            // Remove if archived and not in ARCHIVED view
+                            updatedTask.isArchived && currentTaskFilter != TaskFilter.ARCHIVED -> true
+                            // Remove if unsaved and in SAVED view
+                            !updatedTask.isSaved && currentTaskFilter == TaskFilter.SAVED -> true
+                            // Remove if unarchived but doesn't match current filter
+                            action == "unarchive" && !shouldShowInCurrentFilter(updatedTask) -> true
+                            // Default to not removing
+                            else -> false
+                        }
+                        
+                        // Update UI on main thread
+                        withContext(Dispatchers.Main) {
+                            // Get current list from adapter
+                            val currentList = taskAdapter.getTasks().toMutableList()
+                            val index = currentList.indexOfFirst { it.id == updatedTask.id }
+                            
+                            if (shouldRemove) {
+                                // Remove from current list if exists
+                                if (index != -1) {
+                                    currentList.removeAt(index)
+                                    taskAdapter.updateTasks(currentList)
+                                }
+                            } else if (index != -1) {
+                                // Update in place if exists
+                                currentList[index] = updatedTask
+                                taskAdapter.updateTasks(currentList)
+                            } else if (shouldShowInCurrentFilter(updatedTask)) {
+                                // Add if it should be in current view but isn't
+                                currentList.add(updatedTask)
+                                taskAdapter.updateTasks(currentList)
+                            }
+                            
+                            // Show appropriate toast message
+                            val message = when (action) {
+                                "save" -> "Task saved"
+                                "unsave" -> "Task removed from saved"
+                                "archive" -> "Task archived"
+                                "unarchive" -> "Task unarchived"
+                                else -> ""
+                            }
+                            if (message.isNotEmpty()) {
+                                Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        
+                        // Task action handling complete
+                        
+                    } catch (e: Exception) {
+                        Log.e("TaskAction", "Error handling task action", e)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@MainActivity, 
+                                "Error: ${e.message}", 
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
-                    withContext(Dispatchers.IO) { taskDao.updateTask(updatedTask) }
                 }
             }
         )
@@ -256,9 +461,9 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Edit Task")
+            .setTitle(R.string.dialog_edit_task_title)
             .setView(dialogView)
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton(R.string.button_save) { _, _ ->
                 val newTitle = titleInput.text.toString().trim()
                 val newDescription = descriptionInput.text.toString().trim()
                 val newPriority = when (radioGroupPriority.checkedRadioButtonId) {
@@ -281,7 +486,7 @@ class MainActivity : AppCompatActivity() {
                     loadTasksFromDb()
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.cancel, null)
             .create()
         dialog.show()
     }
@@ -300,11 +505,11 @@ class MainActivity : AppCompatActivity() {
                     }
                     withContext(Dispatchers.IO) { taskDao.deleteCompletedTasks() }
                     loadTasksFromDb() // Refresh the list
-                    Toast.makeText(this@MainActivity, "Removed ${completedTasksToClear.size} completed tasks", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, getString(R.string.removed_completed_tasks, completedTasksToClear.size), Toast.LENGTH_SHORT).show()
                 } else if (currentTaskFilter == TaskFilter.PENDING) {
-                    Toast.makeText(this@MainActivity, "Switch to 'Completed' tab to clear tasks", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, getString(R.string.switch_to_completed_tab), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this@MainActivity, "No completed tasks to remove on this tab", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, getString(R.string.no_completed_tasks), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -332,7 +537,7 @@ class MainActivity : AppCompatActivity() {
                         loadTasksFromDb()
                         Toast.makeText(
                             this@MainActivity,
-                            "All tasks have been reset to pending.",
+                            getString(R.string.all_tasks_reset),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -340,7 +545,7 @@ class MainActivity : AppCompatActivity() {
                     Log.e("MainActivity", "Error resetting tasks", e)
                     Toast.makeText(
                         this@MainActivity,
-                        "Error resetting tasks: ${e.message}",
+                        getString(R.string.error_resetting_tasks, e.message),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -393,9 +598,9 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Add New Task")
+            .setTitle(R.string.dialog_add_task_title)
             .setView(dialogView)
-            .setPositiveButton("Add") { _, _ ->
+            .setPositiveButton(R.string.add) { _, _ ->
                 val title = titleInput.text.toString().trim()
                 val description = descriptionInput.text.toString().trim()
                 val priority = when (radioGroupPriority.checkedRadioButtonId) {
@@ -409,7 +614,7 @@ class MainActivity : AppCompatActivity() {
                         selectedDate!!.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                     } else null
                     if (scheduledMillis != null && scheduledMillis < System.currentTimeMillis()) {
-                        Toast.makeText(this, "Selected reminder time is in the past. Please choose a future time.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.reminder_time_past), Toast.LENGTH_SHORT).show()
                         return@setPositiveButton
                     }
                     val newTask = Task(
@@ -429,17 +634,17 @@ class MainActivity : AppCompatActivity() {
                             val insertedTask = withContext(Dispatchers.IO) { taskDao.getTaskById(newTaskId) }
                             insertedTask?.let {
                                 notificationHelper.scheduleNotification(it)
-                                Toast.makeText(this@MainActivity, "Task added with reminder", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@MainActivity, getString(R.string.task_added_with_reminder), Toast.LENGTH_SHORT).show()
                             }
                         } else if (newTaskId > 0) {
-                            Toast.makeText(this@MainActivity, "Task added successfully", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@MainActivity, getString(R.string.task_added_successfully), Toast.LENGTH_SHORT).show()
                         }
                     }
                 } else {
-                    Toast.makeText(this, "Please enter a task title", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.enter_task_title), Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.cancel, null)
             .create()
         dialog.show()
     }
@@ -459,9 +664,9 @@ class MainActivity : AppCompatActivity() {
             ) {
                 Snackbar.make(
                     binding.root, 
-                    "This app needs permission to post notifications for task reminders.",
+                    getString(R.string.notification_permission_needed),
                     Snackbar.LENGTH_INDEFINITE
-                ).setAction("Grant") {
+                ).setAction(getString(R.string.button_grant)) {
                     ActivityCompat.requestPermissions(
                         this,
                         arrayOf(Manifest.permission.POST_NOTIFICATIONS),
@@ -483,9 +688,9 @@ class MainActivity : AppCompatActivity() {
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
                 AlertDialog.Builder(this)
-                    .setTitle("Exact Alarm Permission Needed")
-                    .setMessage("To ensure timely task reminders, this app needs permission to schedule exact alarms. Please grant this permission in the app settings.")
-                    .setPositiveButton("Open Settings") { _, _ ->
+                    .setTitle(getString(R.string.exact_alarm_permission_title))
+                    .setMessage(getString(R.string.exact_alarm_permission_message))
+                    .setPositiveButton(getString(R.string.button_open_settings)) { _, _ ->
                         Intent().apply {
                             action = Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
                             data = Uri.fromParts("package", packageName, null)
@@ -497,9 +702,9 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                     }
-                    .setNegativeButton("Cancel") { dialog, _ ->
+                    .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                         dialog.dismiss()
-                        Snackbar.make(binding.root, "Exact alarm permission not granted. Reminders may be less precise.", Snackbar.LENGTH_LONG).show()
+                        Snackbar.make(binding.root, getString(R.string.exact_alarm_not_granted), Snackbar.LENGTH_LONG).show()
                     }
                     .show()
             }
@@ -514,15 +719,16 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Snackbar.make(binding.root, "Notification permission granted.", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, getString(R.string.notification_permission_granted), Snackbar.LENGTH_SHORT).show()
             } else {
-                Snackbar.make(binding.root, "Notification permission denied. Task reminders might not work.", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding.root, getString(R.string.notification_permission_denied), Snackbar.LENGTH_LONG).show()
             }
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+        menu.add(Menu.NONE, MENU_ITEM_LANGUAGE, Menu.NONE, R.string.language)
         return true
     }
 
@@ -536,16 +742,32 @@ class MainActivity : AppCompatActivity() {
                 showAboutDialog()
                 true
             }
+            MENU_ITEM_LANGUAGE -> {
+                showLanguageSelectionDialog()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
+    
+    private fun showLanguageSelectionDialog() {
+        LanguageSelectionDialog(this) {
+            // The language setting is handled internally by LanguageSelectionDialog
+            // which calls localeManager.setNewLocale() and activity.recreate()
+            
+            // Show a message that the language has been changed
+            Toast.makeText(this, getString(R.string.language_changed), Toast.LENGTH_SHORT).show()
+        }.show()
+    }
+    
+
 
     private fun showAboutDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_about, null)
         AlertDialog.Builder(this)
             .setView(dialogView)
-            .setTitle("About")
-            .setPositiveButton("OK", null)
+            .setTitle(getString(R.string.dialog_about_title))
+            .setPositiveButton(getString(R.string.button_ok), null)
             .show()
     }
 
@@ -565,24 +787,24 @@ class MainActivity : AppCompatActivity() {
 
         AlertDialog.Builder(this)
             .setView(dialogView)
-            .setTitle("Choose App Theme")
-            .setPositiveButton("OK") { _, _ ->
+            .setTitle(getString(R.string.dialog_theme_title))
+            .setPositiveButton(getString(R.string.button_ok)) { _, _ ->
                 when (radioGroup.checkedRadioButtonId) {
                     R.id.radioLight -> {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                        Toast.makeText(this, "Light theme selected", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.theme_light), Toast.LENGTH_SHORT).show()
                     }
                     R.id.radioDark -> {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                        Toast.makeText(this, "Dark theme selected", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.theme_dark), Toast.LENGTH_SHORT).show()
                     }
                     R.id.radioSystem -> {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                        Toast.makeText(this, "System theme selected", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.theme_system_default), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
@@ -605,19 +827,19 @@ class MainActivity : AppCompatActivity() {
                     currentTaskFilter = TaskFilter.PENDING
                     binding.tabLayout.getTabAt(0)?.select()
                     loadTasksFromDb()
-                    updateUI("All Tasks")
+                    updateUI(getString(R.string.nav_all_tasks))
                     navigationView.setCheckedItem(R.id.nav_all_tasks)
                 }
                 R.id.nav_saved_tasks -> {
                     currentTaskFilter = TaskFilter.SAVED
                     loadTasksFromDb()
-                    updateUI("Saved Tasks")
+                    updateUI(getString(R.string.nav_saved_tasks))
                     navigationView.setCheckedItem(R.id.nav_saved_tasks)
                 }
                 R.id.nav_archive -> {
                     currentTaskFilter = TaskFilter.ARCHIVED
                     loadTasksFromDb()
-                    updateUI("Archive")
+                    updateUI(getString(R.string.nav_archive))
                     navigationView.setCheckedItem(R.id.nav_archive)
                 }
             }

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Einfache Aufgabe</string>
+    <string name="add_task">Aufgabe hinzufügen</string>
+    <string name="task_title">Aufgabentitel</string>
+    <string name="task_description">Aufgabenbeschreibung (Optional)</string>
+    <string name="add">Hinzufügen</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="clear_completed">Erledigte löschen</string>
+    <string name="reset_all">Alle zurücksetzen</string>
+    <string name="set_reminder">Erinnerung festlegen (Optional)</string>
+    <string name="set_reminder_checkbox">Erinnerung festlegen</string>
+    <string name="select_date">Datum auswählen</string>
+    <string name="select_time">Zeit auswählen</string>
+    <string name="date_label">Datum:</string>
+    <string name="time_label">Zeit:</string>
+    <string name="reminder_set">Aufgabe mit Erinnerung hinzugefügt</string>
+    <string name="notification_permission_granted">Benachrichtigungsberechtigung gewährt</string>
+    <string name="notification_permission_denied">Benachrichtigungsberechtigung verweigert</string>
+    <string name="date_format_string">%2$d/%1$d/%3$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">Erinnerung: %s</string>
+    <string name="search_tasks">Aufgaben suchen…</string>
+    <string name="tab_pending">AUSSTEHEND</string>
+    <string name="tab_completed">ERLEDIGT</string>
+    <string name="empty_state_description">Keine Aufgaben</string>
+    <string name="no_tasks">Noch keine Aufgaben</string>
+    <string name="add_your_first_task">Tippe + um deine erste Aufgabe hinzuzufügen</string>
+    <string name="menu_settings">Einstellungen</string>
+    <string name="menu_about">Über</string>
+    <string name="menu_theme">Design</string>
+    <string name="menu_sort">Sortieren nach</string>
+    <string name="sort_by_date">Datum</string>
+    <string name="sort_by_priority">Priorität</string>
+    <string name="sort_by_name">Name</string>
+    <string name="reset_tasks">Aufgaben zurücksetzen</string>
+    
+    <!-- Priority strings -->
+    <string name="priority">Priorität</string>
+    <string name="priority_low">Niedrig</string>
+    <string name="priority_medium">Mittel</string>
+    <string name="priority_high">Hoch</string>
+    <string name="language">Sprache</string>
+    <string name="select_language">Sprache auswählen</string>
+    <string name="language_english">Englisch</string>
+    <string name="language_arabic">Arabisch</string>
+    <string name="language_chinese_simplified">Chinesisch (Vereinfacht)</string>
+    <string name="language_chinese_traditional">Chinesisch (Traditionell)</string>
+    <string name="language_dutch">Niederländisch</string>
+    <string name="language_french">Französisch</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_hindi">Hindi</string>
+    <string name="language_italian">Italienisch</string>
+    <string name="language_japanese">Japanisch</string>
+    <string name="language_korean">Koreanisch</string>
+    <string name="language_kurdish">Kurdisch</string>
+    <string name="language_portuguese">Portugiesisch</string>
+    <string name="language_russian">Russisch</string>
+    <string name="language_spanish">Spanisch</string>
+    <string name="language_turkish">Türkisch</string>
+    <string name="language_ukrainian">Ukrainisch</string>
+    <string name="language_changed">Sprache geändert</string>
+    
+    <!-- Dialog strings -->
+    <string name="dialog_add_task_title">Neue Aufgabe hinzufügen</string>
+    <string name="dialog_edit_task_title">Aufgabe bearbeiten</string>
+    <string name="button_save">Speichern</string>
+    
+    <!-- Navigation drawer strings -->
+    <string name="nav_all_tasks">Alle Aufgaben</string>
+    <string name="nav_saved_tasks">Gespeicherte Aufgaben</string>
+    <string name="nav_archive">Archiv</string>
+    
+    <!-- Toast messages -->
+    <string name="task_added_with_reminder">Aufgabe mit Erinnerung hinzugefügt</string>
+    <string name="task_added_successfully">Aufgabe erfolgreich hinzugefügt</string>
+    <string name="enter_task_title">Bitte geben Sie einen Aufgabentitel ein</string>
+    <string name="reminder_time_past">Die ausgewählte Erinnerungszeit liegt in der Vergangenheit. Bitte wählen Sie eine zukünftige Zeit.</string>
+    <string name="all_tasks_reset">Alle Aufgaben wurden auf ausstehend zurückgesetzt.</string>
+    <string name="error_resetting_tasks">Fehler beim Zurücksetzen der Aufgaben: %s</string>
+    <string name="removed_completed_tasks">%d erledigte Aufgaben entfernt</string>
+    <string name="switch_to_completed_tab">Wechseln Sie zur Registerkarte \'Erledigt\', um Aufgaben zu löschen</string>
+    <string name="no_completed_tasks">Keine erledigten Aufgaben auf dieser Registerkarte zu entfernen</string>
+    
+    <!-- Missing dialog and button strings -->
+    <string name="dialog_about_title">Über</string>
+    <string name="dialog_theme_title">App-Design wählen</string>
+    <string name="button_ok">OK</string>
+    <string name="button_grant">Gewähren</string>
+    <string name="button_open_settings">Einstellungen öffnen</string>
+    
+    <!-- About dialog strings -->
+    <string name="about_title">Über Einfache Aufgabe</string>
+    <string name="about_summary">Einfache Aufgabe hilft Ihnen, Ihre täglichen Aufgaben zu organisieren, Erinnerungen einzustellen und produktiv zu bleiben. Funktionen umfassen schöne dunkle/helle Designs, intuitive Tab-Navigation und beständige Benachrichtigungen für Ihre wichtigen Aufgaben.</string>
+    <string name="about_developer">Entwickelt von: Jwtyar Nariman</string>
+    <string name="about_email">E-Mail: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+
+    <!-- Theme selection strings -->
+    <string name="theme_dialog_title">App-Design wählen</string>
+    <string name="theme_light">Hell</string>
+    <string name="theme_dark">Dunkel</string>
+    <string name="theme_system_default">System Standard</string>
+    <string name="theme_system">System-Design ausgewählt</string>
+    
+    <!-- Missing permission strings -->
+    <string name="notification_permission_needed">Diese App benötigt die Berechtigung, Benachrichtigungen für Aufgabenerinnerungen zu senden.</string>
+    <string name="exact_alarm_permission_title">Exakte Alarm-Berechtigung erforderlich</string>
+    <string name="exact_alarm_permission_message">Um pünktliche Aufgabenerinnerungen sicherzustellen, benötigt diese App die Berechtigung, exakte Alarme zu planen. Bitte gewähren Sie diese Berechtigung in den App-Einstellungen.</string>
+    <string name="exact_alarm_not_granted">Exakte Alarm-Berechtigung nicht gewährt. Erinnerungen könnten weniger präzise sein.</string>
+</resources>

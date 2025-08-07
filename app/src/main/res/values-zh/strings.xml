@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">简单任务</string>
+    <string name="add_task">添加任务</string>
+    <string name="task_title">任务标题</string>
+    <string name="task_description">任务描述（可选）</string>
+    <string name="add">添加</string>
+    <string name="cancel">取消</string>
+    <string name="clear_completed">清除已完成</string>
+    <string name="reset_all">重置所有</string>
+    <string name="set_reminder">设置提醒（可选）</string>
+    <string name="set_reminder_checkbox">设置提醒</string>
+    <string name="select_date">选择日期</string>
+    <string name="select_time">选择时间</string>
+    <string name="date_label">日期：</string>
+    <string name="time_label">时间：</string>
+    <string name="reminder_set">任务已添加并设置提醒</string>
+    <string name="notification_permission_granted">通知权限已授予</string>
+    <string name="notification_permission_denied">通知权限已拒绝</string>
+    <string name="date_format_string">%3$d/%1$d/%2$d</string>
+    <string name="time_format_string" formatted="false">%02d:%02d</string>
+    <string name="task_reminder_prefix">提醒：%s</string>
+    <string name="search_tasks">搜索任务…</string>
+    <string name="tab_pending">待处理</string>
+    <string name="tab_completed">已完成</string>
+    <string name="empty_state_description">无任务</string>
+    <string name="no_tasks">暂无任务</string>
+    <string name="add_your_first_task">点击 + 添加您的第一个任务</string>
+    <string name="menu_settings">设置</string>
+    <string name="menu_about">关于</string>
+    <string name="menu_theme">主题</string>
+    <string name="menu_sort">排序方式</string>
+    <string name="sort_by_date">日期</string>
+    <string name="sort_by_priority">优先级</string>
+    <string name="sort_by_name">名称</string>
+    <string name="reset_tasks">重置任务</string>
+
+    <!-- Priority strings -->
+    <string name="priority">Priority</string>
+    <string name="priority_low">Low</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_high">High</string>
+    <string name="language">语言</string>
+    <string name="select_language">选择语言</string>
+    <string name="language_english">英语</string>
+    <string name="language_arabic">阿拉伯语</string>
+    <string name="language_chinese_simplified">简体中文</string>
+    <string name="language_chinese_traditional">繁体中文</string>
+    <string name="language_dutch">荷兰语</string>
+    <string name="language_french">法语</string>
+    <string name="language_german">德语</string>
+    <string name="language_hindi">印地语</string>
+    <string name="language_italian">意大利语</string>
+    <string name="language_japanese">日语</string>
+    <string name="language_korean">韩语</string>
+    <string name="language_kurdish">库尔德语</string>
+    <string name="language_portuguese">葡萄牙语</string>
+    <string name="language_russian">俄语</string>
+    <string name="language_spanish">西班牙语</string>
+    <string name="language_turkish">土耳其语</string>
+    <string name="language_ukrainian">乌克兰语</string>
+    <string name="language_changed">语言已更改。请重启应用以应用更改。</string>
+    
+    <!-- Dialog strings -->
+    <string name="dialog_add_task_title">添加新任务</string>
+    <string name="dialog_edit_task_title">编辑任务</string>
+    <string name="dialog_about_title">关于</string>
+    <string name="theme_dialog_title">选择应用主题</string>
+    <string name="dialog_theme_title">选择应用主题</string>
+    
+    <!-- Button strings -->
+    <string name="button_save">保存</string>
+    <string name="button_ok">确定</string>
+    <string name="button_grant">授权</string>
+    <string name="button_open_settings">打开设置</string>
+    
+    <!-- Navigation strings -->
+    <string name="nav_all_tasks">所有任务</string>
+    <string name="nav_saved_tasks">已保存任务</string>
+    <string name="nav_archive">归档</string>
+    
+    <!-- About dialog strings -->
+    <string name="about_title">关于简单任务</string>
+    <string name="about_summary">简单任务帮助您组织日常任务、设置提醒并保持高效。功能包括美丽的深色/浅色主题、直观的标签页导航和重要任务的持续通知。</string>
+    <string name="about_developer">开发者：Jwtyar Nariman</string>
+    <string name="about_email">邮箱：jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub：https://github.com/jwtiyar</string>
+    
+    <!-- Theme strings -->
+    <string name="theme_light">已选择浅色主题</string>
+    <string name="theme_dark">已选择深色主题</string>
+    <string name="theme_system_default">系统默认</string>
+    <string name="theme_system">已选择系统主题</string>
+    
+    <!-- Task action messages -->
+    <string name="task_added_with_reminder">任务已添加并设置提醒</string>
+    <string name="task_added_successfully">任务添加成功</string>
+    <string name="enter_task_title">请输入任务标题</string>
+    <string name="reminder_time_past">选择的提醒时间已过期。请选择将来的时间。</string>
+    <string name="all_tasks_reset">所有任务已重置为待处理。</string>
+    <string name="error_resetting_tasks">重置任务时出错：%s</string>
+    <string name="removed_completed_tasks">已移除 %d 个已完成任务</string>
+    <string name="switch_to_completed_tab">切换到\"已完成\"选项卡以清除任务</string>
+    <string name="no_completed_tasks">此选项卡中没有已完成的任务可移除</string>
+    
+    <!-- Permission strings -->
+    <string name="notification_permission_needed">此应用需要权限以发送任务提醒通知。</string>
+    <string name="exact_alarm_permission_title">需要精确闹钟权限</string>
+    <string name="exact_alarm_permission_message">为确保及时的任务提醒，此应用需要权限来设置精确闹钟。请在应用设置中授予此权限。</string>
+    <string name="exact_alarm_not_granted">未授予精确闹钟权限。提醒可能不够准确。</string>
+</resources>
