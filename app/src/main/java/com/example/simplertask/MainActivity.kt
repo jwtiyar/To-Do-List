@@ -49,15 +49,20 @@ import kotlinx.coroutines.flow.first
 import com.google.android.material.button.MaterialButton
 import com.example.simplertask.utils.LocaleManager
 import java.util.Locale
+import com.google.android.material.search.SearchView
+import android.widget.EditText
+import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var taskAdapter: TaskAdapter
+    private lateinit var searchAdapter: TaskAdapter
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var db: TaskDatabase
     private lateinit var taskDao: TaskDao
     private lateinit var localeManager: LocaleManager
     private var tasks: List<Task> = emptyList()
+    private var originalTasks: List<Task> = emptyList()
     private var loadTasksJob: Job? = null
 
     private var currentTaskFilter: TaskFilter = TaskFilter.PENDING // To store current filter
@@ -108,9 +113,183 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSearchBar() {
-        // TODO: Implement search functionality with Material SearchBar
-        // The Material SearchBar component requires a different implementation approach
-        // than the traditional EditText-based search
+        // Connect SearchBar to SearchView
+        binding.searchBar.setOnClickListener {
+            binding.searchView.show()
+        }
+        
+        // Setup SearchView
+        setupSearchView()
+    }
+    
+    private fun setupSearchView() {
+        // Initialize search adapter for the search results
+        searchAdapter = TaskAdapter(
+            emptyList(),
+            onTaskClick = { task ->
+                // Handle task click in search results (same as main list)
+                lifecycleScope.launch {
+                    try {
+                        Log.d("TaskClick", "Updating task ${task.id} with completion=${task.isCompleted}")
+                        updateTaskInDatabaseAndUI(task) {
+                            (currentTaskFilter == TaskFilter.PENDING && task.isCompleted) ||
+                            (currentTaskFilter == TaskFilter.COMPLETED && !task.isCompleted) ||
+                            (currentTaskFilter != TaskFilter.ARCHIVED && task.isArchived)
+                        }
+                        
+                        withContext(Dispatchers.Main) {
+                            val message = if (task.isCompleted) {
+                                notificationHelper.cancelNotification(task)
+                                "Task completed: ${task.title}"
+                            } else {
+                                if (task.dueDateMillis != null) {
+                                    notificationHelper.scheduleNotification(task)
+                                }
+                                "Task marked as pending: ${task.title}"
+                            }
+                            Toast.makeText(
+                                this@MainActivity, 
+                                message, 
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            
+                            // Update search results after task update
+                            val currentQuery = binding.searchView.editText.text.toString()
+                            if (currentQuery.isNotEmpty()) {
+                                performSearch(currentQuery, searchAdapter)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("TaskClick", "Error toggling task completion", e)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@MainActivity, 
+                                "Error updating task: ${e.message}", 
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            },
+            onEditClick = { task ->
+                showEditTaskDialog(task)
+                binding.searchView.hide()
+            },
+            onTaskAction = { task, action ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        val updatedTask = when (action) {
+                            "save" -> task.copy(isSaved = true)
+                            "unsave" -> task.copy(isSaved = false)
+                            "archive" -> task.copy(isArchived = true, isSaved = false)
+                            "unarchive" -> task.copy(isArchived = false)
+                            else -> task
+                        }
+                        
+                        Log.d("TaskAction", "Action: $action on task ${task.id}")
+                        taskDao.updateTask(updatedTask)
+                        
+                        withContext(Dispatchers.Main) {
+                            val message = when (action) {
+                                "save" -> "Task saved"
+                                "unsave" -> "Task removed from saved"
+                                "archive" -> "Task archived"
+                                "unarchive" -> "Task unarchived"
+                                else -> ""
+                            }
+                            if (message.isNotEmpty()) {
+                                Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                            }
+                            
+                            // Update search results after action
+                            val currentQuery = binding.searchView.editText.text.toString()
+                            if (currentQuery.isNotEmpty()) {
+                                performSearch(currentQuery, searchAdapter)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("TaskAction", "Error handling task action", e)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@MainActivity, 
+                                "Error: ${e.message}", 
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            }
+        )
+        
+        // Setup search RecyclerView
+        binding.searchRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.searchRecyclerView.adapter = searchAdapter
+        
+        // Setup search text listener
+        binding.searchView.editText.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s?.toString() ?: ""
+                performSearch(query, searchAdapter)
+            }
+            
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+        
+        // Handle search view hide/show events
+        binding.searchView.addTransitionListener { searchView, previousState, newState ->
+            if (newState == SearchView.TransitionState.HIDDEN) {
+                // Clear search when closing
+                binding.searchView.editText.setText("")
+                // Reload main tasks list to refresh any changes
+                loadTasksFromDb()
+            }
+        }
+    }
+    
+    private fun performSearch(query: String, searchAdapter: TaskAdapter) {
+        if (query.isEmpty()) {
+            searchAdapter.updateTasks(emptyList())
+            return
+        }
+        
+        lifecycleScope.launch {
+            try {
+                // Get all tasks from database
+                val allTasks = withContext(Dispatchers.IO) {
+                    taskDao.getAllTasks().first()
+                }
+                
+                // Filter tasks based on search query
+                val filteredTasks = allTasks.filter { task ->
+                    task.title.contains(query, ignoreCase = true) ||
+                    task.description.contains(query, ignoreCase = true)
+                }
+                
+                withContext(Dispatchers.Main) {
+                    searchAdapter.updateTasks(filteredTasks)
+                    
+                    // Show a message if no results found
+                    if (filteredTasks.isEmpty() && query.isNotEmpty()) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "No tasks found for \"$query\"",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("Search", "Error performing search", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Error searching tasks: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 
 
@@ -166,6 +345,7 @@ class MainActivity : AppCompatActivity() {
                 
                 Log.d("TaskLoad", "Loaded ${taskList.size} tasks for $currentTaskFilter")
                 tasks = taskList
+                originalTasks = taskList
                 
                 withContext(Dispatchers.Main) {
                     taskAdapter.updateTasks(tasks)
@@ -516,31 +696,35 @@ class MainActivity : AppCompatActivity() {
         binding.btnResetTasks.setOnClickListener {
             lifecycleScope.launch {
                 try {
-                    // Collect all tasks from the Flow
-                    taskDao.getAllTasks().collect { taskList ->
-                        // Process each task in the list
-                        taskList.forEach { task ->
-                            if (task.isCompleted || task.dueDateMillis != null) {
-                                // Create an updated task with isCompleted = false
-                                val updatedTask = task.copy(isCompleted = false)
-                                // Update in database
-                                withContext(Dispatchers.IO) {
-                                    taskDao.updateTask(updatedTask)
-                                    // Re-schedule notification if needed
-                                    if (updatedTask.dueDateMillis != null) {
-                                        notificationHelper.scheduleNotification(updatedTask)
-                                    }
+                    // Get all tasks once (not continuously collecting)
+                    val taskList = withContext(Dispatchers.IO) {
+                        taskDao.getAllTasks().first()
+                    }
+                    
+                    // Process each task
+                    taskList.forEach { task ->
+                        if (task.isCompleted) {
+                            // Create an updated task with isCompleted = false
+                            val updatedTask = task.copy(isCompleted = false)
+                            // Update in database
+                            withContext(Dispatchers.IO) {
+                                taskDao.updateTask(updatedTask)
+                                // Re-schedule notification if needed
+                                if (updatedTask.dueDateMillis != null) {
+                                    notificationHelper.scheduleNotification(updatedTask)
                                 }
                             }
                         }
-                        // Refresh the current view
-                        loadTasksFromDb()
-                        Toast.makeText(
-                            this@MainActivity,
-                            getString(R.string.all_tasks_reset),
-                            Toast.LENGTH_SHORT
-                        ).show()
                     }
+                    
+                    // Refresh the current view
+                    loadTasksFromDb()
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.all_tasks_reset),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    
                 } catch (e: Exception) {
                     Log.e("MainActivity", "Error resetting tasks", e)
                     Toast.makeText(

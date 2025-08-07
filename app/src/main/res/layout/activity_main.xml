@@ -59,6 +59,7 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
                     android:hint="@string/search_tasks"
+                    app:navigationIcon="@drawable/ic_search_24dp"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.TaskManager.MediumComponent"
                     app:strokeWidth="0dp"
                     app:strokeColor="@color/outline_variant"
@@ -255,6 +256,25 @@
             android:paddingBottom="8dp" />
     </LinearLayout>
 
+
+    <com.google.android.material.search.SearchView
+        android:id="@+id/searchView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:hint="@string/search_tasks"
+        app:layout_anchor="@id/searchBar">
+        
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/searchRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_task"
+            tools:orientation="vertical" />
+    </com.google.android.material.search.SearchView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
