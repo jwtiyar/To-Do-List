@@ -92,20 +92,8 @@
     
     <!-- About dialog strings -->
     <string name="about_title">À propos de Tâches Simples</string>
-    <string name="about_summary">Tâches Simples vous aide à organiser vos tâches quotidiennes, à définir des rappels et à rester productif. Les fonctionnalités incluent de beaux thèmes sombre/clair, une navigation par onglets intuitive et des notifications persistantes pour vos tâches importantes.</string>
-    <string name="about_developer">Développé par : Jwtyar Nariman</string>
-    <string name="about_email">Email : jwtiyar@gmail.com</string>
-    <string name="about_github">GitHub : https://github.com/jwtiyar</string>
-    
-    <!-- Missing theme strings -->
-    <string name="theme_light">Thème clair sélectionné</string>
-    <string name="theme_dark">Thème sombre sélectionné</string>
-    <string name="theme_system_default">Système par défaut</string>
-    <string name="theme_system">Thème système sélectionné</string>
-    
-    <!-- Missing permission strings -->
-    <string name="notification_permission_needed">Cette application a besoin de l\'autorisation pour envoyer des notifications de rappel de tâches.</string>
-    <string name="exact_alarm_permission_title">Autorisation d\'alarme exacte nécessaire</string>
-    <string name="exact_alarm_permission_message">Pour garantir des rappels de tâches ponctuels, cette application a besoin de l\'autorisation pour programmer des alarmes exactes. Veuillez accorder cette autorisation dans les paramètres de l\'application.</string>
-    <string name="exact_alarm_not_granted">Autorisation d\'alarme exacte non accordée. Les rappels peuvent être moins précis.</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+
 </resources>

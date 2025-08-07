@@ -56,7 +56,6 @@
     
     <!-- About dialog strings -->
     <string name="about_title">About Simpler Task</string>
-    <string name="about_summary">Simpler Task helps you organize your daily tasks, set reminders, and stay productive. Features include beautiful dark/light themes, intuitive tab navigation, and persistent notifications for your important tasks.</string>
     <string name="about_developer">Developed by: Jwtyar Nariman</string>
     <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>

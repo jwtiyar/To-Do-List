@@ -96,18 +96,8 @@
     
     <!-- About dialog strings -->
     <string name="about_title">Informazioni su Attività Semplice</string>
-    <string name="about_summary">Attività Semplice ti aiuta a organizzare le tue attività quotidiane, impostare promemoria e rimanere produttivo. Le funzionalità includono bellissimi temi scuro/chiaro, navigazione intuitiva a schede e notifiche persistenti per le tue attività importanti.</string>
-    <string name="about_developer">Sviluppato da: Jwtyar Nariman</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
     <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
 
-    <!-- Theme dialog strings -->
-    <string name="theme_dialog_title">Scegli Tema App</string>
-    <string name="theme_system_default">Predefinito Sistema</string>
-
-    <!-- Permission strings -->
-    <string name="notification_permission_needed">Questa app ha bisogno del permesso per inviare notifiche per i promemoria delle attività.</string>
-    <string name="exact_alarm_permission_title">Permesso Allarme Esatto Necessario</string>
-    <string name="exact_alarm_permission_message">Per garantire promemoria puntuali delle attività, questa app ha bisogno del permesso per programmare allarmi esatti. Per favore concedi questo permesso nelle impostazioni dell\'app.</string>
-    <string name="exact_alarm_not_granted">Permesso allarme esatto non concesso. I promemoria potrebbero essere meno precisi.</string>
 </resources>

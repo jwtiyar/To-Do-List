@@ -88,20 +88,8 @@
     
     <!-- About dialog strings -->
     <string name="about_title">간단한 작업에 대하여</string>
-    <string name="about_summary">간단한 작업은 일상 작업을 정리하고 알림을 설정하며 생산성을 유지하는 데 도움을 줍니다. 아름다운 다크/라이트 테마, 직관적인 탭 내비게이션, 중요한 작업에 대한 지속적인 알림 기능이 포함되어 있습니다.</string>
-    <string name="about_developer">개발자: Jwtyar Nariman</string>
-    <string name="about_email">이메일: jwtiyar@gmail.com</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
-    
-    <!-- Missing theme strings -->
-    <string name="theme_light">밝은 테마가 선택되었습니다</string>
-    <string name="theme_dark">어두운 테마가 선택되었습니다</string>
-    <string name="theme_system_default">시스템 기본값</string>
-    <string name="theme_system">시스템 테마가 선택되었습니다</string>
-    
-    <!-- Missing permission strings -->
-    <string name="notification_permission_needed">이 앱은 작업 알림을 위해 알림 권한이 필요합니다.</string>
-    <string name="exact_alarm_permission_title">정확한 알람 권한 필요</string>
-    <string name="exact_alarm_permission_message">정시 작업 알림을 보장하기 위해 이 앱은 정확한 알람을 설정할 권한이 필요합니다. 앱 설정에서 이 권한을 허용해 주세요.</string>
-    <string name="exact_alarm_not_granted">정확한 알람 권한이 허용되지 않았습니다. 알림이 덜 정확할 수 있습니다.</string>
+
 </resources>

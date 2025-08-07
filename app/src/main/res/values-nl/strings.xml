@@ -71,43 +71,12 @@
 
     <!-- About dialog strings -->
     <string name="about_title">Over Eenvoudige Taak</string>
-    <string name="about_summary">Eenvoudige Taak helpt je bij het organiseren van je dagelijkse taken, het instellen van herinneringen en productief blijven. Bevat mooie donkere/lichte thema\'s, intuitieve tabnavigatie en persistente meldingen voor je belangrijke taken.</string>
-    <string name="about_developer">Ontwikkeld door: Jwtyar Nariman</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
     <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
-    
-    <!-- Button strings -->
-    <string name="button_save">Opslaan</string>
+
+    <string name="button_save">Save</string>
     <string name="button_ok">OK</string>
-    <string name="button_grant">Verlenen</string>
-    <string name="button_open_settings">Instellingen Openen</string>
-    
-    <!-- Navigation strings -->
-    <string name="nav_all_tasks">Alle Taken</string>
-    <string name="nav_saved_tasks">Opgeslagen Taken</string>
-    <string name="nav_archive">Archief</string>
-    
-    <!-- Theme strings -->
-    <string name="theme_dialog_title">App Thema Kiezen</string>
-    <string name="theme_light">Licht</string>
-    <string name="theme_dark">Donker</string>
-    <string name="theme_system">Systeemthema geselecteerd</string>
-    <string name="theme_system_default">Systeemstandaard</string>
-    
-    <!-- Task action messages -->
-    <string name="task_added_with_reminder">Taak toegevoegd met herinnering</string>
-    <string name="task_added_successfully">Taak succesvol toegevoegd</string>
-    <string name="enter_task_title">Voer een taaknaam in</string>
-    <string name="reminder_time_past">De geselecteerde herinneringstijd ligt in het verleden. Kies een toekomstige tijd.</string>
-    <string name="all_tasks_reset">Alle taken zijn gereset naar in behandeling.</string>
-    <string name="error_resetting_tasks">Fout bij het resetten van taken: %s</string>
-    <string name="removed_completed_tasks">%d voltooide taken verwijderd</string>
-    <string name="switch_to_completed_tab">Ga naar de \'Voltooid\' tab om taken te wissen</string>
-    <string name="no_completed_tasks">Geen voltooide taken om te verwijderen op dit tabblad</string>
-    
-    <!-- Permission strings -->
-    <string name="notification_permission_needed">Deze app heeft toestemming nodig om meldingen te posten voor taakherinneringen.</string>
-    <string name="exact_alarm_permission_title">Exacte Alarmtoestemming Nodig</string>
-    <string name="exact_alarm_permission_message">Om tijdige taakherinneringen te garanderen, heeft deze app toestemming nodig om exacte alarmen in te stellen. Verleen deze toestemming in de app-instellingen.</string>
-    <string name="exact_alarm_not_granted">Exacte alarmtoestemming niet verleend. Herinneringen kunnen minder nauwkeurig zijn.</string>
+    <string name="button_grant">Grant</string>
+    <string name="button_open_settings">Open Settings</string>
 </resources>

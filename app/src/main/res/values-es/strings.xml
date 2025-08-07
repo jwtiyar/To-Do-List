@@ -92,20 +92,8 @@
     
     <!-- About dialog strings -->
     <string name="about_title">Acerca de Tareas Simples</string>
-    <string name="about_summary">Tareas Simples te ayuda a organizar tus tareas diarias, establecer recordatorios y mantenerte productivo. Las características incluyen hermosos temas oscuro/claro, navegación por pestañas intuitiva y notificaciones persistentes para tus tareas importantes.</string>
-    <string name="about_developer">Desarrollado por: Jwtyar Nariman</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
     <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
-    
-    <!-- Missing theme strings -->
-    <string name="theme_light">Tema claro seleccionado</string>
-    <string name="theme_dark">Tema oscuro seleccionado</string>
-    <string name="theme_system_default">Sistema por defecto</string>
-    <string name="theme_system">Tema del sistema seleccionado</string>
-    
-    <!-- Missing permission strings -->
-    <string name="notification_permission_needed">Esta aplicación necesita permiso para enviar notificaciones de recordatorios de tareas.</string>
-    <string name="exact_alarm_permission_title">Permiso de Alarma Exacta Necesario</string>
-    <string name="exact_alarm_permission_message">Para garantizar recordatorios puntuales de tareas, esta aplicación necesita permiso para programar alarmas exactas. Por favor concede este permiso en los ajustes de la aplicación.</string>
-    <string name="exact_alarm_not_granted">Permiso de alarma exacta no concedido. Los recordatorios pueden ser menos precisos.</string>
+
 </resources>

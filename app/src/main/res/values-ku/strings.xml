@@ -49,16 +49,11 @@
 
     <!-- About dialog strings -->
     <string name="about_title">دەربارەی Simpler Task</string>
-    <string name="about_summary">Simpler Task یارمەتیت دەدات لە ڕێکخستنی کارە ڕۆژانەکانت، یادەوەری دانان وە بەرهەمبوون مانەوە. تایبەتمەندییەکان شێوازی جوانی تاریک/ڕووناک، گەڕانی زیرەکی با تابەکان وە ئاگاداری بەردەوام بۆ کارە گرنگەکانت لەخۆی دەگریت.</string>
-    <string name="about_developer">دروستکراو لەلایەن: جوتیار ناریمان</string>
-    <string name="about_email">ئیمەیڵ: jwtiyar@gmail.com</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
 
-    <string name="button_save">پاشەکەوتبکە</string>
-    <string name="button_ok">باشە</string>
-    <string name="button_grant">درابدە</string>
-    <string name="button_open_settings">ڕێکخستنەکان بکەوە</string>
-    
+
     <!-- Navigation drawer strings -->
     <string name="nav_all_tasks">هەموو کارەکان</string>
     <string name="nav_saved_tasks">کارە پاشەکەوتکراوەکان</string>
@@ -87,4 +82,8 @@
     <string name="exact_alarm_permission_title">پێویستی بە ڕێپێدانی ئاگادارکردنەوەی وردە</string>
     <string name="exact_alarm_permission_message">بۆ دڵنیابوون لە یادەوەری بە کات، ئەم ئەپە پێویستی بە ڕێپێدان هەیە بۆ ڕێکخستنی ئاگادارکردنەوەی وردەکان. تکایە ئەم ڕێپێدانە بدە لە ڕێکخستنەکانی ئەپ.</string>
     <string name="exact_alarm_not_granted">ڕێپێدانی ئاگادارکردنەوەی ورد نەدراوە. یادەوەریەکان ڕەنگە وردتر نەبن.</string>
+    <string name="button_save">Save</string>
+    <string name="button_ok">OK</string>
+    <string name="button_grant">Grant</string>
+    <string name="button_open_settings">Open Settings</string>
 </resources>

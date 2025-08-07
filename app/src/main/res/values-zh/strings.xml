@@ -81,31 +81,8 @@
     
     <!-- About dialog strings -->
     <string name="about_title">关于简单任务</string>
-    <string name="about_summary">简单任务帮助您组织日常任务、设置提醒并保持高效。功能包括美丽的深色/浅色主题、直观的标签页导航和重要任务的持续通知。</string>
-    <string name="about_developer">开发者：Jwtyar Nariman</string>
-    <string name="about_email">邮箱：jwtiyar@gmail.com</string>
-    <string name="about_github">GitHub：https://github.com/jwtiyar</string>
-    
-    <!-- Theme strings -->
-    <string name="theme_light">已选择浅色主题</string>
-    <string name="theme_dark">已选择深色主题</string>
-    <string name="theme_system_default">系统默认</string>
-    <string name="theme_system">已选择系统主题</string>
-    
-    <!-- Task action messages -->
-    <string name="task_added_with_reminder">任务已添加并设置提醒</string>
-    <string name="task_added_successfully">任务添加成功</string>
-    <string name="enter_task_title">请输入任务标题</string>
-    <string name="reminder_time_past">选择的提醒时间已过期。请选择将来的时间。</string>
-    <string name="all_tasks_reset">所有任务已重置为待处理。</string>
-    <string name="error_resetting_tasks">重置任务时出错：%s</string>
-    <string name="removed_completed_tasks">已移除 %d 个已完成任务</string>
-    <string name="switch_to_completed_tab">切换到\"已完成\"选项卡以清除任务</string>
-    <string name="no_completed_tasks">此选项卡中没有已完成的任务可移除</string>
-    
-    <!-- Permission strings -->
-    <string name="notification_permission_needed">此应用需要权限以发送任务提醒通知。</string>
-    <string name="exact_alarm_permission_title">需要精确闹钟权限</string>
-    <string name="exact_alarm_permission_message">为确保及时的任务提醒，此应用需要权限来设置精确闹钟。请在应用设置中授予此权限。</string>
-    <string name="exact_alarm_not_granted">未授予精确闹钟权限。提醒可能不够准确。</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
+    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
+
 </resources>

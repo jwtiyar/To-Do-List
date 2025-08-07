@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Language Selection -->
+    <string name="language">زمان</string>
+    <string name="select_language">زمان هەڵبژێرە</string>
+    <string name="language_english">ئینگلیزی</string>
+    <string name="language_arabic">عەرەبی</string>
+    <string name="language_chinese_simplified">چینی (ئاسان)</string>
+    <string name="language_chinese_traditional">چینی (نەریتی)</string>
+    <string name="language_dutch">هۆڵەندی</string>
+    <string name="language_french">فەرەنسی</string>
+    <string name="language_german">ئەڵمانی</string>
+    <string name="language_hindi">هیندی</string>
+    <string name="language_italian">ئیتالی</string>
+    <string name="language_japanese">ژاپۆنی</string>
+    <string name="language_korean">کۆرەی</string>
+    <string name="language_kurdish">کوردی</string>
+    <string name="language_portuguese">پرتگالی</string>
+    <string name="language_russian">رووسی</string>
+    <string name="language_spanish">ئیسپانی</string>
+    <string name="language_turkish">تورکی</string>
+    <string name="language_ukrainian">ئوکراینی</string>
+    <string name="language_changed">زمان گۆڕا</string>
+</resources>

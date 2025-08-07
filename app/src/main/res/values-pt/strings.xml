@@ -71,43 +71,16 @@
 
     <!-- About dialog strings -->
     <string name="about_title">Sobre Tarefa Simples</string>
-    <string name="about_summary">Tarefa Simples ajuda você a organizar suas tarefas diárias, definir lembretes e manter-se produtivo. Inclui belos temas escuros/claros, navegação intuitiva por abas e notificações persistentes para suas tarefas importantes.</string>
-    <string name="about_developer">Desenvolvido por: Jwtyar Nariman</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
     <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
-    
-    <!-- Button strings -->
-    <string name="button_save">Salvar</string>
+
+    <string name="button_save">Save</string>
     <string name="button_ok">OK</string>
-    <string name="button_grant">Conceder</string>
-    <string name="button_open_settings">Abrir Configurações</string>
-    
-    <!-- Navigation strings -->
-    <string name="nav_all_tasks">Todas as Tarefas</string>
-    <string name="nav_saved_tasks">Tarefas Salvas</string>
-    <string name="nav_archive">Arquivo</string>
-    
-    <!-- Theme strings -->
-    <string name="theme_dialog_title">Escolher Tema do App</string>
-    <string name="theme_light">Claro</string>
-    <string name="theme_dark">Escuro</string>
-    <string name="theme_system_default">Padrão do Sistema</string>
-    <string name="theme_system">Tema do sistema selecionado</string>
-    
-    <!-- Task action messages -->
-    <string name="task_added_with_reminder">Tarefa adicionada com lembrete</string>
-    <string name="task_added_successfully">Tarefa adicionada com sucesso</string>
-    <string name="enter_task_title">Por favor, insira um título da tarefa</string>
-    <string name="reminder_time_past">O horário do lembrete selecionado está no passado. Por favor, escolha um horário futuro.</string>
-    <string name="all_tasks_reset">Todas as tarefas foram redefinidas para pendente.</string>
-    <string name="error_resetting_tasks">Erro ao redefinir tarefas: %s</string>
-    <string name="removed_completed_tasks">Removidas %d tarefas concluídas</string>
-    <string name="switch_to_completed_tab">Mude para a aba \'Concluído\' para limpar tarefas</string>
-    <string name="no_completed_tasks">Nenhuma tarefa concluída para remover nesta aba</string>
-    
-    <!-- Permission strings -->
-    <string name="notification_permission_needed">Este app precisa de permissão para postar notificações para lembretes de tarefas.</string>
-    <string name="exact_alarm_permission_title">Permissão de Alarme Exato Necessária</string>
-    <string name="exact_alarm_permission_message">Para garantir lembretes de tarefas pontuais, este app precisa de permissão para agendar alarmes exatos. Por favor, conceda essa permissão nas configurações do app.</string>
-    <string name="exact_alarm_not_granted">Permissão de alarme exato não concedida. Os lembretes podem ser menos precisos.</string>
+    <string name="button_grant">Grant</string>
+    <string name="button_open_settings">Open Settings</string>
+
+    <string name="nav_all_tasks">All Tasks</string>
+    <string name="nav_saved_tasks">Saved Tasks</string>
+    <string name="nav_archive">Archive</string>
 </resources>

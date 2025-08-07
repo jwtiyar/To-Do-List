@@ -91,9 +91,8 @@
     
     <!-- About dialog strings -->
     <string name="about_title">Über Einfache Aufgabe</string>
-    <string name="about_summary">Einfache Aufgabe hilft Ihnen, Ihre täglichen Aufgaben zu organisieren, Erinnerungen einzustellen und produktiv zu bleiben. Funktionen umfassen schöne dunkle/helle Designs, intuitive Tab-Navigation und beständige Benachrichtigungen für Ihre wichtigen Aufgaben.</string>
-    <string name="about_developer">Entwickelt von: Jwtyar Nariman</string>
-    <string name="about_email">E-Mail: jwtiyar@gmail.com</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
 
     <!-- Theme selection strings -->

@@ -71,43 +71,12 @@
 
     <!-- About dialog strings -->
     <string name="about_title">Basit Görev Hakkında</string>
-    <string name="about_summary">Basit Görev günlük görevlerinizi organize etmenize, hatırlatıcılar ayarlamanıza ve verimli kalmanıza yardımcı olur. Güzel koyu/açık temalar, sezgisel sekme navigasyonu ve önemli görevleriniz için kalıcı bildirimler içerir.</string>
-    <string name="about_developer">Geliştirici: Jwtyar Nariman</string>
-    <string name="about_email">E-posta: jwtiyar@gmail.com</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
-    
-    <!-- Button strings -->
-    <string name="button_save">Kaydet</string>
-    <string name="button_ok">Tamam</string>
-    <string name="button_grant">Ver</string>
-    <string name="button_open_settings">Ayarları Aç</string>
-    
-    <!-- Navigation strings -->
-    <string name="nav_all_tasks">Tüm Görevler</string>
-    <string name="nav_saved_tasks">Kaydedilen Görevler</string>
-    <string name="nav_archive">Arşiv</string>
-    
-    <!-- Theme strings -->
-    <string name="theme_dialog_title">Uygulama Teması Seç</string>
-    <string name="theme_light">Açık</string>
-    <string name="theme_dark">Koyu</string>
-    <string name="theme_system">Sistem teması seçildi</string>
-    <string name="theme_system_default">Sistem Varsayılanı</string>
-    
-    <!-- Task action messages -->
-    <string name="task_added_with_reminder">Görev hatırlatıcıyla eklendi</string>
-    <string name="task_added_successfully">Görev başarıyla eklendi</string>
-    <string name="enter_task_title">Lütfen bir görev başlığı girin</string>
-    <string name="reminder_time_past">Seçilen hatırlatıcı zamanı geçmişte. Lütfen gelecek bir zaman seçin.</string>
-    <string name="all_tasks_reset">Tüm görevler beklemeye sıfırlandı.</string>
-    <string name="error_resetting_tasks">Görevler sıfırlanırken hata: %s</string>
-    <string name="removed_completed_tasks">%d tamamlanmış görev kaldırıldı</string>
-    <string name="switch_to_completed_tab">Görevleri temizlemek için \'Tamamlandı\' sekmesine geçin</string>
-    <string name="no_completed_tasks">Bu sekmede kaldırılacak tamamlanmış görev yok</string>
-    
-    <!-- Permission strings -->
-    <string name="notification_permission_needed">Bu uygulama görev hatırlatıcıları için bildirim gönderme izni gerektiriyor.</string>
-    <string name="exact_alarm_permission_title">Kesin Alarm İzni Gerekli</string>
-    <string name="exact_alarm_permission_message">Zamanında görev hatırlatıcıları sağlamak için, bu uygulama kesin alarmlar ayarlama izni gerektiriyor. Lütfen uygulama ayarlarında bu izni verin.</string>
-    <string name="exact_alarm_not_granted">Kesin alarm izni verilmedi. Hatırlatıcılar daha az kesin olabilir.</string>
+
+    <string name="button_save">Save</string>
+    <string name="button_ok">OK</string>
+    <string name="button_grant">Grant</string>
+    <string name="button_open_settings">Open Settings</string>
 </resources>

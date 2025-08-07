@@ -16,14 +16,6 @@
             android:text="@string/about_title"
             android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
             android:textStyle="bold"
-            android:paddingBottom="8dp" />
-
-        <TextView
-            android:id="@+id/aboutSummary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/about_summary"
-            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:paddingBottom="16dp" />
 
         <TextView

@@ -87,9 +87,8 @@
     
     <!-- About dialog strings -->
     <string name="about_title">シンプルタスクについて</string>
-    <string name="about_summary">シンプルタスクは日常のタスク整理、リマインダー設定、生産性向上をサポートします。美しいダーク/ライトテーマ、直感的なタブナビゲーション、重要なタスクの継続通知機能を含んでいます。</string>
-    <string name="about_developer">開発者: Jwtyar Nariman</string>
-    <string name="about_email">メール: jwtiyar@gmail.com</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
 
     <!-- Theme selection strings -->

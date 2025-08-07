@@ -70,15 +70,11 @@
     
     <!-- About dialog strings -->
     <string name="about_title">О Простой Задаче</string>
-    <string name="about_summary">Простая Задача поможет вам организовать ваши ежедневные задачи, устанавливать напоминания и оставаться продуктивными. Функции включают красивые тёмную/светлую темы, интуитивную навигацию по вкладкам и постоянные уведомления для важных задач.</string>
-    <string name="about_developer">Разработчик: Jwtyar Nariman</string>
-    <string name="about_email">Электронная почта: jwtiyar@gmail.com</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
-    <string name="button_save">Сохранить</string>
-    <string name="button_ok">ОК</string>
-    <string name="button_grant">Предоставить</string>
-    <string name="button_open_settings">Открыть Настройки</string>
-    
+
+
     <!-- Navigation drawer strings -->
     <string name="nav_all_tasks">Все Задачи</string>
     <string name="nav_saved_tasks">Сохранённые Задачи</string>
@@ -106,4 +102,8 @@
     <string name="exact_alarm_permission_title">Нужно разрешение точного будильника</string>
     <string name="exact_alarm_permission_message">Для своевременных напоминаний о задачах, этому приложению нужно разрешение на планирование точных сигналов. Пожалуйста, предоставьте это разрешение в настройках приложения.</string>
     <string name="exact_alarm_not_granted">Разрешение на точные сигналы не предоставлено. Напоминания могут быть менее точными.</string>
+    <string name="button_save">Save</string>
+    <string name="button_ok">OK</string>
+    <string name="button_grant">Grant</string>
+    <string name="button_open_settings">Open Settings</string>
 </resources>

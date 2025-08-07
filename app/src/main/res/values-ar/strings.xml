@@ -79,9 +79,8 @@
     
     <!-- About dialog strings -->
     <string name="about_title">حول المهام البسيطة</string>
-    <string name="about_summary">المهام البسيطة تساعدك على تنظيم مهامك اليومية، وتعيين التذكيرات، والبقاء منتجاً. تشمل الميزات سمات جميلة مظلمة/فاتحة، وتنقل بديهي بالتبويبات، وإشعارات مستمرة لمهامك المهمة.</string>
-    <string name="about_developer">طور بواسطة: جوتيار نريمان</string>
-    <string name="about_email">البريد الإلكتروني: jwtiyar@gmail.com</string>
+    <string name="about_developer">Developed by: Jwtyar Nariman</string>
+    <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>
 
     <!-- Theme selection strings -->
