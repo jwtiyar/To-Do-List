@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="task_added_with_reminder">알림과 함께 작업이 추가되었습니다</string>
     <string name="app_name">간단한 작업</string>
     <string name="add_task">작업 추가</string>
     <string name="task_title">작업 제목</string>
@@ -68,7 +69,7 @@
     <string name="nav_all_tasks">모든 작업</string>
     <string name="nav_saved_tasks">저장된 작업</string>
     <string name="nav_archive">보관함</string>
-    <string name="task_added_with_reminder">알림과 함께 작업이 추가되었습니다</string>
+    <!-- Removed duplicate task_added_with_reminder -->
     <string name="task_added_successfully">작업이 성공적으로 추가되었습니다</string>
     <string name="enter_task_title">작업 제목을 입력하세요</string>
     <string name="reminder_time_past">선택한 알림 시간이 과거입니다. 미래 시간을 선택하세요.</string>
@@ -82,6 +83,10 @@
     <string name="dialog_about_title">정보</string>
     <string name="theme_dialog_title">앱 테마 선택</string>
     <string name="dialog_theme_title">앱 테마 선택</string>
+    <string name="theme_light">라이트</string>
+    <string name="theme_dark">다크</string>
+    <string name="theme_system_default">시스템 기본값</string>
+    <string name="theme_system">시스템 테마가 선택되었습니다</string>
     <string name="button_ok">확인</string>
     <string name="button_grant">허용</string>
     <string name="button_open_settings">설정 열기</string>

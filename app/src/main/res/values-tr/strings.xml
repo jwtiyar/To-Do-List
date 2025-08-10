@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="task_added_with_reminder">Hatırlatıcı ile eklenen görev</string>
     <string name="app_name">Basit Görev</string>
     <string name="add_task">Görev Ekle</string>
     <string name="task_title">Görev Başlığı</string>
@@ -79,4 +80,13 @@
     <string name="button_ok">OK</string>
     <string name="button_grant">Grant</string>
     <string name="button_open_settings">Open Settings</string>
+    <!-- Added translations to satisfy lint MissingTranslation -->
+    <string name="nav_all_tasks">Tüm Görevler</string>
+    <string name="nav_saved_tasks">Kaydedilen Görevler</string>
+    <string name="nav_archive">Arşiv</string>
+    <string name="theme_dialog_title">Uygulama Temasını Seç</string>
+    <string name="theme_light">Açık</string>
+    <string name="theme_dark">Koyu</string>
+    <string name="theme_system_default">Sistem Varsayılanı</string>
+    <string name="theme_system">Sistem teması seçildi</string>
 </resources>

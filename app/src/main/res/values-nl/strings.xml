@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="task_added_with_reminder">Taak toegevoegd met herinnering</string>
     <string name="app_name">Eenvoudige Taak</string>
     <string name="add_task">Taak toevoegen</string>
     <string name="task_title">Taaktitel</string>
@@ -79,4 +80,13 @@
     <string name="button_ok">OK</string>
     <string name="button_grant">Grant</string>
     <string name="button_open_settings">Open Settings</string>
+    <!-- Added translations to satisfy lint MissingTranslation -->
+    <string name="nav_all_tasks">Alle Taken</string>
+    <string name="nav_saved_tasks">Opgeslagen Taken</string>
+    <string name="nav_archive">Archief</string>
+    <string name="theme_dialog_title">Kies App Thema</string>
+    <string name="theme_light">Licht</string>
+    <string name="theme_dark">Donker</string>
+    <string name="theme_system_default">Systeemstandaard</string>
+    <string name="theme_system">Systeemthema geselecteerd</string>
 </resources>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="task_added_with_reminder">Tarefa adicionada com lembrete</string>
     <string name="app_name">Tarefa Simples</string>
     <string name="add_task">Adicionar Tarefa</string>
     <string name="task_title">Título da Tarefa</string>
@@ -68,6 +69,14 @@
     <string name="dialog_edit_task_title">Editar Tarefa</string>
     <string name="dialog_about_title">Sobre</string>
     <string name="dialog_theme_title">Escolher Tema do App</string>
+    <string name="theme_dialog_title">Escolher Tema do App</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
+    <string name="theme_system_default">Padrão do sistema</string>
+    <!-- Theme status messages -->
+    <string name="theme_status_light">Tema claro selecionado</string>
+    <string name="theme_status_dark">Tema escuro selecionado</string>
+    <string name="theme_system">Tema do sistema selecionado</string>
 
     <!-- About dialog strings -->
     <string name="about_title">Sobre Tarefa Simples</string>

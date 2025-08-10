@@ -66,6 +66,10 @@
     <string name="dialog_edit_task_title">Modifica Attività</string>
     <string name="dialog_about_title">Informazioni</string>
     <string name="dialog_theme_title">Scegli Tema App</string>
+    <string name="theme_dialog_title">Scegli Tema App</string>
+    <string name="theme_light">Chiaro</string>
+    <string name="theme_dark">Scuro</string>
+    <string name="theme_system_default">Predefinito di sistema</string>
     
     <!-- Button strings -->
     <string name="button_save">Salva</string>
@@ -79,8 +83,9 @@
     <string name="nav_archive">Archivio</string>
     
     <!-- Theme strings -->
-    <string name="theme_light">Tema chiaro selezionato</string>
-    <string name="theme_dark">Tema scuro selezionato</string>
+    <!-- Theme status messages (distinct keys) -->
+    <string name="theme_status_light">Tema chiaro selezionato</string>
+    <string name="theme_status_dark">Tema scuro selezionato</string>
     <string name="theme_system">Tema di sistema selezionato</string>
     
     <!-- Task action messages -->

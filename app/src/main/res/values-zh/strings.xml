@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="task_added_with_reminder">已添加带有提醒的任务</string>
     <string name="app_name">简单任务</string>
     <string name="add_task">添加任务</string>
     <string name="task_title">任务标题</string>
@@ -67,6 +68,10 @@
     <string name="dialog_about_title">关于</string>
     <string name="theme_dialog_title">选择应用主题</string>
     <string name="dialog_theme_title">选择应用主题</string>
+    <string name="theme_light">浅色</string>
+    <string name="theme_dark">深色</string>
+    <string name="theme_system_default">系统默认</string>
+    <string name="theme_system">已选择系统主题</string>
     
     <!-- Button strings -->
     <string name="button_save">保存</string>

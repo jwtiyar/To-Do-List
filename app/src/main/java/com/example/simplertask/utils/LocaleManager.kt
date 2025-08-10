@@ -5,11 +5,11 @@ import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
-import android.preference.PreferenceManager
+// import android.preference.PreferenceManager
 import java.util.*
 
 class LocaleManager(private val context: Context) {
-    private val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    private val prefs: SharedPreferences = context.getSharedPreferences("simplertask_prefs", Context.MODE_PRIVATE)
     private val SELECTED_LANGUAGE = "Locale.Helper.Selected.Language"
 
     fun setAppLocale(): Context {
@@ -36,15 +36,14 @@ class LocaleManager(private val context: Context) {
 
         val resources = context.resources
         val config = Configuration(resources.configuration)
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             config.setLocale(locale)
             config.setLayoutDirection(locale)
-            val context = context.createConfigurationContext(config)
-            resources.updateConfiguration(config, resources.displayMetrics)
-            return context
+            return context.createConfigurationContext(config)
         } else {
             config.locale = locale
+            @Suppress("DEPRECATION")
             resources.updateConfiguration(config, resources.displayMetrics)
             return context
         }

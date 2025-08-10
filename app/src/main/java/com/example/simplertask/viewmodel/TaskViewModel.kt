@@ -22,6 +22,8 @@ import androidx.paging.cachedIn
  *
  * All write operations are launched in [viewModelScope]. Repository handles dispatcher switching.
  */
+@kotlinx.coroutines.ExperimentalCoroutinesApi
+@kotlinx.coroutines.FlowPreview
 class TaskViewModel(
     private val repository: TaskRepository
 ) : ViewModel() {
@@ -160,10 +162,10 @@ class TaskViewModel(
         priority: Priority = Priority.MEDIUM,
         dueDateMillis: Long? = null
     ) {
-        viewModelScope.launch { 
-            runTask("Failed to add task") { 
-                repository.insertTask(Task(title = title, description = description, priority = priority, dueDateMillis = dueDateMillis)) 
-            } 
+        launchWithError(
+            onError = { postSnackbar("Failed to add task: ${'$'}{it.message}") }
+        ) {
+            repository.insertTask(Task(title = title, description = description, priority = priority, dueDateMillis = dueDateMillis))
         }
     }
     
@@ -180,7 +182,9 @@ class TaskViewModel(
      * - Launched in viewModelScope
      */
     fun updateTask(task: Task) {
-        viewModelScope.launch { runTask("Failed to update task") { repository.updateTask(task) } }
+        launchWithError({ postSnackbar("Failed to update task: ${'$'}{it.message}") }) {
+            repository.updateTask(task)
+        }
     }
     
     /**
@@ -196,7 +200,9 @@ class TaskViewModel(
      * - Launched in viewModelScope
      */
     fun toggleTaskCompletion(task: Task) {
-        viewModelScope.launch { runTask("Failed to toggle task") { repository.toggleTaskCompletion(task) } }
+        launchWithError({ postSnackbar("Failed to toggle task: ${'$'}{it.message}") }) {
+            repository.toggleTaskCompletion(task)
+        }
     }
     
     /**
@@ -212,7 +218,9 @@ class TaskViewModel(
      * - Launched in viewModelScope
      */
     fun toggleTaskSaved(task: Task) {
-        viewModelScope.launch { runTask("Failed to save/unsave task") { repository.toggleTaskSaved(task) } }
+        launchWithError({ postSnackbar("Failed to save/unsave task: ${'$'}{it.message}") }) {
+            repository.toggleTaskSaved(task)
+        }
     }
     
     /**
@@ -228,10 +236,8 @@ class TaskViewModel(
      * - Launched in viewModelScope
      */
     fun toggleTaskArchived(task: Task) {
-        viewModelScope.launch { 
-            runTask("Failed to archive/unarchive task") { 
-                if (task.isArchived) repository.unarchiveTask(task) else repository.archiveTask(task) 
-            } 
+        launchWithError({ postSnackbar("Failed to archive/unarchive task: ${'$'}{it.message}") }) {
+            if (task.isArchived) repository.unarchiveTask(task) else repository.archiveTask(task)
         }
     }
     
@@ -248,7 +254,9 @@ class TaskViewModel(
      * - Launched in viewModelScope
      */
     fun deleteTask(task: Task) {
-        viewModelScope.launch { runTask("Failed to delete task") { repository.deleteTask(task) } }
+        launchWithError({ postSnackbar("Failed to delete task: ${'$'}{it.message}") }) {
+            repository.deleteTask(task)
+        }
     }
     
     /**
@@ -262,7 +270,9 @@ class TaskViewModel(
      * - Launched in viewModelScope
      */
     fun clearCompletedTasks() {
-        viewModelScope.launch { runTask("Failed to clear completed tasks") { repository.deleteCompletedTasks() } }
+        launchWithError({ postSnackbar("Failed to clear completed tasks: ${'$'}{it.message}") }) {
+            repository.deleteCompletedTasks()
+        }
     }
     
     /**
@@ -276,7 +286,9 @@ class TaskViewModel(
      * - Launched in viewModelScope
      */
     fun resetAllTasks() {
-        viewModelScope.launch { runTask("Failed to reset tasks") { repository.resetAllTasksToPending() } }
+        launchWithError({ postSnackbar("Failed to reset tasks: ${'$'}{it.message}") }) {
+            repository.resetAllTasksToPending()
+        }
     }
     
     /**
@@ -333,14 +345,7 @@ class TaskViewModel(
         }
     }
     
-    private suspend inline fun runTask(errorMessage: String, block: () -> Unit) {
-        try {
-            block()
-        } catch (e: Exception) {
-            // Emit as one-off UI event instead of persisting in state
-            _events.emit(UiEvent.ShowSnackbar(errorMessage + ": " + (e.message ?: "")))
-        }
-    }
+    // runTask removed; replaced by launchWithError
 }
 
 class TaskViewModelFactory(private val repository: TaskRepository) : ViewModelProvider.Factory {

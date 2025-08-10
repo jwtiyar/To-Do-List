@@ -43,6 +43,8 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.search.SearchView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
+import com.example.simplertask.utils.requestPermissionCompat
+import com.example.simplertask.utils.setupVertical
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -65,28 +67,28 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         localeManager = LocaleManager(applicationContext)
         localeManager.setAppLocale()
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        setSupportActionBar(binding.topAppBar)
+    binding = ActivityMainBinding.inflate(layoutInflater)
+    setContentView(binding.root)
+    setSupportActionBar(binding.topAppBar)
 
-        notificationHelper = NotificationHelper(this)
-        dialogManager = TaskDialogManager(this)
+    notificationHelper = NotificationHelper(this)
+    dialogManager = TaskDialogManager(this)
+
+    // Manual DI wiring (could be moved to a dedicated provider later)
     val database = TaskDatabase.getDatabase(this)
     val repository = com.example.simplertask.repository.TaskRepository(database.taskDao())
     val factory = com.example.simplertask.viewmodel.TaskViewModelFactory(repository)
     taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
 
-        observeViewModel()
-
-        checkAndRequestPostNotificationPermission()
-        checkAndRequestExactAlarmPermission()
-
-        setupRecyclerView()
-        setupTabLayout()
-        setupButtons()
-        setupSearchBar()
-        setupNavigationDrawer()
-        setupBackPressHandler()
+    observeViewModel()
+    checkAndRequestPostNotificationPermission()
+    checkAndRequestExactAlarmPermission()
+    setupRecyclerView()
+    setupTabLayout()
+    setupButtons()
+    setupSearchBar()
+    setupNavigationDrawer()
+    setupBackPressHandler()
     }
 
     private fun observeViewModel() {
@@ -143,12 +145,8 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.task_pending, task.title)
                 }
                 taskViewModel.postToast(message)
-                binding.searchView.editText.text?.toString()?.let { if (it.isNotBlank()) taskViewModel.searchTasks(it) }
             },
-            onEditClick = { task ->
-                showEditTaskDialog(task)
-                binding.searchView.hide()
-            },
+            onEditClick = { task -> showEditTaskDialog(task) },
             onTaskAction = { task, action ->
                 val updated = when (action) {
                     TaskAction.SAVE -> task.copy(isSaved = true)
@@ -164,7 +162,6 @@ class MainActivity : AppCompatActivity() {
                     TaskAction.UNARCHIVE -> R.string.task_unarchived
                 }
                 taskViewModel.postToast(getString(msgRes))
-                binding.searchView.editText.text?.toString()?.let { if (it.isNotBlank()) taskViewModel.searchTasks(it) }
             }
         )
         binding.searchRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -219,7 +216,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 taskViewModel.postToast(message)
             },
-            onEditClick = { task -> showEditTaskDialog(task) },
+            onEditClick = { task ->
+                showEditTaskDialog(task)
+                binding.searchView.hide()
+            },
             onTaskAction = { task, action ->
                 val updated = when (action) {
                     TaskAction.SAVE -> task.copy(isSaved = true)
@@ -237,24 +237,23 @@ class MainActivity : AppCompatActivity() {
                 taskViewModel.postToast(getString(msgRes))
             }
         )
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        // Prevent default context menu on long-press for RecyclerView and parent views
+
+        // Setup main list RecyclerView with vertical layout & footer
+        binding.recyclerView.setupVertical(taskAdapter.withLoadStateFooter(TaskLoadStateAdapter { taskAdapter.retry() }))
         binding.recyclerView.setOnCreateContextMenuListener(null)
         binding.recyclerView.isLongClickable = false
-        binding.nestedScrollView.setOnCreateContextMenuListener(null)
+
+        // Defensive: also disable long press context menu on parent scroll container
         binding.nestedScrollView.isLongClickable = false
-        // Defensive: also disable on parent LinearLayout if accessible
         (binding.nestedScrollView.getChildAt(0) as? android.widget.LinearLayout)?.apply {
             setOnCreateContextMenuListener(null)
             isLongClickable = false
         }
-        // Attach footer for load states
-        binding.recyclerView.adapter = taskAdapter.withLoadStateFooter(TaskLoadStateAdapter { taskAdapter.retry() })
 
         // Swipe-to-refresh triggers refresh of paging source
         binding.swipeRefresh.setOnRefreshListener { taskAdapter.refresh() }
 
-        // Observe load states to show/hide refresh indicator
+        // Observe load states to show/hide refresh indicator & surface errors
         lifecycleScope.launch {
             taskAdapter.loadStateFlow.collect { loadStates: CombinedLoadStates ->
                 val refreshing = loadStates.refresh is LoadState.Loading
@@ -328,35 +327,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkAndRequestPostNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                // Permission is already granted
-            } else if (ActivityCompat.shouldShowRequestPermissionRationale(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                )
-            ) {
-                Snackbar.make(
-                    binding.root,
-                    getString(R.string.notification_permission_needed),
-                    Snackbar.LENGTH_INDEFINITE
-                ).setAction(getString(R.string.button_grant)) {
-                    ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                        REQUEST_CODE_POST_NOTIFICATIONS
-                    )
-                }.show()
-            } else {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    REQUEST_CODE_POST_NOTIFICATIONS
-                )
-            }
+            requestPermissionCompat(
+                Manifest.permission.POST_NOTIFICATIONS,
+                getString(R.string.notification_permission_needed),
+                REQUEST_CODE_POST_NOTIFICATIONS
+            )
         }
     }
 
