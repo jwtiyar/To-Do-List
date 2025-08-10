@@ -47,6 +47,71 @@ import com.example.simplertask.utils.requestPermissionCompat
 import com.example.simplertask.utils.setupVertical
 
 class MainActivity : AppCompatActivity() {
+
+    private fun exportBackup() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            putExtra(Intent.EXTRA_TITLE, "tasks-backup-${System.currentTimeMillis()}.json")
+        }
+        startActivityForResult(intent, REQUEST_CODE_EXPORT_BACKUP)
+    }
+
+    private fun importBackup() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+        }
+        startActivityForResult(intent, REQUEST_CODE_IMPORT_BACKUP)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode != RESULT_OK || data == null || data.data == null) return
+        val uri = data.data!!
+        when (requestCode) {
+            REQUEST_CODE_EXPORT_BACKUP -> {
+                lifecycleScope.launch {
+                    try {
+                        val json = backupExporter.exportAllTasks()
+                        contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray()) }
+                        Toast.makeText(this@MainActivity, "Backup exported", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(this@MainActivity, "Export failed: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            REQUEST_CODE_IMPORT_BACKUP -> {
+                lifecycleScope.launch {
+                    try {
+                        val json = contentResolver.openInputStream(uri)?.bufferedReader()?.readText()
+                        if (json == null) throw Exception("Empty file")
+                        val result = backupImporter.import(json)
+                        val msg = when (result) {
+                            is com.example.simplertask.backup.ImportResult.Success -> "Imported: ${result.inserted}, Skipped: ${result.skipped}"
+                            is com.example.simplertask.backup.ImportResult.UnsupportedVersion -> "Unsupported backup version"
+                            is com.example.simplertask.backup.ImportResult.Malformed -> "Malformed backup: ${result.reason}"
+                        }
+                        Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(this@MainActivity, "Import failed: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+    }
+    companion object {
+        private const val REQUEST_CODE_EXPORT_BACKUP = 2001
+        private const val REQUEST_CODE_IMPORT_BACKUP = 2002
+        private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
+        private const val MENU_ITEM_LANGUAGE = 1002
+    }
+    private val backupExporter by lazy {
+        com.example.simplertask.backup.BackupExporter(this, TaskDatabase.getDatabase(this).taskDao())
+    }
+    private val backupImporter by lazy {
+        com.example.simplertask.backup.BackupImporter(TaskDatabase.getDatabase(this).taskDao())
+    }
     private lateinit var binding: ActivityMainBinding
     // Legacy list adapter kept for search results; main list now uses paging
     private lateinit var taskAdapter: TaskPagingAdapter
@@ -58,37 +123,15 @@ class MainActivity : AppCompatActivity() {
 
     private var currentTaskFilter: TaskViewModel.TaskFilter = TaskViewModel.TaskFilter.PENDING
 
-    companion object {
-        private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
-        private const val MENU_ITEM_LANGUAGE = 1002
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         localeManager = LocaleManager(applicationContext)
         localeManager.setAppLocale()
-    binding = ActivityMainBinding.inflate(layoutInflater)
-    setContentView(binding.root)
-    setSupportActionBar(binding.topAppBar)
-
-    notificationHelper = NotificationHelper(this)
-    dialogManager = TaskDialogManager(this)
-
-    // Manual DI wiring (could be moved to a dedicated provider later)
-    val database = TaskDatabase.getDatabase(this)
-    val repository = com.example.simplertask.repository.TaskRepository(database.taskDao())
-    val factory = com.example.simplertask.viewmodel.TaskViewModelFactory(repository)
-    taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
-
-    observeViewModel()
-    checkAndRequestPostNotificationPermission()
-    checkAndRequestExactAlarmPermission()
-    setupRecyclerView()
-    setupTabLayout()
-    setupButtons()
-    setupSearchBar()
-    setupNavigationDrawer()
-    setupBackPressHandler()
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.topAppBar)
+    // Menu is now handled via onCreateOptionsMenu/onOptionsItemSelected
     }
 
     private fun observeViewModel() {
@@ -375,7 +418,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.main_menu, menu)
         menu.add(Menu.NONE, MENU_ITEM_LANGUAGE, Menu.NONE, R.string.language)
         return true
     }
@@ -384,6 +427,8 @@ class MainActivity : AppCompatActivity() {
         R.id.action_theme -> { showThemeSelectionDialog(); true }
         R.id.action_about -> { showAboutDialog(); true }
         MENU_ITEM_LANGUAGE -> { showLanguageSelectionDialog(); true }
+        R.id.action_export_backup -> { exportBackup(); true }
+        R.id.action_import_backup -> { importBackup(); true }
         else -> super.onOptionsItemSelected(item)
     }
 
