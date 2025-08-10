@@ -42,6 +42,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.search.SearchView
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.MutableSharedFlow
 import com.example.simplertask.utils.requestPermissionCompat
 import com.example.simplertask.utils.setupVertical
@@ -63,10 +64,18 @@ class MainActivity : AppCompatActivity() {
         private const val MENU_ITEM_LANGUAGE = 1002
     }
 
+    override fun attachBaseContext(newBase: Context) {
+        val localeManager = LocaleManager(newBase)
+        val context = localeManager.setAppLocale()
+        super.attachBaseContext(context)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        // Apply locale BEFORE calling super.onCreate() to ensure it's applied correctly
         localeManager = LocaleManager(applicationContext)
         localeManager.setAppLocale()
+        super.onCreate(savedInstanceState)
+        
     binding = ActivityMainBinding.inflate(layoutInflater)
     setContentView(binding.root)
     setSupportActionBar(binding.topAppBar)
@@ -89,14 +98,17 @@ class MainActivity : AppCompatActivity() {
     setupSearchBar()
     setupNavigationDrawer()
     setupBackPressHandler()
+    
+    // Load initial tasks
+    loadTasks()
     }
 
     private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // collect paging data for main list
+                // Observe ViewModel data
                 launch {
-                    taskViewModel.pagedTasks.collect { pagingData ->
+                    taskViewModel.pagedTasks.collectLatest { pagingData ->
                         taskAdapter.submitData(pagingData)
                     }
                 }
@@ -201,7 +213,9 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun loadTasks() { taskViewModel.loadTasks(currentTaskFilter) }
+    private fun loadTasks() { 
+        taskViewModel.loadTasks(currentTaskFilter) 
+    }
 
     private fun setupRecyclerView() {
         taskAdapter = TaskPagingAdapter(
@@ -237,9 +251,22 @@ class MainActivity : AppCompatActivity() {
                 taskViewModel.postToast(getString(msgRes))
             }
         )
-
+        
         // Setup main list RecyclerView with vertical layout & footer
-        binding.recyclerView.setupVertical(taskAdapter.withLoadStateFooter(TaskLoadStateAdapter { taskAdapter.retry() }))
+        val concatAdapter = taskAdapter.withLoadStateFooter(TaskLoadStateAdapter { taskAdapter.retry() })
+        
+        binding.recyclerView.setupVertical(concatAdapter)
+        
+        // Add adapter observer
+        concatAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onChanged() {
+                // Adapter data changed
+            }
+            
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                // Items inserted
+            }
+        })
         binding.recyclerView.setOnCreateContextMenuListener(null)
         binding.recyclerView.isLongClickable = false
 
@@ -323,7 +350,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showAddTaskDialog() { dialogManager.showAddTaskDialog { t -> taskViewModel.addTask(t.title, t.description, t.priority, t.dueDateMillis) } }
+    private fun showAddTaskDialog() { 
+        dialogManager.showAddTaskDialog { task -> 
+            taskViewModel.addTask(task.title, task.description, task.priority, task.dueDateMillis)
+            // Force refresh after a short delay to allow DB operation to complete
+            lifecycleScope.launch {
+                kotlinx.coroutines.delay(200)
+                taskAdapter.refresh()
+            }
+        } 
+    }
 
     private fun checkAndRequestPostNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

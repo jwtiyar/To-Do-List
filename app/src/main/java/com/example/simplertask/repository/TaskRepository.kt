@@ -6,6 +6,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -34,15 +35,27 @@ class TaskRepository(
     fun searchTasks(query: String): Flow<List<Task>> = taskDao.searchTasks("%$query%")
 
     private val pagingConfig = PagingConfig(pageSize = 20, enablePlaceholders = false)
-    fun pageAllTasks(): Flow<PagingData<Task>> = Pager(pagingConfig) { taskDao.pagingAllTasks() }.flow
-    fun pagePendingTasks(): Flow<PagingData<Task>> = Pager(pagingConfig) { taskDao.pagingPendingTasks() }.flow
-    fun pageCompletedTasks(): Flow<PagingData<Task>> = Pager(pagingConfig) { taskDao.pagingCompletedTasks() }.flow
-    fun pageSavedTasks(): Flow<PagingData<Task>> = Pager(pagingConfig) { taskDao.pagingSavedTasks() }.flow
-    fun pageArchivedTasks(): Flow<PagingData<Task>> = Pager(pagingConfig) { taskDao.pagingArchivedTasks() }.flow
+    fun pageAllTasks(): Flow<PagingData<Task>> {
+        return Pager(pagingConfig) { taskDao.pagingAllTasks() }.flow
+    }
+    fun pagePendingTasks(): Flow<PagingData<Task>> {
+        return Pager(pagingConfig) { taskDao.pagingPendingTasks() }.flow
+    }
+    fun pageCompletedTasks(): Flow<PagingData<Task>> {
+        return Pager(pagingConfig) { taskDao.pagingCompletedTasks() }.flow
+    }
+    fun pageSavedTasks(): Flow<PagingData<Task>> {
+        return Pager(pagingConfig) { taskDao.pagingSavedTasks() }.flow
+    }
+    fun pageArchivedTasks(): Flow<PagingData<Task>> {
+        return Pager(pagingConfig) { taskDao.pagingArchivedTasks() }.flow
+    }
 
 
     /** Insert a new task. Returns new row id. */
-    suspend fun insertTask(task: Task): Long = withContext(Dispatchers.IO) { taskDao.insertTask(task) }
+    suspend fun insertTask(task: Task): Long = withContext(Dispatchers.IO) { 
+        taskDao.insertTask(task)
+    }
     /** Persist full task update. */
     suspend fun updateTask(task: Task) = withContext(Dispatchers.IO) { taskDao.updateTask(task) }
     /** Remove a single task. */

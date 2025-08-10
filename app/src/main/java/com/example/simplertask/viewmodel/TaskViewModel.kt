@@ -51,10 +51,15 @@ class TaskViewModel(
 
     // Paging filter (mirrors filterFlow but kept separate for clarity / future divergence)
     private val pagingFilterFlow = MutableStateFlow(TaskFilter.PENDING)
+    
+    // Trigger for forcing paging source refresh
+    private val pagingRefreshTrigger = MutableStateFlow(0)
 
     // Expose PagingData flow (UI collects this for infinite scrolling). We keep legacy list flows
     // for existing UI state until fully migrated.
-    val pagedTasks: Flow<androidx.paging.PagingData<Task>> = pagingFilterFlow
+    val pagedTasks: Flow<androidx.paging.PagingData<Task>> = combine(pagingFilterFlow, pagingRefreshTrigger) { filter, trigger ->
+            filter
+        }
         .flatMapLatest { filter ->
             when (filter) {
                 TaskFilter.PENDING -> repository.pagePendingTasks()
@@ -64,7 +69,7 @@ class TaskViewModel(
                 TaskFilter.ALL -> repository.pageAllTasks()
             }
         }
-        .cachedIn(viewModelScope)
+        // REMOVED .cachedIn(viewModelScope) to force refresh
 
     private val baseTasks: StateFlow<List<Task>> = filterFlow
         .flatMapLatest { filter ->
@@ -163,9 +168,21 @@ class TaskViewModel(
         dueDateMillis: Long? = null
     ) {
         launchWithError(
-            onError = { postSnackbar("Failed to add task: ${'$'}{it.message}") }
+            onError = { 
+                postSnackbar("Failed to add task: ${'$'}{it.message}") 
+            }
         ) {
-            repository.insertTask(Task(title = title, description = description, priority = priority, dueDateMillis = dueDateMillis))
+            val task = Task(title = title, description = description, priority = priority, dueDateMillis = dueDateMillis)
+            repository.insertTask(task)
+            
+            // Force paging source refresh by incrementing trigger
+            val currentTrigger = pagingRefreshTrigger.value
+            pagingRefreshTrigger.value = currentTrigger + 1
+            
+            // Also trigger a reload of the current filter
+            loadTasks(filterFlow.value)
+            
+            postToast("Task added successfully!")
         }
     }
     

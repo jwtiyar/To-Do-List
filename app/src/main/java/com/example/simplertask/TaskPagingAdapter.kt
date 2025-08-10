@@ -20,8 +20,12 @@ class TaskPagingAdapter(
 
     companion object {
         private val DIFF = object : DiffUtil.ItemCallback<Task>() {
-            override fun areItemsTheSame(oldItem: Task, newItem: Task): Boolean = oldItem.id == newItem.id
-            override fun areContentsTheSame(oldItem: Task, newItem: Task): Boolean = oldItem == newItem
+            override fun areItemsTheSame(oldItem: Task, newItem: Task): Boolean {
+                return oldItem.id == newItem.id
+            }
+            override fun areContentsTheSame(oldItem: Task, newItem: Task): Boolean {
+                return oldItem == newItem
+            }
         }
     private var currentDialog: androidx.appcompat.app.AlertDialog? = null
     }
@@ -102,6 +106,11 @@ class TaskPagingAdapter(
     }
 
     override fun onBindViewHolder(holder: TaskVH, position: Int) {
-        holder.bind(getItem(position))
+        val item = getItem(position)
+        holder.bind(item)
+    }
+    
+    override fun getItemCount(): Int {
+        return super.getItemCount()
     }
 }
