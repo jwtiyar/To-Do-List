@@ -15,6 +15,16 @@ class NotificationHelper(private val context: Context) {
         const val CHANNEL_ID = "task_reminders"
         const val CHANNEL_NAME = "Task Reminders"
         const val CHANNEL_DESCRIPTION = "Notifications for task reminders"
+        
+        fun scheduleOrToggle(helper: NotificationHelper, task: Task) {
+            if (task.isCompleted) {
+                helper.cancelNotification(task)
+            } else {
+                task.dueDateMillis?.let { scheduledMillis ->
+                    helper.scheduleNotification(task)
+                }
+            }
+        }
     }
     
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

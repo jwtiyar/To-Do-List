@@ -10,7 +10,9 @@ import androidx.room.PrimaryKey
         Index("isCompleted"),
         Index("isArchived"),
         Index("isSaved"),
-        Index("dueDateMillis")
+        Index("dueDateMillis"),
+        // Composite index to accelerate common filter + ordering by id desc
+        Index(value = ["isArchived", "isCompleted", "id"], name = "idx_task_archived_completed_id")
     ]
 )
 data class Task(
@@ -66,8 +68,3 @@ data class Task(
 enum class Priority {
     LOW, MEDIUM, HIGH
 }
-
-typealias TaskAction = String
-
-const val TOGGLE_SAVE = "TOGGLE_SAVE"
-const val TOGGLE_ARCHIVE = "TOGGLE_ARCHIVE"

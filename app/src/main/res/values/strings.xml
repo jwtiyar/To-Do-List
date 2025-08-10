@@ -99,4 +99,19 @@
     
     <!-- Search string -->
     <string name="search">Search</string>
+    <string name="due_prefix">Due: %1$s</string>
+    <string name="action_save">Save Task</string>
+    <string name="action_unsave">Remove from Saved</string>
+    <string name="action_archive">Archive</string>
+    <string name="action_unarchive">Unarchive</string>
+    <string name="task_actions_title">Task Actions</string>
+    <!-- Newly referenced toast/status strings -->
+    <string name="task_completed">Task completed: %1$s</string>
+    <string name="task_pending">Task marked as pending: %1$s</string>
+    <string name="task_saved">Task saved</string>
+    <string name="task_unsaved">Task removed from saved</string>
+    <string name="task_archived">Task archived</string>
+    <string name="task_unarchived">Task unarchived</string>
+    <string name="error_generic">An error occurred</string>
+    <string name="retry">Retry</string>
 </resources>

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplertask.databinding.ItemTaskBinding
 import java.time.format.DateTimeFormatter
+import com.example.simplertask.TaskAction
 import java.util.Locale
 import java.time.Instant
 import java.time.LocalDateTime
@@ -15,10 +16,14 @@ import java.time.ZoneId
 
 class TaskAdapter(
     private var tasks: List<Task>,
-    private val onTaskClick: (Task) -> Unit, // Callback for task completion toggle
-    private val onEditClick: (Task) -> Unit, // Callback for edit action
-    private val onTaskAction: (Task, String) -> Unit // Callback for save/archive actions
+    private val onTaskClick: (Task) -> Unit,
+    private val onEditClick: (Task) -> Unit,
+    private val onTaskAction: (Task, TaskAction) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
+    companion object {
+        // Ensures only one task actions dialog is visible at a time across instances
+        private var currentDialog: androidx.appcompat.app.AlertDialog? = null
+    }
     /**
      * Returns a copy of the current tasks list
      */
@@ -64,129 +69,79 @@ class TaskAdapter(
             binding.apply {
                 taskTitle.text = task.title
                 taskDescription.text = task.description
-
-                // Priority chip
-                chipPriority.text = when (task.priority) {
-                    Priority.LOW -> "Low"
-                    Priority.MEDIUM -> "Medium"
-                    Priority.HIGH -> "High"
+                chipPriority.text = when (task.priority) { 
+                    Priority.LOW -> root.context.getString(R.string.priority_low)
+                    Priority.MEDIUM -> root.context.getString(R.string.priority_medium)
+                    Priority.HIGH -> root.context.getString(R.string.priority_high) 
                 }
-                val chipColor = when (task.priority) {
+                val chipColor = when (task.priority) { 
                     Priority.LOW -> R.color.priority_low
                     Priority.MEDIUM -> R.color.priority_medium
-                    Priority.HIGH -> R.color.priority_high
+                    Priority.HIGH -> R.color.priority_high 
                 }
                 chipPriority.setBackgroundResource(R.drawable.chip_priority_bg)
                 chipPriority.background.setTint(root.context.getColor(chipColor))
 
-                // Temporarily remove listener to prevent firing during programmatic update of isChecked
                 taskCheckBox.setOnCheckedChangeListener(null)
                 taskCheckBox.isChecked = task.isCompleted
 
                 if (task.dueDateMillis != null) {
                     val ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.dueDateMillis!!), ZoneId.systemDefault())
-                    taskScheduledTime.text = "Due: " + ldt.format(timeFormatter)
+                    taskScheduledTime.text = root.context.getString(R.string.due_prefix, ldt.format(timeFormatter))
                     taskScheduledTime.visibility = View.VISIBLE
-                } else {
-                    taskScheduledTime.visibility = View.GONE
-                }
+                } else taskScheduledTime.visibility = View.GONE
 
-                updateVisualState()
+                updateVisualState(task)
 
-                // Store the previous checked state to prevent multiple callbacks
                 var previousCheckedState = taskCheckBox.isChecked
-                
-                // Handle task completion when clicking the checkbox
-                taskCheckBox.setOnCheckedChangeListener(null) // Clear any existing listeners
-                taskCheckBox.isChecked = task.isCompleted // Set initial state
-                
                 taskCheckBox.setOnCheckedChangeListener { _, isChecked ->
-                    // Only proceed if the state actually changed
                     if (isChecked != previousCheckedState) {
                         previousCheckedState = isChecked
-                        val pos = bindingAdapterPosition
-                        if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
-                            val currentTask = tasks[pos].copy(isCompleted = isChecked)
-                            updateVisualState()
-                            onTaskClick(currentTask)
-                        }
+                        val current = task.copy(isCompleted = isChecked)
+                        updateVisualState(current)
+                        onTaskClick(current)
                     }
                 }
 
-                // Handle task item clicks (excluding the checkbox)
-                // Removed item click toggling for completion; only checkbox marks as completed
-                
-                root.setOnLongClickListener {
-                    val pos = bindingAdapterPosition
-                    if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
-                        val currentTask = tasks[pos]
-                        showTaskActions(currentTask)
-                        true
-                    } else {
-                        false
-                    }
+                root.setOnLongClickListener { 
+                    showTaskActions(task); true 
                 }
-                btnEditTask.setOnClickListener {
-                    val pos = bindingAdapterPosition
-                    if (pos != RecyclerView.NO_POSITION && pos < tasks.size) {
-                        val currentTask = tasks[pos]
-                        onEditClick(currentTask)
-                    }
+                btnEditTask.setOnClickListener { 
+                    onEditClick(task) 
                 }
             }
         }
 
         private fun showTaskActions(task: Task) {
-            val actions = arrayOf(
-                if (task.isSaved) "Remove from Saved" else "Save Task",
-                if (task.isArchived) "Unarchive" else "Archive",
-                "Cancel"
-            )
-            
-            androidx.appcompat.app.AlertDialog.Builder(binding.root.context)
-                .setTitle("Task Actions")
-                .setItems(actions) { _, which ->
-                    when (which) {
-                        0 -> onTaskAction(task, if (task.isSaved) "unsave" else "save")
-                        1 -> onTaskAction(task, if (task.isArchived) "unarchive" else "archive")
-                        // 2 is Cancel, do nothing
-                    }
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
+            val ctx = binding.root.context
+            // Dismiss any previously shown dialog to avoid stacking / duplicate cancel buttons
+            currentDialog?.dismiss()
+            val actionItems: List<Pair<String, TaskAction>> = mutableListOf<Pair<String, TaskAction>>().apply {
+                add(if (task.isSaved) ctx.getString(R.string.action_unsave) to TaskAction.UNSAVE else ctx.getString(R.string.action_save) to TaskAction.SAVE)
+                add(if (task.isArchived) ctx.getString(R.string.action_unarchive) to TaskAction.UNARCHIVE else ctx.getString(R.string.action_archive) to TaskAction.ARCHIVE)
+            }
+            val labels = actionItems.map { it.first }.toTypedArray()
+            currentDialog = androidx.appcompat.app.AlertDialog.Builder(ctx)
+                .setTitle(ctx.getString(R.string.task_actions_title))
+                .setItems(labels) { _, which ->
+                    val (_, action) = actionItems[which]
+                    onTaskAction(task, action)
+                }.create()
+            currentDialog?.setOnDismissListener { if (currentDialog?.isShowing != true) currentDialog = null }
+            currentDialog?.show()
         }
 
-        private fun updateVisualState() {
+        private fun updateVisualState(task: Task) {
             binding.apply {
-                // Update visual state based on completion
-                if (taskCheckBox.isChecked) {
-                    // Task is completed
+                if (task.isCompleted) {
                     taskTitle.paintFlags = taskTitle.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
                     taskDescription.paintFlags = taskDescription.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
                     root.alpha = 0.6f
                 } else {
-                    // Task is not completed
                     taskTitle.paintFlags = taskTitle.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
                     taskDescription.paintFlags = taskDescription.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                    root.alpha = 1.0f
+                    root.alpha = 1f
                 }
-                
-                // Update save icon visibility based on task state
-                val saveIconRes = if (bindingAdapterPosition != RecyclerView.NO_POSITION && 
-                    bindingAdapterPosition < tasks.size) {
-                    val currentTask = tasks[bindingAdapterPosition]
-                    if (currentTask.isSaved) {
-                        R.drawable.ic_bookmark_24
-                    } else {
-                        R.drawable.ic_bookmark_border_24
-                    }
-                } else {
-                    R.drawable.ic_bookmark_border_24
-                }
-                
-                // If you have a save icon in your layout, uncomment these lines
-                // btnSave.setImageResource(saveIconRes)
-                // btnSave.contentDescription = if (saveIconRes == R.drawable.ic_bookmark_24) "Unsave task" else "Save task"
             }
         }
     }

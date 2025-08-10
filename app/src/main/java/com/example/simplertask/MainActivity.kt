@@ -1,74 +1,60 @@
 package com.example.simplertask
 
-import androidx.appcompat.app.AppCompatDelegate
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.RadioGroup
-import android.widget.RadioButton
-// Removed broken import line
-import androidx.core.view.GravityCompat
-import androidx.activity.OnBackPressedCallback
-
 import android.Manifest
 import android.app.AlarmManager
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.provider.Settings
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.Toast
-import com.example.simplertask.dialogs.LanguageSelectionDialog
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.paging.LoadState
+import androidx.paging.LoadStateAdapter
+import androidx.paging.CombinedLoadStates
+import androidx.recyclerview.widget.RecyclerView
+import android.view.ViewGroup
 import com.example.simplertask.databinding.ActivityMainBinding
-import com.google.android.material.checkbox.MaterialCheckBox
+import com.example.simplertask.dialogs.LanguageSelectionDialog
+import com.example.simplertask.TaskAction
+import com.example.simplertask.utils.LocaleManager
+import com.example.simplertask.viewmodel.TaskViewModel
+import com.example.simplertask.ui.UiEvent
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
-import com.google.android.material.textfield.TextInputEditText
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.Instant
-import java.time.ZoneId
-import java.util.Calendar
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.first
-import com.google.android.material.button.MaterialButton
-import com.example.simplertask.utils.LocaleManager
-import java.util.Locale
 import com.google.android.material.search.SearchView
-import android.widget.EditText
-import android.widget.TextView
-import com.example.simplertask.viewmodel.TaskViewModel
-import com.example.simplertask.viewmodel.TaskViewModelFactory
-import com.example.simplertask.TaskRepositoryImpl
-import androidx.lifecycle.ViewModelProvider
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var taskAdapter: TaskAdapter
+    // Legacy list adapter kept for search results; main list now uses paging
+    private lateinit var taskAdapter: TaskPagingAdapter
     private lateinit var searchAdapter: TaskAdapter
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var dialogManager: TaskDialogManager
     private lateinit var localeManager: LocaleManager
     private lateinit var taskViewModel: TaskViewModel
-    private var tasks: List<Task> = emptyList()
-    private var loadTasksJob: Job? = null
 
     private var currentTaskFilter: TaskViewModel.TaskFilter = TaskViewModel.TaskFilter.PENDING
-    // To store current filter
 
     companion object {
         private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
@@ -85,17 +71,12 @@ class MainActivity : AppCompatActivity() {
 
         notificationHelper = NotificationHelper(this)
         dialogManager = TaskDialogManager(this)
-        val repository = TaskRepositoryImpl(applicationContext)
-        val factory = TaskViewModelFactory(repository)
-        taskViewModel = ViewModelProvider(this, factory).get(TaskViewModel::class.java)
+    val database = TaskDatabase.getDatabase(this)
+    val repository = com.example.simplertask.repository.TaskRepository(database.taskDao())
+    val factory = com.example.simplertask.viewmodel.TaskViewModelFactory(repository)
+    taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
 
-        // Observe tasks from ViewModel
-        lifecycleScope.launch {
-            taskViewModel.uiState.collect { uiState ->
-                tasks = uiState.tasks
-                taskAdapter.updateTasks(tasks)
-            }
-        }
+        observeViewModel()
 
         checkAndRequestPostNotificationPermission()
         checkAndRequestExactAlarmPermission()
@@ -106,127 +87,104 @@ class MainActivity : AppCompatActivity() {
         setupSearchBar()
         setupNavigationDrawer()
         setupBackPressHandler()
-        // Optionally show theme dialog on first launch or via menu
+    }
+
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // collect paging data for main list
+                launch {
+                    taskViewModel.pagedTasks.collect { pagingData ->
+                        taskAdapter.submitData(pagingData)
+                    }
+                }
+                // search results
+                launch {
+                    taskViewModel.searchResults.collect { results ->
+                        searchAdapter.updateTasks(results)
+                    }
+                }
+                // one-off events (toasts / snackbars)
+                launch {
+                    taskViewModel.events.collect { event ->
+                        when (event) {
+                            is UiEvent.ShowToast -> {
+                                Toast.makeText(this@MainActivity, event.message, Toast.LENGTH_SHORT).show()
+                            }
+                            is UiEvent.ShowSnackbar -> {
+                                val sb = Snackbar.make(binding.root, event.message, Snackbar.LENGTH_LONG)
+                                event.actionLabel?.let { label ->
+                                    sb.setAction(label) { /* action placeholder */ }
+                                }
+                                sb.show()
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun setupSearchBar() {
-        // Connect SearchBar to SearchView
-        binding.searchBar.setOnClickListener {
-            binding.searchView.show()
-        }
-
-        // Setup SearchView
+        binding.searchBar.setOnClickListener { binding.searchView.show() }
         setupSearchView()
     }
 
     private fun setupSearchView() {
-        // Initialize search adapter for the search results
         searchAdapter = TaskAdapter(
             emptyList(),
             onTaskClick = { task ->
-                // Use ViewModel for updating task
                 taskViewModel.updateTask(task)
-                lifecycleScope.launch(Dispatchers.Main) {
-                    val message = if (task.isCompleted) {
-                        notificationHelper.cancelNotification(task)
-                        "Task completed: ${task.title}"
-                    } else {
-                        if (task.dueDateMillis != null) {
-                            notificationHelper.scheduleNotification(task)
-                        }
-                        "Task marked as pending: ${task.title}"
-                    }
-                    Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
-                    // Update search results after task update
-                    val currentQuery = binding.searchView.editText.text.toString()
-                    if (currentQuery.isNotEmpty()) {
-                        performSearch(currentQuery, searchAdapter)
-                    }
+                val message = if (task.isCompleted) {
+                    notificationHelper.cancelNotification(task)
+                    getString(R.string.task_completed, task.title)
+                } else {
+                    if (task.dueDateMillis != null) notificationHelper.scheduleNotification(task)
+                    getString(R.string.task_pending, task.title)
                 }
+                taskViewModel.postToast(message)
+                binding.searchView.editText.text?.toString()?.let { if (it.isNotBlank()) taskViewModel.searchTasks(it) }
             },
             onEditClick = { task ->
                 showEditTaskDialog(task)
                 binding.searchView.hide()
             },
             onTaskAction = { task, action ->
-                val updatedTask = when (action) {
-                    "save" -> task.copy(isSaved = true)
-                    "unsave" -> task.copy(isSaved = false)
-                    "archive" -> task.copy(isArchived = true, isSaved = false)
-                    "unarchive" -> task.copy(isArchived = false)
-                    else -> task
+                val updated = when (action) {
+                    TaskAction.SAVE -> task.copy(isSaved = true)
+                    TaskAction.UNSAVE -> task.copy(isSaved = false)
+                    TaskAction.ARCHIVE -> task.copy(isArchived = true, isSaved = false)
+                    TaskAction.UNARCHIVE -> task.copy(isArchived = false)
                 }
-                taskViewModel.updateTask(updatedTask)
-                lifecycleScope.launch(Dispatchers.Main) {
-                    val message = when (action) {
-                        "save" -> "Task saved"
-                        "unsave" -> "Task removed from saved"
-                        "archive" -> "Task archived"
-                        "unarchive" -> "Task unarchived"
-                        else -> ""
-                    }
-                    if (message.isNotEmpty()) {
-                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
-                    }
-                    // Update search results after action
-                    val currentQuery = binding.searchView.editText.text.toString()
-                    if (currentQuery.isNotEmpty()) {
-                        performSearch(currentQuery, searchAdapter)
-                    }
+                taskViewModel.updateTask(updated)
+                val msgRes = when (action) {
+                    TaskAction.SAVE -> R.string.task_saved
+                    TaskAction.UNSAVE -> R.string.task_unsaved
+                    TaskAction.ARCHIVE -> R.string.task_archived
+                    TaskAction.UNARCHIVE -> R.string.task_unarchived
                 }
+                taskViewModel.postToast(getString(msgRes))
+                binding.searchView.editText.text?.toString()?.let { if (it.isNotBlank()) taskViewModel.searchTasks(it) }
             }
         )
-
-        // Setup search RecyclerView
         binding.searchRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.searchRecyclerView.adapter = searchAdapter
 
-        // Setup search text listener
         binding.searchView.editText.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val query = s?.toString() ?: ""
-                performSearch(query, searchAdapter)
+                taskViewModel.searchTasks(s?.toString() ?: "")
             }
-
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
 
-        // Handle search view hide/show events
-        binding.searchView.addTransitionListener { searchView, previousState, newState ->
+        binding.searchView.addTransitionListener { _, _, newState ->
             if (newState == SearchView.TransitionState.HIDDEN) {
-                // Clear search when closing
                 binding.searchView.editText.setText("")
-                // Reload main tasks list to refresh any changes
-                loadTasksFromDb()
+                taskViewModel.searchTasks("")
             }
         }
     }
-
-    private fun performSearch(query: String, searchAdapter: TaskAdapter) {
-        if (query.isEmpty()) {
-            searchAdapter.updateTasks(emptyList())
-            return
-        }
-        // Use ViewModel to filter tasks
-        lifecycleScope.launch {
-            val allTasks = taskViewModel.uiState.value.tasks
-            val filteredTasks = allTasks.filter { task ->
-                task.title.contains(query, ignoreCase = true) ||
-                        task.description.contains(query, ignoreCase = true)
-            }
-            searchAdapter.updateTasks(filteredTasks)
-            if (filteredTasks.isEmpty() && query.isNotEmpty()) {
-                Toast.makeText(
-                    this@MainActivity,
-                    "No tasks found for \"$query\"",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-    }
-
 
     private fun setupTabLayout() {
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -238,110 +196,135 @@ class MainActivity : AppCompatActivity() {
                 }
                 if (newFilter != currentTaskFilter) {
                     currentTaskFilter = newFilter
-                    loadTasksFromDb()
+                    loadTasks()
                 }
             }
-
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
     }
 
-
-    private fun loadTasksFromDb() {
-        taskViewModel.loadTasks(currentTaskFilter)
-    }
+    private fun loadTasks() { taskViewModel.loadTasks(currentTaskFilter) }
 
     private fun setupRecyclerView() {
-        taskAdapter = TaskAdapter(
-            emptyList(),
+        taskAdapter = TaskPagingAdapter(
             onTaskClick = { task ->
-                // Use ViewModel for updating task
                 taskViewModel.updateTask(task)
-                lifecycleScope.launch(Dispatchers.Main) {
-                    val message = if (task.isCompleted) {
-                        notificationHelper.cancelNotification(task)
-                        "Task completed: ${task.title}"
-                    } else {
-                        if (task.dueDateMillis != null) {
-                            notificationHelper.scheduleNotification(task)
-                        }
-                        "Task marked as pending: ${task.title}"
-                    }
-                    Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                val message = if (task.isCompleted) {
+                    notificationHelper.cancelNotification(task)
+                    getString(R.string.task_completed, task.title)
+                } else {
+                    if (task.dueDateMillis != null) notificationHelper.scheduleNotification(task)
+                    getString(R.string.task_pending, task.title)
                 }
+                taskViewModel.postToast(message)
             },
-            onEditClick = { task ->
-                showEditTaskDialog(task)
-            },
+            onEditClick = { task -> showEditTaskDialog(task) },
             onTaskAction = { task, action ->
-                val updatedTask = when (action) {
-                    "save" -> task.copy(isSaved = true)
-                    "unsave" -> task.copy(isSaved = false)
-                    "archive" -> task.copy(isArchived = true, isSaved = false)
-                    "unarchive" -> task.copy(isArchived = false)
-                    else -> task
+                val updated = when (action) {
+                    TaskAction.SAVE -> task.copy(isSaved = true)
+                    TaskAction.UNSAVE -> task.copy(isSaved = false)
+                    TaskAction.ARCHIVE -> task.copy(isArchived = true, isSaved = false)
+                    TaskAction.UNARCHIVE -> task.copy(isArchived = false)
                 }
-                taskViewModel.updateTask(updatedTask)
-                lifecycleScope.launch(Dispatchers.Main) {
-                    val message = when (action) {
-                        "save" -> "Task saved"
-                        "unsave" -> "Task removed from saved"
-                        "archive" -> "Task archived"
-                        "unarchive" -> "Task unarchived"
-                        else -> ""
-                    }
-                    if (message.isNotEmpty()) {
-                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
-                    }
+                taskViewModel.updateTask(updated)
+                val msgRes = when (action) {
+                    TaskAction.SAVE -> R.string.task_saved
+                    TaskAction.UNSAVE -> R.string.task_unsaved
+                    TaskAction.ARCHIVE -> R.string.task_archived
+                    TaskAction.UNARCHIVE -> R.string.task_unarchived
                 }
+                taskViewModel.postToast(getString(msgRes))
             }
         )
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = taskAdapter
-    }
+        // Prevent default context menu on long-press for RecyclerView and parent views
+        binding.recyclerView.setOnCreateContextMenuListener(null)
+        binding.recyclerView.isLongClickable = false
+        binding.nestedScrollView.setOnCreateContextMenuListener(null)
+        binding.nestedScrollView.isLongClickable = false
+        // Defensive: also disable on parent LinearLayout if accessible
+        (binding.nestedScrollView.getChildAt(0) as? android.widget.LinearLayout)?.apply {
+            setOnCreateContextMenuListener(null)
+            isLongClickable = false
+        }
+        // Attach footer for load states
+        binding.recyclerView.adapter = taskAdapter.withLoadStateFooter(TaskLoadStateAdapter { taskAdapter.retry() })
 
-    private fun showEditTaskDialog(task: Task) {
-        dialogManager.showEditTaskDialog(task) { updatedTask ->
-            taskViewModel.updateTask(updatedTask)
+        // Swipe-to-refresh triggers refresh of paging source
+        binding.swipeRefresh.setOnRefreshListener { taskAdapter.refresh() }
+
+        // Observe load states to show/hide refresh indicator
+        lifecycleScope.launch {
+            taskAdapter.loadStateFlow.collect { loadStates: CombinedLoadStates ->
+                val refreshing = loadStates.refresh is LoadState.Loading
+                binding.swipeRefresh.isRefreshing = refreshing
+                val errorState = loadStates.refresh as? LoadState.Error
+                    ?: loadStates.append as? LoadState.Error
+                    ?: loadStates.prepend as? LoadState.Error
+                errorState?.let { taskViewModel.postSnackbar(it.error.message ?: getString(R.string.error_generic)) }
+            }
         }
     }
+
+    // Simple LoadStateAdapter for footer progress & retry
+    private inner class TaskLoadStateAdapter(private val onRetry: () -> Unit) : LoadStateAdapter<LoadStateViewHolder>() {
+        override fun onBindViewHolder(holder: LoadStateViewHolder, loadState: LoadState) = holder.bind(loadState)
+        override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): LoadStateViewHolder {
+            val progress = android.widget.ProgressBar(parent.context).apply { isIndeterminate = true }
+            val retryButton = com.google.android.material.button.MaterialButton(parent.context).apply {
+                text = parent.context.getString(R.string.retry)
+                setOnClickListener { onRetry() }
+                visibility = View.GONE
+            }
+            val container = android.widget.LinearLayout(parent.context).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                gravity = android.view.Gravity.CENTER
+                setPadding(24,24,24,24)
+                addView(progress, android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
+                addView(retryButton, android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
+            }
+            return LoadStateViewHolder(container, progress, retryButton)
+        }
+    }
+
+    private class LoadStateViewHolder(view: View, private val progress: android.widget.ProgressBar, private val retryBtn: com.google.android.material.button.MaterialButton) : RecyclerView.ViewHolder(view) {
+        fun bind(loadState: LoadState) {
+            when (loadState) {
+                is LoadState.Loading -> { progress.visibility = View.VISIBLE; retryBtn.visibility = View.GONE }
+                is LoadState.Error -> { progress.visibility = View.GONE; retryBtn.visibility = View.VISIBLE }
+                is LoadState.NotLoading -> { progress.visibility = View.GONE; retryBtn.visibility = View.GONE }
+            }
+        }
+    }
+
+    private fun showEditTaskDialog(task: Task) { dialogManager.showEditTaskDialog(task) { taskViewModel.updateTask(it) } }
 
     private fun setupButtons() {
         binding.fabAddTask.setOnClickListener { showAddTaskDialog() }
         binding.btnClearCompleted.setOnClickListener {
-            lifecycleScope.launch {
-                if (currentTaskFilter == TaskViewModel.TaskFilter.COMPLETED && tasks.any { it.isCompleted }) {
-                    tasks.filter { it.isCompleted }.forEach { notificationHelper.cancelNotification(it) }
-                    taskViewModel.clearCompletedTasks()
-                    loadTasksFromDb()
-                    Toast.makeText(this@MainActivity, getString(R.string.removed_completed_tasks, tasks.count { it.isCompleted }), Toast.LENGTH_SHORT).show()
-                } else if (currentTaskFilter == TaskViewModel.TaskFilter.PENDING) {
-                    Toast.makeText(this@MainActivity, getString(R.string.switch_to_completed_tab), Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@MainActivity, getString(R.string.no_completed_tasks), Toast.LENGTH_SHORT).show()
-                }
+            val state = taskViewModel.uiState.value
+            if (currentTaskFilter == TaskViewModel.TaskFilter.COMPLETED && state.tasks.any { it.isCompleted }) {
+                state.tasks.filter { it.isCompleted }.forEach { notificationHelper.cancelNotification(it) }
+                taskViewModel.clearCompletedTasks()
+                taskViewModel.postToast(getString(R.string.removed_completed_tasks, state.tasks.count { it.isCompleted }))
+            } else if (currentTaskFilter == TaskViewModel.TaskFilter.PENDING) {
+                taskViewModel.postToast(getString(R.string.switch_to_completed_tab))
+            } else {
+                taskViewModel.postToast(getString(R.string.no_completed_tasks))
             }
         }
         binding.btnResetTasks.setOnClickListener {
-            lifecycleScope.launch {
-                try {
-                    taskViewModel.resetAllTasks()
-                    loadTasksFromDb()
-                    Toast.makeText(this@MainActivity, getString(R.string.all_tasks_reset), Toast.LENGTH_SHORT).show()
-                } catch (e: Exception) {
-                    Log.e("MainActivity", "Error resetting tasks", e)
-                    Toast.makeText(this@MainActivity, getString(R.string.error_resetting_tasks, e.message), Toast.LENGTH_SHORT).show()
-                }
+            try {
+                taskViewModel.resetAllTasks()
+                taskViewModel.postToast(getString(R.string.all_tasks_reset))
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, getString(R.string.error_resetting_tasks, e.message), Snackbar.LENGTH_LONG).show()
             }
         }
     }
 
-    private fun showAddTaskDialog() {
-        dialogManager.showAddTaskDialog { newTask ->
-            taskViewModel.addTask(newTask.title, newTask.description, newTask.priority, newTask.dueDateMillis)
-        }
-    }
+    private fun showAddTaskDialog() { dialogManager.showAddTaskDialog { t -> taskViewModel.addTask(t.title, t.description, t.priority, t.dueDateMillis) } }
 
     private fun checkAndRequestPostNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -405,11 +388,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -426,42 +405,16 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_theme -> {
-                showThemeSelectionDialog()
-                true
-            }
-            R.id.action_about -> {
-                showAboutDialog()
-                true
-            }
-            MENU_ITEM_LANGUAGE -> {
-                showLanguageSelectionDialog()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.action_theme -> { showThemeSelectionDialog(); true }
+        R.id.action_about -> { showAboutDialog(); true }
+        MENU_ITEM_LANGUAGE -> { showLanguageSelectionDialog(); true }
+        else -> super.onOptionsItemSelected(item)
     }
 
-    private fun showLanguageSelectionDialog() {
-        LanguageSelectionDialog(this) {
-            // The language setting is handled internally by LanguageSelectionDialog
-            // which calls localeManager.setNewLocale() and activity.recreate()
+    private fun showLanguageSelectionDialog() { LanguageSelectionDialog(this) { taskViewModel.postToast(getString(R.string.language_changed)) }.show() }
 
-            // Show a message that the language has been changed
-            Toast.makeText(this, getString(R.string.language_changed), Toast.LENGTH_SHORT).show()
-        }.show()
-    }
-
-    private fun showAboutDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_about, null)
-        AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setTitle(getString(R.string.dialog_about_title))
-            .setPositiveButton(getString(R.string.button_ok), null)
-            .show()
-    }
+    private fun showAboutDialog() { val v = layoutInflater.inflate(R.layout.dialog_about, null); AlertDialog.Builder(this).setView(v).setTitle(getString(R.string.dialog_about_title)).setPositiveButton(getString(R.string.button_ok), null).show() }
 
     private fun showThemeSelectionDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_theme_selection, null)
@@ -484,15 +437,15 @@ class MainActivity : AppCompatActivity() {
                 when (radioGroup.checkedRadioButtonId) {
                     R.id.radioLight -> {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                        Toast.makeText(this, getString(R.string.theme_light), Toast.LENGTH_SHORT).show()
+                        taskViewModel.postToast(getString(R.string.theme_light))
                     }
                     R.id.radioDark -> {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                        Toast.makeText(this, getString(R.string.theme_dark), Toast.LENGTH_SHORT).show()
+                        taskViewModel.postToast(getString(R.string.theme_dark))
                     }
                     R.id.radioSystem -> {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                        Toast.makeText(this, getString(R.string.theme_system_default), Toast.LENGTH_SHORT).show()
+                        taskViewModel.postToast(getString(R.string.theme_system_default))
                     }
                 }
             }
@@ -503,61 +456,25 @@ class MainActivity : AppCompatActivity() {
     private fun setupNavigationDrawer() {
         val drawerLayout = binding.drawerLayout
         val navigationView = binding.navigationView
-
-        // Set up the hamburger menu button to open the drawer
-        binding.topAppBar.setNavigationOnClickListener {
-            drawerLayout.openDrawer(GravityCompat.START)
-        }
-
-        // Set default checked item
+        binding.topAppBar.setNavigationOnClickListener { drawerLayout.openDrawer(GravityCompat.START) }
         navigationView.setCheckedItem(R.id.nav_all_tasks)
-
-        // Handle navigation menu item clicks
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_all_tasks -> {
-                    currentTaskFilter = TaskViewModel.TaskFilter.PENDING
-                    binding.tabLayout.getTabAt(0)?.select()
-                    loadTasksFromDb()
-                    updateUI(getString(R.string.nav_all_tasks))
-                    navigationView.setCheckedItem(R.id.nav_all_tasks)
-                }
-                R.id.nav_saved_tasks -> {
-                    currentTaskFilter = TaskViewModel.TaskFilter.SAVED
-                    loadTasksFromDb()
-                    updateUI(getString(R.string.nav_saved_tasks))
-                    navigationView.setCheckedItem(R.id.nav_saved_tasks)
-                }
-                R.id.nav_archive -> {
-                    currentTaskFilter = TaskViewModel.TaskFilter.ARCHIVED
-                    loadTasksFromDb()
-                    updateUI(getString(R.string.nav_archive))
-                    navigationView.setCheckedItem(R.id.nav_archive)
-                }
+        navigationView.setNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_all_tasks -> { currentTaskFilter = TaskViewModel.TaskFilter.PENDING; binding.tabLayout.getTabAt(0)?.select(); loadTasks(); updateUI(getString(R.string.nav_all_tasks)); navigationView.setCheckedItem(R.id.nav_all_tasks) }
+                R.id.nav_saved_tasks -> { currentTaskFilter = TaskViewModel.TaskFilter.SAVED; loadTasks(); updateUI(getString(R.string.nav_saved_tasks)); navigationView.setCheckedItem(R.id.nav_saved_tasks) }
+                R.id.nav_archive -> { currentTaskFilter = TaskViewModel.TaskFilter.ARCHIVED; loadTasks(); updateUI(getString(R.string.nav_archive)); navigationView.setCheckedItem(R.id.nav_archive) }
             }
-            drawerLayout.closeDrawer(GravityCompat.START)
-            true
+            drawerLayout.closeDrawer(GravityCompat.START); true
         }
     }
 
     private fun updateUI(title: String) {
         binding.topAppBar.title = title
-        when (currentTaskFilter) {
-            TaskViewModel.TaskFilter.PENDING, TaskViewModel.TaskFilter.COMPLETED -> binding.tabLayout.visibility = View.VISIBLE
-            else -> binding.tabLayout.visibility = View.GONE
+        binding.tabLayout.visibility = when (currentTaskFilter) {
+            TaskViewModel.TaskFilter.PENDING, TaskViewModel.TaskFilter.COMPLETED -> View.VISIBLE
+            else -> View.GONE
         }
     }
 
-    private fun setupBackPressHandler() {
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                val drawerLayout = binding.drawerLayout
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                } else {
-                    finish()
-                }
-            }
-        })
-    }
+    private fun setupBackPressHandler() { onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) { override fun handleOnBackPressed() { val drawer = binding.drawerLayout; if (drawer.isDrawerOpen(GravityCompat.START)) drawer.closeDrawer(GravityCompat.START) else finish() } }) }
 }
