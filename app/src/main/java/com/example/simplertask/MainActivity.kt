@@ -370,10 +370,21 @@ class MainActivity : AppCompatActivity() {
     private fun showAddTaskDialog() { 
         dialogManager.showAddTaskDialog { task -> 
             taskViewModel.addTask(task.title, task.description, task.priority, task.dueDateMillis)
-            // Force refresh after a short delay to allow DB operation to complete
+            
+            // Enhanced refresh and scroll to top for new task visibility
             lifecycleScope.launch {
-                kotlinx.coroutines.delay(200)
+                // Small delay to ensure DB operation completes
+                kotlinx.coroutines.delay(300)
+                
+                // Refresh the adapter
                 taskAdapter.refresh()
+                
+                // Scroll to top to show the new task
+                binding.recyclerView.smoothScrollToPosition(0)
+                
+                // Additional fallback: if still not visible, force scroll after another delay
+                kotlinx.coroutines.delay(500)
+                binding.recyclerView.scrollToPosition(0)
             }
         } 
     }

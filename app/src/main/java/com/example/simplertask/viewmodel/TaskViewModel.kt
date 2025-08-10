@@ -175,12 +175,16 @@ class TaskViewModel(
             val task = Task(title = title, description = description, priority = priority, dueDateMillis = dueDateMillis)
             repository.insertTask(task)
             
-            // Force paging source refresh by incrementing trigger
+            // Immediate refresh trigger - increment multiple times for faster response
             val currentTrigger = pagingRefreshTrigger.value
             pagingRefreshTrigger.value = currentTrigger + 1
             
-            // Also trigger a reload of the current filter
+            // Also trigger a reload of the current filter immediately
             loadTasks(filterFlow.value)
+            
+            // Secondary refresh after a short delay for better reliability
+            kotlinx.coroutines.delay(100)
+            pagingRefreshTrigger.value = currentTrigger + 2
             
             postToast("Task added successfully!")
         }
