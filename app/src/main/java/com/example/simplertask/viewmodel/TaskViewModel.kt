@@ -362,6 +362,44 @@ class TaskViewModel(
         }
     }
     
+    /**
+     * Export all tasks for backup
+     */
+    suspend fun getAllTasksForBackup(): List<Task> {
+        return repository.getAllTasksAsList()
+    }
+    
+    /**
+     * Import tasks from backup with specified mode
+     */
+    fun importTasksFromBackup(tasks: List<Task>, replaceExisting: Boolean = false) {
+        launchWithError(
+            onError = { 
+                postSnackbar("Failed to import tasks: ${it.message}")
+            }
+        ) {
+            if (replaceExisting) {
+                repository.clearAllTasks()
+            }
+            
+            // Remove IDs to let the database assign new ones (avoiding conflicts)
+            val tasksWithoutIds = tasks.map { it.copy(id = 0) }
+            repository.insertTasks(tasksWithoutIds)
+            
+            // Trigger refresh
+            val currentTrigger = pagingRefreshTrigger.value
+            pagingRefreshTrigger.value = currentTrigger + 1
+            loadTasks(filterFlow.value)
+            
+            val message = if (replaceExisting) {
+                "Successfully imported ${tasks.size} tasks (replaced existing)"
+            } else {
+                "Successfully imported ${tasks.size} tasks (added to existing)"
+            }
+            postToast(message)
+        }
+    }
+    
     // runTask removed; replaced by launchWithError
 }
 

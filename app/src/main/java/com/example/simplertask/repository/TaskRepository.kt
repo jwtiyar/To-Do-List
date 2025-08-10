@@ -74,4 +74,19 @@ class TaskRepository(
     suspend fun unarchiveTask(task: Task) = withContext(Dispatchers.IO) { taskDao.updateTask(task.copy(isArchived = false)) }
     /** Fetch single task by id or null if missing. */
     suspend fun getTaskById(taskId: Long): Task? = withContext(Dispatchers.IO) { taskDao.getTaskById(taskId) }
+    
+    /** Get all tasks as a list for backup purposes */
+    suspend fun getAllTasksAsList(): List<Task> = withContext(Dispatchers.IO) {
+        taskDao.getAllTasks().first()
+    }
+    
+    /** Insert multiple tasks (for import/restore) */
+    suspend fun insertTasks(tasks: List<Task>) = withContext(Dispatchers.IO) {
+        taskDao.insertTasks(tasks)
+    }
+    
+    /** Clear all tasks (for import with replace) */
+    suspend fun clearAllTasks() = withContext(Dispatchers.IO) {
+        taskDao.clearAllTasks()
+    }
 }

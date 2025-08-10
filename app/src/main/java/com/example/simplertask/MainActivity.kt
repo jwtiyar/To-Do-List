@@ -16,6 +16,7 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -38,6 +39,7 @@ import com.example.simplertask.TaskAction
 import com.example.simplertask.utils.LocaleManager
 import com.example.simplertask.viewmodel.TaskViewModel
 import com.example.simplertask.ui.UiEvent
+import com.example.simplertask.backup.BackupManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.search.SearchView
@@ -56,8 +58,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var dialogManager: TaskDialogManager
     private lateinit var localeManager: LocaleManager
     private lateinit var taskViewModel: TaskViewModel
+    private lateinit var backupManager: BackupManager
 
     private var currentTaskFilter: TaskViewModel.TaskFilter = TaskViewModel.TaskFilter.PENDING
+
+    // Activity result launchers for file operations
+    private val exportBackupLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let { exportBackupToUri(it) }
+    }
+    
+    private val importBackupLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { importBackupFromUri(it) }
+    }
 
     companion object {
         private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
@@ -82,6 +98,7 @@ class MainActivity : AppCompatActivity() {
 
     notificationHelper = NotificationHelper(this)
     dialogManager = TaskDialogManager(this)
+    backupManager = BackupManager(this)
 
     // Manual DI wiring (could be moved to a dedicated provider later)
     val database = TaskDatabase.getDatabase(this)
@@ -419,6 +436,8 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_theme -> { showThemeSelectionDialog(); true }
         R.id.action_about -> { showAboutDialog(); true }
+        R.id.action_export_backup -> { startExportBackup(); true }
+        R.id.action_import_backup -> { startImportBackup(); true }
         MENU_ITEM_LANGUAGE -> { showLanguageSelectionDialog(); true }
         else -> super.onOptionsItemSelected(item)
     }
@@ -488,4 +507,93 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupBackPressHandler() { onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) { override fun handleOnBackPressed() { val drawer = binding.drawerLayout; if (drawer.isDrawerOpen(GravityCompat.START)) drawer.closeDrawer(GravityCompat.START) else finish() } }) }
+    
+    // Backup and Restore Methods
+    
+    private fun startExportBackup() {
+        val filename = backupManager.generateBackupFilename()
+        exportBackupLauncher.launch(filename)
+    }
+    
+    private fun startImportBackup() {
+        importBackupLauncher.launch(arrayOf("application/json", "text/plain"))
+    }
+    
+    private fun exportBackupToUri(uri: Uri) {
+        lifecycleScope.launch {
+            try {
+                val tasks = taskViewModel.getAllTasksForBackup()
+                val backupJson = backupManager.exportTasks(tasks)
+                backupManager.writeToUri(uri, backupJson)
+                
+                taskViewModel.postToast("Backup exported successfully (${tasks.size} tasks)")
+            } catch (e: Exception) {
+                taskViewModel.postSnackbar("Failed to export backup: ${e.message}")
+            }
+        }
+    }
+    
+    private fun importBackupFromUri(uri: Uri) {
+        lifecycleScope.launch {
+            try {
+                val backupContent = backupManager.readFromUri(uri)
+                val metadata = backupManager.getBackupMetadata(backupContent)
+                
+                if (metadata == null) {
+                    taskViewModel.postSnackbar("Invalid backup file format")
+                    return@launch
+                }
+                
+                showImportConfirmationDialog(backupContent, metadata)
+                
+            } catch (e: Exception) {
+                taskViewModel.postSnackbar("Failed to read backup file: ${e.message}")
+            }
+        }
+    }
+    
+    private fun showImportConfirmationDialog(backupContent: String, metadata: BackupManager.BackupMetadata) {
+        val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+        val createdAtString = if (metadata.createdAt > 0) {
+            dateFormat.format(java.util.Date(metadata.createdAt))
+        } else {
+            "Unknown"
+        }
+        
+        val message = """
+            Backup Information:
+            • Created: $createdAtString
+            • Tasks: ${metadata.taskCount}
+            • Version: ${metadata.version}
+        """.trimIndent()
+        
+        val items = arrayOf(
+            "Add to existing tasks (keep current tasks)", 
+            "Replace all tasks (delete current tasks)"
+        )
+        var selectedOption = 0
+        
+        AlertDialog.Builder(this)
+            .setTitle("Import Backup")
+            .setMessage(message)
+            .setSingleChoiceItems(items, 0) { _, which ->
+                selectedOption = which
+            }
+            .setPositiveButton("Import") { _, _ ->
+                performImport(backupContent, replaceExisting = selectedOption == 1)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun performImport(backupContent: String, replaceExisting: Boolean) {
+        lifecycleScope.launch {
+            try {
+                val tasks = backupManager.importTasks(backupContent)
+                taskViewModel.importTasksFromBackup(tasks, replaceExisting)
+            } catch (e: Exception) {
+                taskViewModel.postSnackbar("Failed to import tasks: ${e.message}")
+            }
+        }
+    }
 }
