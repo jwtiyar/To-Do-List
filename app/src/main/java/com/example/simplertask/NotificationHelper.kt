@@ -115,7 +115,7 @@ class NotificationHelper(private val context: Context) {
     }
     
     fun showNotification(taskId: Int, title: String, description: String) {
-        val intent = Intent(context, MainActivity::class.java)
+        val intent = Intent(context, Class.forName("com.example.simplertask.MainActivity"))
         val pendingIntent = PendingIntent.getActivity(
             context,
             0,

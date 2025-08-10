@@ -69,6 +69,7 @@
     <string name="nav_archive">Archive</string>
     
     <!-- Theme selection strings -->
+    <string name="theme_dialog_title">Choose App Theme</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_system_default">System Default</string>
