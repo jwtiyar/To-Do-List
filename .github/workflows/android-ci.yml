@@ -31,9 +31,16 @@ jobs:
       env:
         KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
-    - name: Build with Gradle
+    - name: Create keystore.properties
+      run: |
+        echo "storeFile=keystore/simplertask-release.jks" > keystore.properties
+        echo "storePassword=$KEYSTORE_PASSWORD" >> keystore.properties
+        echo "keyAlias=$KEY_ALIAS" >> keystore.properties
+        echo "keyPassword=$KEY_PASSWORD" >> keystore.properties
       env:
         KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+    - name: Build with Gradle
       run: ./gradlew build
