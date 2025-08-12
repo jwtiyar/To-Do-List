@@ -75,6 +75,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     lint {
     // Temporarily allow build to succeed while backfilling missing translations
