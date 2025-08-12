@@ -1,8 +1,8 @@
-package com.example.simplertask.viewmodel
+package io.github.jwtiyar.simplertask.viewmodel
 
-import com.example.simplertask.Priority
-import com.example.simplertask.Task
-import com.example.simplertask.repository.TaskRepository
+import io.github.jwtiyar.simplertask.Priority
+import io.github.jwtiyar.simplertask.Task
+import io.github.jwtiyar.simplertask.repository.TaskRepository
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.coVerify
@@ -155,11 +155,11 @@ class TaskViewModelTest {
     fun errorDuringRepositoryCall_emitsSnackbarEvent() = runTest(testDispatcher) {
         // Force exception on insert
         coEvery { repository.insertTask(any()) } throws IllegalStateException("boom")
-        val events = mutableListOf<com.example.simplertask.ui.UiEvent>()
+        val events = mutableListOf<io.github.jwtiyar.simplertask.ui.UiEvent>()
         val job = launch { viewModel.events.collect { events.add(it) } }
         viewModel.addTask("Err", "Desc")
         advanceUntilIdle()
-        assert(events.any { it is com.example.simplertask.ui.UiEvent.ShowSnackbar && (it as com.example.simplertask.ui.UiEvent.ShowSnackbar).message.contains("Failed to add task") })
+        assert(events.any { it is io.github.jwtiyar.simplertask.ui.UiEvent.ShowSnackbar && (it as io.github.jwtiyar.simplertask.ui.UiEvent.ShowSnackbar).message.contains("Failed to add task") })
         job.cancel()
     }
 }

@@ -102,8 +102,8 @@ class MainActivity : AppCompatActivity() {
 
     // Manual DI wiring (could be moved to a dedicated provider later)
     val database = TaskDatabase.getDatabase(this)
-    val repository = com.example.simplertask.repository.TaskRepository(database.taskDao())
-    val factory = com.example.simplertask.viewmodel.TaskViewModelFactory(repository)
+    val repository = io.github.jwtiyar.simplertask.repository.TaskRepository(database.taskDao())
+    val factory = io.github.jwtiyar.simplertask.viewmodel.TaskViewModelFactory(repository)
     taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
 
     observeViewModel()
