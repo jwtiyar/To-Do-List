@@ -116,4 +116,12 @@
     <string name="task_unarchived">Task unarchived</string>
     <string name="error_generic">An error occurred</string>
     <string name="retry">Retry</string>
+    
+    <!-- Backup and Import strings -->
+    <string name="export_backup">Export Backup</string>
+    <string name="import_backup">Import Backup</string>
+    <string name="backup_exported_successfully">Backup exported successfully</string>
+    <string name="backup_import_successful">Backup imported successfully</string>
+    <string name="backup_export_failed">Failed to export backup</string>
+    <string name="backup_import_failed">Failed to import backup</string>
 </resources>
