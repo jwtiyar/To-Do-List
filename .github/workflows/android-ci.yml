@@ -26,14 +26,14 @@ jobs:
       run: ./gradlew clean
     - name: Restore keystore from secret
       run: |
-        mkdir -p app/keystore
-        echo "$KEYSTORE_BASE64" | base64 -d > app/keystore/simplertask-release.jks
+        mkdir -p keystore
+        echo "$KEYSTORE_BASE64" | base64 -d > keystore/simplertask-release.jks
       env:
         KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
     - name: Create keystore.properties
       run: |
-        echo "storeFile=app/keystore/simplertask-release.jks" > keystore.properties
+        echo "storeFile=../keystore/simplertask-release.jks" > keystore.properties
         echo "storePassword=$KEYSTORE_PASSWORD" >> keystore.properties
         echo "keyAlias=$KEY_ALIAS" >> keystore.properties
         echo "keyPassword=$KEY_PASSWORD" >> keystore.properties
