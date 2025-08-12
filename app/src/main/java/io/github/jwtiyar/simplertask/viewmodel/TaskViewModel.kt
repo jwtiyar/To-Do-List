@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import androidx.paging.cachedIn
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 
 /**
  * ViewModel managing task UI state & operations.
@@ -22,8 +24,7 @@ import androidx.paging.cachedIn
  *
  * All write operations are launched in [viewModelScope]. Repository handles dispatcher switching.
  */
-@kotlinx.coroutines.ExperimentalCoroutinesApi
-@kotlinx.coroutines.FlowPreview
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class TaskViewModel(
     private val repository: TaskRepository
 ) : ViewModel() {

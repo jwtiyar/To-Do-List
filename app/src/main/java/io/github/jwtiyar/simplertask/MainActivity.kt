@@ -18,6 +18,8 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
@@ -49,6 +51,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import io.github.jwtiyar.simplertask.utils.requestPermissionCompat
 import io.github.jwtiyar.simplertask.utils.setupVertical
 
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     // Legacy list adapter kept for search results; main list now uses paging
