@@ -5,25 +5,67 @@ plugins {
 }
 
 android {
-    namespace = 'com.example.simplertask'
+    namespace = 'io.github.jwtiyar.simplertask'
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.simplertask"
+        applicationId = "io.github.jwtiyar.simplertask"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
+        
+        // App metadata
+        resValue "string", "app_name", "SimplerTask"
+        resValue "string", "app_version", versionName
+        
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Vector drawable support for older APIs
+        vectorDrawables.useSupportLibrary = true
+        
+        // Archive name configuration
+        setProperty("archivesBaseName", "SimplerTask-v$versionName")
+    }
+
+    // Signing configuration for release builds
+    signingConfigs {
+        release {
+            storeFile file('../keystore/simplertask-release.jks')
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyAlias System.getenv("KEY_ALIAS") ?: "simplertask"
+            keyPassword System.getenv("KEY_PASSWORD") ?: ""
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled = false
+            minifyEnabled = true
+            shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable = false
+            
+            // Optimize for release
+            crunchPngs = true
+            zipAlignEnabled = true
+            
+            // Enable signing for release builds
+            signingConfig signingConfigs.release
+            
+            buildConfigField "boolean", "DEBUG_MODE", "false"
+            resValue "string", "build_type", "release"
+        }
+        debug {
+            debuggable = true
+            minifyEnabled = false
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            
+            buildConfigField "boolean", "DEBUG_MODE", "true"
+            resValue "string", "build_type", "debug"
         }
     }
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

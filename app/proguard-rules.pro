@@ -1,21 +1,50 @@
 # Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Production-ready configuration for SimplerTask
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep Room database entities and DAOs
+-keep class io.github.jwtiyar.simplertask.data.** { *; }
+-keepclassmembers class io.github.jwtiyar.simplertask.data.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep Gson serialization classes for backup functionality
+-keep class com.google.gson.** { *; }
+-keepclassmembers class ** {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile 
+# Keep notification receivers
+-keep class io.github.jwtiyar.simplertask.NotificationReceiver { *; }
+
+# Keep application class
+-keep class io.github.jwtiyar.simplertask.TaskApp { *; }
+
+# Preserve line numbers for crash reports
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+
+# Keep ViewModel classes
+-keep class * extends androidx.lifecycle.ViewModel {
+    <init>(...);
+}
+
+# Keep Parcelable implementations
+-keep class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
+
+# Room specific rules
+-keep class * extends androidx.room.RoomDatabase
+-dontwarn androidx.room.paging.**
+
+# Paging 3 rules
+-keep class androidx.paging.** { *; }
+
+# Material Design Components
+-keep class com.google.android.material.** { *; }
+
+# Coroutines rules
+-keepclassmembers class kotlinx.coroutines.internal.MainDispatcherFactory {
+    void <init>();
+}
+-keepclassmembers class kotlinx.coroutines.CoroutineExceptionHandler {
+    void <init>();
+} 
