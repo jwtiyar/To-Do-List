@@ -24,5 +24,16 @@ jobs:
       run: chmod +x gradlew
     - name: Clean with Gradle
       run: ./gradlew clean
+    - name: Restore keystore from secret
+      run: |
+        mkdir -p keystore
+        echo "$KEYSTORE_BASE64" | base64 -d > keystore/simplertask-release.jks
+      env:
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+
     - name: Build with Gradle
+      env:
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: ./gradlew build
