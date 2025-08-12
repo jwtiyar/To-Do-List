@@ -19,3 +19,6 @@ captures/
 *.bak
 Thumbs.db
 .DS_Store
+# Keystore and signing config
+keystore/
+keystore.properties
