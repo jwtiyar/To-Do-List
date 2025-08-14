@@ -87,7 +87,7 @@
     <color name="highlight_surface">#1F79747E</color>
 
     <!-- Launcher Background -->
-    <color name="ic_launcher_background">#6750A4</color>
+    <!-- <color name="ic_launcher_background">#6750A4</color> -->
     
     <!-- Material 3 System Colors -->
     <color name="system_background">@color/background</color>
