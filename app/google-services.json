@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "744439644146",
+    "project_id": "todo-and-task-reminder",
+    "storage_bucket": "todo-and-task-reminder.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:744439644146:android:9c90e80102fc6a6ab4b56b",
+        "android_client_info": {
+          "package_name": "io.github.jwtiyar.simplertask"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqnPB0i12dLLl6q84htJYZ3sXpaWrjMfw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
