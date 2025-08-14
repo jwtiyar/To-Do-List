@@ -2,6 +2,7 @@ package io.github.jwtiyar.simplertask.dialogs
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Intent
 import io.github.jwtiyar.simplertask.R
 import io.github.jwtiyar.simplertask.utils.LocaleManager
 
@@ -44,7 +45,8 @@ class LanguageSelectionDialog(private val activity: Activity, private val onLang
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
                 if (selectedLanguage != currentLanguage) {
                     localeManager.setNewLocale(selectedLanguage)
-                    activity.recreate()
+                    // Restart the entire app to properly apply language changes
+                    restartApp()
                     onLanguageSelected()
                 }
                 dialog.dismiss()
@@ -53,5 +55,12 @@ class LanguageSelectionDialog(private val activity: Activity, private val onLang
                 dialog.dismiss()
             }
             .show()
+    }
+    
+    private fun restartApp() {
+        val intent = activity.packageManager.getLaunchIntentForPackage(activity.packageName)
+        intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+        activity.startActivity(intent)
+        activity.finish()
     }
 }
