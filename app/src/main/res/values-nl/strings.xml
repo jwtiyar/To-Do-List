@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="task_added_with_reminder">Taak toegevoegd met herinnering</string>
-    <string name="app_name">Eenvoudige Taak</string>
+    <string name="app_name">To-Do: Task List &amp; Reminder</string>
     <string name="add_task">Taak toevoegen</string>
     <string name="task_title">Taaktitel</string>
     <string name="task_description">Taakbeschrijving (Optioneel)</string>

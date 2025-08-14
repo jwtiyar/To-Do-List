@@ -47,7 +47,9 @@ class NotificationHelper(private val context: Context) {
     }
     
     fun scheduleNotification(task: Task) {
+        android.util.Log.d("NotificationHelper", "scheduleNotification called for task: ${task.title}")
         task.dueDateMillis?.let { scheduledMillis ->
+            android.util.Log.d("NotificationHelper", "Scheduling notification for ${java.util.Date(scheduledMillis)}")
             val intent = Intent(context, NotificationReceiver::class.java).apply {
                 putExtra("task_id", task.id)
                 putExtra("task_title", task.title)
@@ -65,12 +67,14 @@ class NotificationHelper(private val context: Context) {
                 // Check if we can schedule exact alarms
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     if (alarmManager.canScheduleExactAlarms()) {
+                        android.util.Log.d("NotificationHelper", "Using exact alarm")
                         alarmManager.setExactAndAllowWhileIdle(
                             AlarmManager.RTC_WAKEUP,
                             scheduledMillis,
                             pendingIntent
                         )
                     } else {
+                        android.util.Log.d("NotificationHelper", "Using inexact alarm - exact alarms not allowed")
                         // Fallback to inexact alarm
                         alarmManager.setAndAllowWhileIdle(
                             AlarmManager.RTC_WAKEUP,
@@ -79,6 +83,7 @@ class NotificationHelper(private val context: Context) {
                         )
                     }
                 } else {
+                    android.util.Log.d("NotificationHelper", "Using exact alarm for older Android")
                     // For older Android versions (but still >= O)
                     alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
@@ -88,7 +93,9 @@ class NotificationHelper(private val context: Context) {
                 }
                 
                 task.notificationId = task.id
-            } catch (_: SecurityException) { // Changed e to _
+                android.util.Log.d("NotificationHelper", "Alarm scheduled successfully for task ${task.id}")
+            } catch (e: SecurityException) {
+                android.util.Log.e("NotificationHelper", "Security exception scheduling alarm: ${e.message}")
                 // Handle the case where exact alarm permission is denied
                 try {
                     alarmManager.setAndAllowWhileIdle(
@@ -97,12 +104,14 @@ class NotificationHelper(private val context: Context) {
                         pendingIntent
                     )
                     task.notificationId = task.id
-                } catch (_: Exception) { // Changed e2 to _
+                    android.util.Log.d("NotificationHelper", "Fallback alarm scheduled")
+                } catch (e2: Exception) {
+                    android.util.Log.e("NotificationHelper", "All alarm scheduling failed: ${e2.message}")
                     // If all else fails, just show a notification immediately
                     showNotification(task.id, task.title, task.description)
                 }
             }
-        }
+        } ?: android.util.Log.w("NotificationHelper", "No dueDateMillis set for task: ${task.title}")
     }
     
     fun cancelNotification(task: Task) {
@@ -125,7 +134,8 @@ class NotificationHelper(private val context: Context) {
     }
     
     fun showNotification(taskId: Int, title: String, description: String) {
-        val intent = Intent(context, Class.forName("com.example.simplertask.MainActivity"))
+        android.util.Log.d("NotificationHelper", "Showing notification for task $taskId: $title")
+        val intent = Intent(context, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             context,
             0,
@@ -143,5 +153,6 @@ class NotificationHelper(private val context: Context) {
             .build()
         
         notificationManager.notify(taskId, notification)
+        android.util.Log.d("NotificationHelper", "Notification posted for task $taskId")
     }
 }

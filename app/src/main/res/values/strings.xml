@@ -2,7 +2,7 @@
     <string name="theme_status_dark">Dark theme selected</string>
     <string name="theme_status_light">Light theme selected</string>
     <!-- App name and general -->
-    <string name="app_name">Simpler Task</string>
+    <string name="app_name">To-Do: Task List &amp; Reminder</string>
     <string name="add_task">Add Task</string>
     
     <!-- Task related -->
@@ -28,7 +28,7 @@
     <string name="task_reminder_prefix">Reminder: %s</string>
     
     <!-- New strings for Material 3 UI -->
-    <string name="search_tasks">Search tasks…</string>
+    <string name="search_tasks">Search Tasks or To-Do…</string>
     <string name="tab_pending">PENDING</string>
     <string name="tab_completed">COMPLETED</string>
     <string name="empty_state_description">No tasks</string>
@@ -56,7 +56,7 @@
     <string name="dialog_theme_title">Choose App Theme</string>
     
     <!-- About dialog strings -->
-    <string name="about_title">About Simpler Task</string>
+    <string name="about_title">About To-Do: Task List &amp; Reminder</string>
     <string name="about_developer">Developed by: Jwtyar Nariman</string>
     <string name="about_email">Email: jwtiyar@gmail.com</string>
     <string name="about_github">GitHub: https://github.com/jwtiyar</string>

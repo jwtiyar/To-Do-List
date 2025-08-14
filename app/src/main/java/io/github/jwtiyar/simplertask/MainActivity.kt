@@ -374,6 +374,11 @@ class MainActivity : AppCompatActivity() {
         dialogManager.showAddTaskDialog { task -> 
             taskViewModel.addTask(task.title, task.description, task.priority, task.dueDateMillis)
             
+            // Schedule notification if reminder is set
+            if (task.dueDateMillis != null) {
+                notificationHelper.scheduleNotification(task)
+            }
+            
             // Enhanced refresh and scroll to top for new task visibility
             lifecycleScope.launch {
                 // Small delay to ensure DB operation completes

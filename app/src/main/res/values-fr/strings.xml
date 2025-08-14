@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Tâches Simples</string>
+    <string name="app_name">To-Do: Task List &amp; Reminder</string>
     <string name="add_task">Ajouter une tâche</string>
     <string name="task_title">Titre de la tâche</string>
     <string name="task_description">Description de la tâche (Optionnel)</string>

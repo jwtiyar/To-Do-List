@@ -14,5 +14,6 @@
     "terminal.integrated.env.linux": {
         "JAVA_HOME": "/usr/lib/jvm/java-17-openjdk"
     },
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "avdmanager.sdkManager": "/home/jwty/Android/sdk/cmdline-tools/latest/bin/apkanalyzer"
 }
