@@ -20,8 +20,8 @@ android {
         applicationId = "io.github.jwtiyar.simplertask"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1.1
-        versionName = "1.1"
+        versionCode = 4
+        versionName = "1.2"
         
         // App metadata
     resValue "string", "app_name", "To-Do: Task List & Reminder"
@@ -33,7 +33,7 @@ android {
         vectorDrawables.useSupportLibrary = true
         
         // Archive name configuration
-        setProperty("archivesBaseName", "SimplerTask-v$versionName")
+        setProperty("archivesBaseName", "TodoTaskReminder-v$versionName")
     }
 
     // Signing configuration for release builds
