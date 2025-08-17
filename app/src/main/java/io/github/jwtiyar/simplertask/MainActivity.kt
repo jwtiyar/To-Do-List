@@ -297,14 +297,44 @@ class MainActivity : AppCompatActivity() {
             isLongClickable = false
         }
 
-        // Swipe-to-refresh triggers refresh of paging source
-        binding.swipeRefresh.setOnRefreshListener { taskAdapter.refresh() }
+        // Configure SwipeRefreshLayout colors (use prominent brand colors for visibility)
+        binding.swipeRefresh.setColorSchemeResources(
+            R.color.primary,
+            R.color.secondary,
+            R.color.tertiary
+        )
+
+        // Track refresh start to enforce a minimum spinner visibility for perceived smoothness
+        var refreshStartTime = 0L
+        val MIN_SHOW_TIME_MS = 900L
+
+        // Swipe-to-refresh triggers refresh of paging source (record start time)
+        binding.swipeRefresh.setOnRefreshListener {
+            refreshStartTime = System.currentTimeMillis()
+            taskAdapter.refresh()
+        }
 
         // Observe load states to show/hide refresh indicator & surface errors
         lifecycleScope.launch {
             taskAdapter.loadStateFlow.collect { loadStates: CombinedLoadStates ->
-                val refreshing = loadStates.refresh is LoadState.Loading
-                binding.swipeRefresh.isRefreshing = refreshing
+                val isLoading = loadStates.refresh is LoadState.Loading
+                if (isLoading) {
+                    if (!binding.swipeRefresh.isRefreshing) {
+                        refreshStartTime = System.currentTimeMillis()
+                        binding.swipeRefresh.isRefreshing = true
+                    }
+                } else {
+                    if (binding.swipeRefresh.isRefreshing) {
+                        val elapsed = System.currentTimeMillis() - refreshStartTime
+                        val remaining = MIN_SHOW_TIME_MS - elapsed
+                        if (remaining > 0) {
+                            binding.swipeRefresh.postDelayed({ binding.swipeRefresh.isRefreshing = false }, remaining)
+                        } else {
+                            binding.swipeRefresh.isRefreshing = false
+                        }
+                    }
+                }
+
                 val errorState = loadStates.refresh as? LoadState.Error
                     ?: loadStates.append as? LoadState.Error
                     ?: loadStates.prepend as? LoadState.Error
