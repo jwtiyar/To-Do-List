@@ -50,6 +50,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.MutableSharedFlow
 import io.github.jwtiyar.simplertask.utils.requestPermissionCompat
 import io.github.jwtiyar.simplertask.utils.setupVertical
+import androidx.activity.enableEdgeToEdge
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import android.content.res.Configuration
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class MainActivity : AppCompatActivity() {
@@ -93,7 +99,10 @@ class MainActivity : AppCompatActivity() {
         // Apply locale BEFORE calling super.onCreate() to ensure it's applied correctly
         localeManager = LocaleManager(applicationContext)
         localeManager.setAppLocale()
-        super.onCreate(savedInstanceState)
+    super.onCreate(savedInstanceState)
+    // Enable modern edge-to-edge rendering
+    enableEdgeToEdge()
+    WindowCompat.setDecorFitsSystemWindows(window, false)
         
     binding = ActivityMainBinding.inflate(layoutInflater)
     setContentView(binding.root)
@@ -108,6 +117,45 @@ class MainActivity : AppCompatActivity() {
     val repository = io.github.jwtiyar.simplertask.repository.TaskRepository(database.taskDao())
     val factory = io.github.jwtiyar.simplertask.viewmodel.TaskViewModelFactory(repository)
     taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
+
+    // Apply window insets to top app bar and scrolling content so they don't overlap system bars
+    ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+        val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        val density = resources.displayMetrics.density
+    val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    // Slightly lower in landscape (closer to bottom) but not as drastic
+    val baseFabBottomMarginDp = if (isLandscape) 96 else 112
+        val baseFabBottomMarginPx = (baseFabBottomMarginDp * density).toInt()
+        val fabDefaultHeightPx = (56 * density).toInt()
+    val gapPx = (if (isLandscape) 16 else 24 * density).toInt() // modest gap in landscape
+
+        // Top inset padding applied to AppBar parent, keep toolbar padding zero
+        (binding.topAppBar.parent as? View)?.setPadding(0, systemBars.top, 0, 0)
+        binding.topAppBar.setPadding(0, 0, 0, 0)
+
+        val fabLp = (binding.fabAddTask.layoutParams as? android.view.ViewGroup.MarginLayoutParams)
+        val fabHeight = binding.fabAddTask.height.takeIf { it > 0 } ?: binding.fabAddTask.measuredHeight.takeIf { it > 0 } ?: fabDefaultHeightPx
+
+        // Set FAB bottom margin = system bars + base design margin so it sits higher above bottom buttons
+        fabLp?.let { lp ->
+            lp.bottomMargin = systemBars.bottom + baseFabBottomMarginPx
+            binding.fabAddTask.layoutParams = lp
+        }
+
+        val requiredContentBottom = systemBars.bottom + baseFabBottomMarginPx + fabHeight + gapPx
+        // Apply to scroll content child and recycler ensuring not to shrink existing padding
+        (binding.nestedScrollView.getChildAt(0))?.let { child ->
+            val current = child.paddingBottom
+            if (current < requiredContentBottom) child.updatePadding(bottom = requiredContentBottom)
+        }
+        val currentRvPad = binding.recyclerView.paddingBottom
+        if (currentRvPad < requiredContentBottom) binding.recyclerView.updatePadding(bottom = requiredContentBottom)
+
+        insets
+    }
+
+    // Re-apply after first layout pass to capture real FAB height
+    binding.fabAddTask.post { binding.root.requestApplyInsets() }
 
     observeViewModel()
     checkAndRequestPostNotificationPermission()
