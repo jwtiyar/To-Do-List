@@ -36,60 +36,10 @@
     <string name="sort_by_name">Nome</string>
 
     <!-- Priority strings -->
-    <string name="priority">Prioridade</string>
-    <string name="priority_low">Baixa</string>
-    <string name="priority_medium">Média</string>
-    <string name="priority_high">Alta</string>
-    <string name="reset_tasks">Redefinir Tarefas</string>
-
-    <!-- Language strings -->
-    <string name="language">Idioma</string>
-    <string name="select_language">Selecionar Idioma</string>
-    <string name="language_english">Inglês</string>
-    <string name="language_arabic">Árabe</string>
-    <string name="language_chinese_simplified">Chinês (Simplificado)</string>
-    <string name="language_chinese_traditional">Chinês (Tradicional)</string>
-    <string name="language_dutch">Holandês</string>
-    <string name="language_french">Francês</string>
-    <string name="language_german">Alemão</string>
-    <string name="language_hindi">Hindi</string>
-    <string name="language_italian">Italiano</string>
-    <string name="language_japanese">Japonês</string>
-    <string name="language_korean">Coreano</string>
-    <string name="language_kurdish">Curdo</string>
-    <string name="language_portuguese">Português</string>
-    <string name="language_russian">Russo</string>
-    <string name="language_spanish">Espanhol</string>
-    <string name="language_turkish">Turco</string>
-    <string name="language_ukrainian">Ucraniano</string>
-    <string name="language_changed">Idioma alterado. Reinicie o app para aplicar as mudanças.</string>
+        <string name="priority">Prioridade</string>
+        <string name="priority_low">Baixa</string>
+        <string name="priority_medium">Média</string>
+        <string name="priority_high">Alta</string>
+        <string name="reset_tasks">Redefinir Tarefas</string>
     
-    <!-- Dialog strings -->
-    <string name="dialog_add_task_title">Adicionar Nova Tarefa</string>
-    <string name="dialog_edit_task_title">Editar Tarefa</string>
-    <string name="dialog_about_title">Sobre</string>
-    <string name="dialog_theme_title">Escolher Tema do App</string>
-    <string name="theme_dialog_title">Escolher Tema do App</string>
-    <string name="theme_light">Claro</string>
-    <string name="theme_dark">Escuro</string>
-    <string name="theme_system_default">Padrão do sistema</string>
-    <!-- Theme status messages -->
-    <string name="theme_status_light">Tema claro selecionado</string>
-    <string name="theme_status_dark">Tema escuro selecionado</string>
-    <string name="theme_system">Tema do sistema selecionado</string>
-
-    <!-- About dialog strings -->
-    <string name="about_title">Sobre Tarefa Simples</string>
-    <string name="about_developer">Developed by: Jwtyar Nariman</string>
-    <string name="about_email">Email: jwtiyar@gmail.com</string>
-    <string name="about_github">GitHub: https://github.com/jwtiyar</string>
-
-    <string name="button_save">Save</string>
-    <string name="button_ok">OK</string>
-    <string name="button_grant">Grant</string>
-    <string name="button_open_settings">Open Settings</string>
-
-    <string name="nav_all_tasks">All Tasks</string>
-    <string name="nav_saved_tasks">Saved Tasks</string>
-    <string name="nav_archive">Archive</string>
 </resources>

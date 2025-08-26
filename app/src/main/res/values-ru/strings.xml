@@ -40,26 +40,6 @@
     <string name="priority_low">Low</string>
     <string name="priority_medium">Medium</string>
     <string name="priority_high">High</string>
-    <string name="language">Язык</string>
-    <string name="select_language">Выберите Язык</string>
-    <string name="language_english">Английский</string>
-    <string name="language_arabic">Арабский</string>
-    <string name="language_chinese_simplified">Китайский (Упрощённый)</string>
-    <string name="language_chinese_traditional">Китайский (Традиционный)</string>
-    <string name="language_dutch">Голландский</string>
-    <string name="language_french">Французский</string>
-    <string name="language_german">Немецкий</string>
-    <string name="language_hindi">Хинди</string>
-    <string name="language_italian">Итальянский</string>
-    <string name="language_japanese">Японский</string>
-    <string name="language_korean">Корейский</string>
-    <string name="language_kurdish">Курдский</string>
-    <string name="language_portuguese">Португальский</string>
-    <string name="language_russian">Русский</string>
-    <string name="language_spanish">Испанский</string>
-    <string name="language_turkish">Турецкий</string>
-    <string name="language_ukrainian">Украинский</string>
-    <string name="language_changed">Язык изменён</string>
     
     <!-- Dialog strings -->
     <string name="dialog_add_task_title">Добавить Новую Задачу</string>

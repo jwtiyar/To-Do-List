@@ -41,26 +41,6 @@
     <string name="priority_low">Low</string>
     <string name="priority_medium">Medium</string>
     <string name="priority_high">High</string>
-    <string name="language">언어</string>
-    <string name="select_language">언어 선택</string>
-    <string name="language_english">영어</string>
-    <string name="language_arabic">아랍어</string>
-    <string name="language_chinese_simplified">중국어 (간체)</string>
-    <string name="language_chinese_traditional">중국어 (번체)</string>
-    <string name="language_dutch">네덜란드어</string>
-    <string name="language_french">프랑스어</string>
-    <string name="language_german">독일어</string>
-    <string name="language_hindi">힌디어</string>
-    <string name="language_italian">이탈리아어</string>
-    <string name="language_japanese">일본어</string>
-    <string name="language_korean">한국어</string>
-    <string name="language_kurdish">쿠르드어</string>
-    <string name="language_portuguese">포르투갈어</string>
-    <string name="language_russian">러시아어</string>
-    <string name="language_spanish">스페인어</string>
-    <string name="language_turkish">터키어</string>
-    <string name="language_ukrainian">우크라이나어</string>
-    <string name="language_changed">언어가 변경되었습니다</string>
     
     <!-- Essential missing strings -->
     <string name="dialog_add_task_title">새 작업 추가</string>

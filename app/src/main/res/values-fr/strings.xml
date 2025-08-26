@@ -40,26 +40,6 @@
     <string name="priority_low">Basse</string>
     <string name="priority_medium">Moyenne</string>
     <string name="priority_high">Haute</string>
-    <string name="language">Langue</string>
-    <string name="select_language">Sélectionner une langue</string>
-    <string name="language_english">Anglais</string>
-    <string name="language_arabic">Arabe</string>
-    <string name="language_chinese_simplified">Chinois (Simplifié)</string>
-    <string name="language_chinese_traditional">Chinois (Traditionnel)</string>
-    <string name="language_dutch">Néerlandais</string>
-    <string name="language_french">Français</string>
-    <string name="language_german">Allemand</string>
-    <string name="language_hindi">Hindi</string>
-    <string name="language_italian">Italien</string>
-    <string name="language_japanese">Japonais</string>
-    <string name="language_korean">Coréen</string>
-    <string name="language_kurdish">Kurde</string>
-    <string name="language_portuguese">Portugais</string>
-    <string name="language_russian">Russe</string>
-    <string name="language_spanish">Espagnol</string>
-    <string name="language_turkish">Turc</string>
-    <string name="language_ukrainian">Ukrainien</string>
-    <string name="language_changed">Langue modifiée</string>
     
     <!-- Dialog strings -->
     <string name="dialog_add_task_title">Ajouter une nouvelle tâche</string>

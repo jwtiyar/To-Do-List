@@ -43,26 +43,6 @@
     <string name="reset_tasks">Görevleri Sıfırla</string>
 
     <!-- Language strings -->
-    <string name="language">Dil</string>
-    <string name="select_language">Dil Seç</string>
-    <string name="language_english">İngilizce</string>
-    <string name="language_arabic">Arapça</string>
-    <string name="language_chinese_simplified">Çince (Basitleştirilmiş)</string>
-    <string name="language_chinese_traditional">Çince (Geleneksel)</string>
-    <string name="language_dutch">Felemenkçe</string>
-    <string name="language_french">Fransızca</string>
-    <string name="language_german">Almanca</string>
-    <string name="language_hindi">Hintçe</string>
-    <string name="language_italian">İtalyanca</string>
-    <string name="language_japanese">Japonca</string>
-    <string name="language_korean">Korece</string>
-    <string name="language_kurdish">Kürtçe</string>
-    <string name="language_portuguese">Portekizce</string>
-    <string name="language_russian">Rusça</string>
-    <string name="language_spanish">İspanyolca</string>
-    <string name="language_turkish">Türkçe</string>
-    <string name="language_ukrainian">Ukraynaca</string>
-    <string name="language_changed">Dil değiştirildi. Değişiklikleri uygulamak için uygulamayı yeniden başlatın.</string>
     
     <!-- Dialog strings -->
     <string name="dialog_add_task_title">Yeni Görev Ekle</string>

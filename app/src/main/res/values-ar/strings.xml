@@ -41,26 +41,6 @@
     <string name="reset_tasks">إعادة تعيين المهام</string>
 
     <!-- Language strings -->
-    <string name="language">اللغة</string>
-    <string name="select_language">اختر اللغة</string>
-    <string name="language_english">الإنجليزية</string>
-    <string name="language_arabic">العربية</string>
-    <string name="language_chinese_simplified">الصينية (المبسطة)</string>
-    <string name="language_chinese_traditional">الصينية (التقليدية)</string>
-    <string name="language_dutch">الهولندية</string>
-    <string name="language_french">الفرنسية</string>
-    <string name="language_german">الألمانية</string>
-    <string name="language_hindi">الهندية</string>
-    <string name="language_italian">الإيطالية</string>
-    <string name="language_japanese">اليابانية</string>
-    <string name="language_korean">الكورية</string>
-    <string name="language_kurdish">الكردية</string>
-    <string name="language_portuguese">البرتغالية</string>
-    <string name="language_russian">الروسية</string>
-    <string name="language_spanish">الإسبانية</string>
-    <string name="language_turkish">التركية</string>
-    <string name="language_ukrainian">الأوكرانية</string>
-    <string name="language_changed">تم تغيير اللغة</string>
     
     <!-- Dialog strings -->
     <string name="dialog_add_task_title">إضافة مهمة جديدة</string>

@@ -40,26 +40,6 @@
     <string name="priority_low">Bassa</string>
     <string name="priority_medium">Media</string>
     <string name="priority_high">Alta</string>
-    <string name="language">Lingua</string>
-    <string name="select_language">Seleziona Lingua</string>
-    <string name="language_english">Inglese</string>
-    <string name="language_arabic">Arabo</string>
-    <string name="language_chinese_simplified">Cinese (Semplificato)</string>
-    <string name="language_chinese_traditional">Cinese (Tradizionale)</string>
-    <string name="language_dutch">Olandese</string>
-    <string name="language_french">Francese</string>
-    <string name="language_german">Tedesco</string>
-    <string name="language_hindi">Hindi</string>
-    <string name="language_italian">Italiano</string>
-    <string name="language_japanese">Giapponese</string>
-    <string name="language_korean">Coreano</string>
-    <string name="language_kurdish">Curdo</string>
-    <string name="language_portuguese">Portoghese</string>
-    <string name="language_russian">Russo</string>
-    <string name="language_spanish">Spagnolo</string>
-    <string name="language_turkish">Turco</string>
-    <string name="language_ukrainian">Ucraino</string>
-    <string name="language_changed">Lingua cambiata. Riavvia l\'app per applicare le modifiche.</string>
     
     <!-- Dialog strings -->
     <string name="dialog_add_task_title">Aggiungi Nuova Attività</string>

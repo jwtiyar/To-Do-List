@@ -36,7 +36,6 @@ import androidx.paging.CombinedLoadStates
 import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import io.github.jwtiyar.simplertask.databinding.ActivityMainBinding
-import io.github.jwtiyar.simplertask.dialogs.LanguageSelectionDialog
 import io.github.jwtiyar.simplertask.TaskAction
 import io.github.jwtiyar.simplertask.utils.LocaleManager
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
@@ -86,7 +85,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
-        private const val MENU_ITEM_LANGUAGE = 1002
+    // language menu removed
     }
 
     override fun attachBaseContext(newBase: Context) {
@@ -526,7 +525,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
-        menu.add(Menu.NONE, MENU_ITEM_LANGUAGE, Menu.NONE, R.string.language)
         return true
     }
 
@@ -535,11 +533,11 @@ class MainActivity : AppCompatActivity() {
         R.id.action_about -> { showAboutDialog(); true }
         R.id.action_export_backup -> { startExportBackup(); true }
         R.id.action_import_backup -> { startImportBackup(); true }
-        MENU_ITEM_LANGUAGE -> { showLanguageSelectionDialog(); true }
+        // Removed language selection option
         else -> super.onOptionsItemSelected(item)
     }
 
-    private fun showLanguageSelectionDialog() { LanguageSelectionDialog(this) { taskViewModel.postToast(getString(R.string.language_changed)) }.show() }
+    // Removed showLanguageSelectionDialog()
 
     private fun showAboutDialog() { val v = layoutInflater.inflate(R.layout.dialog_about, null); AlertDialog.Builder(this).setView(v).setTitle(getString(R.string.dialog_about_title)).setPositiveButton(getString(R.string.button_ok), null).show() }
 

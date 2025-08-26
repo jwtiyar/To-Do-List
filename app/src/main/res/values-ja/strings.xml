@@ -40,26 +40,6 @@
     <string name="priority_low">低</string>
     <string name="priority_medium">中</string>
     <string name="priority_high">高</string>
-    <string name="language">言語</string>
-    <string name="select_language">言語を選択</string>
-    <string name="language_english">英語</string>
-    <string name="language_arabic">アラビア語</string>
-    <string name="language_chinese_simplified">中国語（簡体字）</string>
-    <string name="language_chinese_traditional">中国語（繁体字）</string>
-    <string name="language_dutch">オランダ語</string>
-    <string name="language_french">フランス語</string>
-    <string name="language_german">ドイツ語</string>
-    <string name="language_hindi">ヒンディー語</string>
-    <string name="language_italian">イタリア語</string>
-    <string name="language_japanese">日本語</string>
-    <string name="language_korean">韓国語</string>
-    <string name="language_kurdish">クルド語</string>
-    <string name="language_portuguese">ポルトガル語</string>
-    <string name="language_russian">ロシア語</string>
-    <string name="language_spanish">スペイン語</string>
-    <string name="language_turkish">トルコ語</string>
-    <string name="language_ukrainian">ウクライナ語</string>
-    <string name="language_changed">言語が変更されました</string>
     
     <!-- Essential missing strings -->
     <string name="dialog_add_task_title">新しいタスクを追加</string>
