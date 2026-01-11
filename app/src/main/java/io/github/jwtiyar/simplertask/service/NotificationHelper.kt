@@ -1,4 +1,4 @@
-package io.github.jwtiyar.simplertask
+package io.github.jwtiyar.simplertask.service
 
 import android.app.AlarmManager
 import android.app.NotificationChannel
@@ -8,6 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build // Keep for VERSION_CODES.S
 import androidx.core.app.NotificationCompat
+import io.github.jwtiyar.simplertask.data.local.entity.Task
+import io.github.jwtiyar.simplertask.MainActivity
 
 class NotificationHelper(private val context: Context) {
     

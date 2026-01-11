@@ -1,4 +1,4 @@
-package io.github.jwtiyar.simplertask
+package io.github.jwtiyar.simplertask.service
 
 import android.content.BroadcastReceiver
 import android.content.Context

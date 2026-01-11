@@ -24,3 +24,7 @@ Thumbs.db
 # Keystore and signing config
 keystore.properties
 keystore.b64
+
+# Android SDK managed by Antigravity
+sdk/
+sdk_downloads/

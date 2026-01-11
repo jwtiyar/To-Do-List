@@ -3,9 +3,9 @@ package io.github.jwtiyar.simplertask.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import io.github.jwtiyar.simplertask.Task
-import io.github.jwtiyar.simplertask.Priority
-import io.github.jwtiyar.simplertask.repository.TaskRepository
+import io.github.jwtiyar.simplertask.data.local.entity.Task
+import io.github.jwtiyar.simplertask.data.local.entity.Priority
+import io.github.jwtiyar.simplertask.data.repository.TaskRepository
 import io.github.jwtiyar.simplertask.ui.UiEvent
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -408,12 +408,4 @@ class TaskViewModel(
     // runTask removed; replaced by launchWithError
 }
 
-class TaskViewModelFactory(private val repository: TaskRepository) : ViewModelProvider.Factory {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(TaskViewModel::class.java)) {
-            return TaskViewModel(repository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
+

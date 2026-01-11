@@ -1,4 +1,9 @@
-package io.github.jwtiyar.simplertask
+package io.github.jwtiyar.simplertask.ui.adapters
+
+import io.github.jwtiyar.simplertask.data.model.TaskAction
+import io.github.jwtiyar.simplertask.data.local.entity.Task
+import io.github.jwtiyar.simplertask.data.local.entity.Priority
+import io.github.jwtiyar.simplertask.R
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

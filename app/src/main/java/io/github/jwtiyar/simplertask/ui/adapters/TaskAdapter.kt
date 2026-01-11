@@ -1,4 +1,4 @@
-package io.github.jwtiyar.simplertask
+package io.github.jwtiyar.simplertask.ui.adapters
 
 import android.annotation.SuppressLint
 import android.graphics.Rect
@@ -8,7 +8,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import io.github.jwtiyar.simplertask.databinding.ItemTaskBinding
 import java.time.format.DateTimeFormatter
-import io.github.jwtiyar.simplertask.TaskAction
+import io.github.jwtiyar.simplertask.data.model.TaskAction
+import io.github.jwtiyar.simplertask.data.local.entity.Task
+import io.github.jwtiyar.simplertask.data.local.entity.Priority
+import io.github.jwtiyar.simplertask.R
 import java.util.Locale
 import java.time.Instant
 import java.time.LocalDateTime

@@ -1,9 +1,9 @@
-package io.github.jwtiyar.simplertask.backup
+package io.github.jwtiyar.simplertask.data.backup
 
 import android.content.Context
 import android.net.Uri
-import io.github.jwtiyar.simplertask.Task
-import io.github.jwtiyar.simplertask.Priority
+import io.github.jwtiyar.simplertask.data.local.entity.Task
+import io.github.jwtiyar.simplertask.data.local.entity.Priority
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray

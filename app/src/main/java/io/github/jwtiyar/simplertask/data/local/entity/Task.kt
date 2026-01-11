@@ -1,4 +1,4 @@
-package io.github.jwtiyar.simplertask
+package io.github.jwtiyar.simplertask.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.Index

@@ -36,11 +36,17 @@ import androidx.paging.CombinedLoadStates
 import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import io.github.jwtiyar.simplertask.databinding.ActivityMainBinding
-import io.github.jwtiyar.simplertask.TaskAction
+import io.github.jwtiyar.simplertask.data.model.TaskAction
 import io.github.jwtiyar.simplertask.utils.LocaleManager
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
 import io.github.jwtiyar.simplertask.ui.UiEvent
-import io.github.jwtiyar.simplertask.backup.BackupManager
+import io.github.jwtiyar.simplertask.data.backup.BackupManager
+import io.github.jwtiyar.simplertask.ui.adapters.TaskAdapter
+import io.github.jwtiyar.simplertask.ui.adapters.TaskPagingAdapter
+import io.github.jwtiyar.simplertask.service.NotificationHelper
+import io.github.jwtiyar.simplertask.ui.dialogs.TaskDialogManager
+import io.github.jwtiyar.simplertask.data.local.TaskDatabase
+import io.github.jwtiyar.simplertask.data.local.entity.Task
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.search.SearchView
@@ -113,7 +119,7 @@ class MainActivity : AppCompatActivity() {
 
     // Manual DI wiring (could be moved to a dedicated provider later)
     val database = TaskDatabase.getDatabase(this)
-    val repository = io.github.jwtiyar.simplertask.repository.TaskRepository(database.taskDao())
+    val repository = io.github.jwtiyar.simplertask.data.repository.TaskRepository(database.taskDao())
     val factory = io.github.jwtiyar.simplertask.viewmodel.TaskViewModelFactory(repository)
     taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
 

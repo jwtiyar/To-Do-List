@@ -1,4 +1,4 @@
-package io.github.jwtiyar.simplertask
+package io.github.jwtiyar.simplertask.ui.dialogs
 
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
@@ -8,9 +8,9 @@ import android.widget.RadioGroup
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.button.MaterialButton
 import android.view.View
-import io.github.jwtiyar.simplertask.Task
+import io.github.jwtiyar.simplertask.data.local.entity.Task
 import io.github.jwtiyar.simplertask.R
-import io.github.jwtiyar.simplertask.Priority
+import io.github.jwtiyar.simplertask.data.local.entity.Priority
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat

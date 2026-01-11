@@ -1,7 +1,8 @@
-package io.github.jwtiyar.simplertask
+package io.github.jwtiyar.simplertask.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import io.github.jwtiyar.simplertask.data.repository.TaskRepository
 
 class TaskViewModelFactory(private val repository: TaskRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

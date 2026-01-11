@@ -1,7 +1,7 @@
-package io.github.jwtiyar.simplertask.repository
+package io.github.jwtiyar.simplertask.data.repository
 
-import io.github.jwtiyar.simplertask.Task
-import io.github.jwtiyar.simplertask.TaskDao
+import io.github.jwtiyar.simplertask.data.local.entity.Task
+import io.github.jwtiyar.simplertask.data.local.dao.TaskDao
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData

@@ -1,8 +1,9 @@
-package io.github.jwtiyar.simplertask
+package io.github.jwtiyar.simplertask.data.local.dao
 
 import androidx.room.*
 import androidx.paging.PagingSource
 import kotlinx.coroutines.flow.Flow
+import io.github.jwtiyar.simplertask.data.local.entity.Task
 
 @Dao
 interface TaskDao {
