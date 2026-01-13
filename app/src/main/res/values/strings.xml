@@ -118,10 +118,18 @@
     <string name="retry">Retry</string>
     
     <!-- Backup and Import strings -->
+    <!-- Backup and Import strings -->
     <string name="export_backup">Export Backup</string>
     <string name="import_backup">Import Backup</string>
-    <string name="backup_exported_successfully">Backup exported successfully</string>
-    <string name="backup_import_successful">Backup imported successfully</string>
-    <string name="backup_export_failed">Failed to export backup</string>
-    <string name="backup_import_failed">Failed to import backup</string>
+    <string name="backup_exported">Backup exported successfully (%d tasks)</string>
+    <string name="error_export_backup">Failed to export backup: %s</string>
+    <string name="error_invalid_backup">Invalid backup file format</string>
+    <string name="error_read_backup">Failed to read backup file: %s</string>
+    <string name="unknown">Unknown</string>
+    <string name="backup_info_format">Backup Information:\n• Created: %1$s\n• Tasks: %2$d\n• Version: %3$s</string>
+    <string name="import_mode_add">Add to existing tasks (keep current tasks)</string>
+    <string name="import_mode_replace">Replace all tasks (delete current tasks)</string>
+    <string name="dialog_import_title">Import Backup</string>
+    <string name="button_import">Import</string>
+    <string name="error_import_tasks">Failed to import tasks: %s</string>
 </resources>

@@ -55,6 +55,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import io.github.jwtiyar.simplertask.utils.PermissionManager
+import io.github.jwtiyar.simplertask.ui.MainActivityBackupDelegate
 import android.content.res.Configuration
 
 @AndroidEntryPoint
@@ -67,6 +69,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var localeManager: LocaleManager
     private val taskViewModel: TaskViewModel by viewModels()
     private lateinit var backupManager: BackupManager
+    private lateinit var permissionManager: PermissionManager
+    private lateinit var backupDelegate: MainActivityBackupDelegate
 
     private var currentTaskFilter: TaskViewModel.TaskFilter = TaskViewModel.TaskFilter.PENDING
 
@@ -74,13 +78,13 @@ class MainActivity : AppCompatActivity() {
     private val exportBackupLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
-        uri?.let { exportBackupToUri(it) }
+        uri?.let { backupDelegate.exportBackupToUri(it) }
     }
     
     private val importBackupLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
-        uri?.let { importBackupFromUri(it) }
+        uri?.let { backupDelegate.importBackupFromUri(it) }
     }
 
     companion object {
@@ -107,6 +111,8 @@ class MainActivity : AppCompatActivity() {
         notificationHelper = NotificationHelper(this)
         dialogManager = TaskDialogManager(this)
         backupManager = BackupManager(this)
+        permissionManager = PermissionManager(this)
+        backupDelegate = MainActivityBackupDelegate(this, taskViewModel, backupManager)
 
         // Apply window insets
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
@@ -130,8 +136,8 @@ class MainActivity : AppCompatActivity() {
         binding.fabAddTask.post { binding.root.requestApplyInsets() }
 
         observeViewModel()
-        checkAndRequestPostNotificationPermission()
-        checkAndRequestExactAlarmPermission()
+        permissionManager.checkAndRequestPostNotificationPermission(REQUEST_CODE_POST_NOTIFICATIONS)
+        permissionManager.checkAndRequestExactAlarmPermission(binding.root)
         setupViewPager()
         setupButtons()
         setupSearchBar()
@@ -310,42 +316,13 @@ class MainActivity : AppCompatActivity() {
         } 
     }
 
-    private fun checkAndRequestPostNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissionCompat(
-                Manifest.permission.POST_NOTIFICATIONS,
-                getString(R.string.notification_permission_needed),
-                REQUEST_CODE_POST_NOTIFICATIONS
-            )
-        }
+    private fun startExportBackup() {
+        val filename = backupManager.generateBackupFilename()
+        exportBackupLauncher.launch(filename)
     }
 
-    private fun checkAndRequestExactAlarmPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            if (!alarmManager.canScheduleExactAlarms()) {
-                AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.exact_alarm_permission_title))
-                    .setMessage(getString(R.string.exact_alarm_permission_message))
-                    .setPositiveButton(getString(R.string.button_open_settings)) { _, _ ->
-                        Intent().apply {
-                            action = Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
-                            data = Uri.fromParts("package", packageName, null)
-                        }.also {
-                            try {
-                                startActivity(it)
-                            } catch (_: Exception) {
-                                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
-                            }
-                        }
-                    }
-                    .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                        dialog.dismiss()
-                        Snackbar.make(binding.root, getString(R.string.exact_alarm_not_granted), Snackbar.LENGTH_LONG).show()
-                    }
-                    .show()
-            }
-        }
+    private fun startImportBackup() {
+        importBackupLauncher.launch(arrayOf("application/json", "text/plain"))
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -458,94 +435,5 @@ class MainActivity : AppCompatActivity() {
                 if (drawer.isDrawerOpen(GravityCompat.START)) drawer.closeDrawer(GravityCompat.START) else finish() 
             } 
         }) 
-    }
-    
-    // Backup and Restore Methods
-    
-    private fun startExportBackup() {
-        val filename = backupManager.generateBackupFilename()
-        exportBackupLauncher.launch(filename)
-    }
-    
-    private fun startImportBackup() {
-        importBackupLauncher.launch(arrayOf("application/json", "text/plain"))
-    }
-    
-    private fun exportBackupToUri(uri: Uri) {
-        lifecycleScope.launch {
-            try {
-                val tasks = taskViewModel.getAllTasksForBackup()
-                val backupJson = backupManager.exportTasks(tasks)
-                backupManager.writeToUri(uri, backupJson)
-                
-                taskViewModel.postToast("Backup exported successfully (${tasks.size} tasks)")
-            } catch (e: Exception) {
-                taskViewModel.postSnackbar("Failed to export backup: ${e.message}")
-            }
-        }
-    }
-    
-    private fun importBackupFromUri(uri: Uri) {
-        lifecycleScope.launch {
-            try {
-                val backupContent = backupManager.readFromUri(uri)
-                val metadata = backupManager.getBackupMetadata(backupContent)
-                
-                if (metadata == null) {
-                    taskViewModel.postSnackbar("Invalid backup file format")
-                    return@launch
-                }
-                
-                showImportConfirmationDialog(backupContent, metadata)
-                
-            } catch (e: Exception) {
-                taskViewModel.postSnackbar("Failed to read backup file: ${e.message}")
-            }
-        }
-    }
-    
-    private fun showImportConfirmationDialog(backupContent: String, metadata: BackupManager.BackupMetadata) {
-        val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
-        val createdAtString = if (metadata.createdAt > 0) {
-            dateFormat.format(java.util.Date(metadata.createdAt))
-        } else {
-            "Unknown"
-        }
-        
-        val message = """
-            Backup Information:
-            • Created: $createdAtString
-            • Tasks: ${metadata.taskCount}
-            • Version: ${metadata.version}
-        """.trimIndent()
-        
-        val items = arrayOf(
-            "Add to existing tasks (keep current tasks)", 
-            "Replace all tasks (delete current tasks)"
-        )
-        var selectedOption = 0
-        
-        AlertDialog.Builder(this)
-            .setTitle("Import Backup")
-            .setMessage(message)
-            .setSingleChoiceItems(items, 0) { _, which ->
-                selectedOption = which
-            }
-            .setPositiveButton("Import") { _, _ ->
-                performImport(backupContent, replaceExisting = selectedOption == 1)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-    
-    private fun performImport(backupContent: String, replaceExisting: Boolean) {
-        lifecycleScope.launch {
-            try {
-                val tasks = backupManager.importTasks(backupContent)
-                taskViewModel.importTasksFromBackup(tasks, replaceExisting)
-            } catch (e: Exception) {
-                taskViewModel.postSnackbar("Failed to import tasks: ${e.message}")
-            }
-        }
     }
 }
