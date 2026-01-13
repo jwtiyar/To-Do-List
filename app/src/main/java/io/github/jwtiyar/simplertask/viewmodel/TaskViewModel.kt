@@ -208,6 +208,8 @@ class TaskViewModel @Inject constructor(
     fun updateTask(task: Task) {
         launchWithError({ postSnackbar("Failed to update task: ${'$'}{it.message}") }) {
             repository.updateTask(task)
+            kotlinx.coroutines.delay(200) // Ensure DB commit before refresh
+            _events.emit(UiEvent.RefreshList)
         }
     }
     
@@ -226,6 +228,7 @@ class TaskViewModel @Inject constructor(
     fun toggleTaskCompletion(task: Task) {
         launchWithError({ postSnackbar("Failed to toggle task: ${'$'}{it.message}") }) {
             repository.toggleTaskCompletion(task)
+            _events.emit(UiEvent.RefreshList)
         }
     }
     
@@ -244,6 +247,7 @@ class TaskViewModel @Inject constructor(
     fun toggleTaskSaved(task: Task) {
         launchWithError({ postSnackbar("Failed to save/unsave task: ${'$'}{it.message}") }) {
             repository.toggleTaskSaved(task)
+            _events.emit(UiEvent.RefreshList)
         }
     }
     
@@ -262,6 +266,7 @@ class TaskViewModel @Inject constructor(
     fun toggleTaskArchived(task: Task) {
         launchWithError({ postSnackbar("Failed to archive/unarchive task: ${'$'}{it.message}") }) {
             if (task.isArchived) repository.unarchiveTask(task) else repository.archiveTask(task)
+            _events.emit(UiEvent.RefreshList)
         }
     }
     
@@ -280,6 +285,7 @@ class TaskViewModel @Inject constructor(
     fun deleteTask(task: Task) {
         launchWithError({ postSnackbar("Failed to delete task: ${'$'}{it.message}") }) {
             repository.deleteTask(task)
+            _events.emit(UiEvent.RefreshList)
         }
     }
     
@@ -296,6 +302,7 @@ class TaskViewModel @Inject constructor(
     fun clearCompletedTasks() {
         launchWithError({ postSnackbar("Failed to clear completed tasks: ${'$'}{it.message}") }) {
             repository.deleteCompletedTasks()
+            _events.emit(UiEvent.RefreshList)
         }
     }
     
@@ -312,6 +319,7 @@ class TaskViewModel @Inject constructor(
     fun resetAllTasks() {
         launchWithError({ postSnackbar("Failed to reset tasks: ${'$'}{it.message}") }) {
             repository.resetAllTasksToPending()
+            _events.emit(UiEvent.RefreshList)
         }
     }
     

@@ -22,6 +22,7 @@ import io.github.jwtiyar.simplertask.ui.adapters.TaskPagingAdapter
 import io.github.jwtiyar.simplertask.ui.dialogs.TaskDialogManager
 import io.github.jwtiyar.simplertask.utils.setupVertical
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
+import io.github.jwtiyar.simplertask.ui.UiEvent
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -83,9 +84,8 @@ class TaskListFragment : Fragment() {
     private fun setupRecyclerView() {
         taskAdapter = TaskPagingAdapter(
             onTaskClick = { task ->
-                val updatedTask = task.copy(isCompleted = !task.isCompleted)
-                taskViewModel.updateTask(updatedTask)
-                val message = if (updatedTask.isCompleted) {
+                taskViewModel.updateTask(task)
+                val message = if (task.isCompleted) {
                     notificationHelper.cancelNotification(task)
                     getString(R.string.task_completed, task.title)
                 } else {
@@ -167,8 +167,22 @@ class TaskListFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                taskViewModel.pagedTasks.collectLatest { pagingData ->
-                    taskAdapter.submitData(pagingData)
+                launch {
+                    taskViewModel.pagedTasks.collectLatest { pagingData ->
+                        taskAdapter.submitData(pagingData)
+                    }
+                }
+                
+                launch {
+                    taskViewModel.events.collect { event ->
+                        when (event) {
+                            is UiEvent.RefreshList -> {
+                                // taskViewModel.postToast("Refreshed") // Debug only if needed
+                                taskAdapter.refresh()
+                            }
+                            else -> {} // Handled in Activity
+                        }
+                    }
                 }
             }
         }

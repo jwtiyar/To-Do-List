@@ -4,4 +4,5 @@ package io.github.jwtiyar.simplertask.ui
 sealed interface UiEvent {
     data class ShowToast(val message: String): UiEvent
     data class ShowSnackbar(val message: String, val actionLabel: String? = null): UiEvent
+    object RefreshList : UiEvent
 }

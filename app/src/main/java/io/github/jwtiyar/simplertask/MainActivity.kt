@@ -208,6 +208,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                                 sb.show()
                             }
+                            is UiEvent.RefreshList -> {} // Handled by Fragment
                         }
                     }
                 }
@@ -224,9 +225,8 @@ class MainActivity : AppCompatActivity() {
         searchAdapter = TaskAdapter(
             emptyList(),
             onTaskClick = { task ->
-                val updatedTask = task.copy(isCompleted = !task.isCompleted)
-                taskViewModel.updateTask(updatedTask)
-                val message = if (updatedTask.isCompleted) {
+                taskViewModel.updateTask(task)
+                val message = if (task.isCompleted) {
                     notificationHelper.cancelNotification(task)
                     getString(R.string.task_completed, task.title)
                 } else {
