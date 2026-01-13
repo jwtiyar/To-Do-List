@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /**
  * Repository acting as the single source of truth for Tasks.
@@ -18,7 +19,7 @@ import kotlinx.coroutines.withContext
  * - Perform write operations (insert / update / delete / toggle) on Dispatchers.IO.
  * - Encapsulate incidental business logic (toggling flags, archival rules).
  */
-class TaskRepository(
+class TaskRepository @Inject constructor(
     private val taskDao: TaskDao
 ) {
     /** All tasks including archived ones. Emits on any table change. */

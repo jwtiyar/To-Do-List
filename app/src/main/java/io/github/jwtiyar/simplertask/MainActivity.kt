@@ -17,6 +17,7 @@ import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -26,7 +27,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,6 +35,7 @@ import androidx.paging.LoadStateAdapter
 import androidx.paging.CombinedLoadStates
 import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
+import dagger.hilt.android.AndroidEntryPoint
 import io.github.jwtiyar.simplertask.databinding.ActivityMainBinding
 import io.github.jwtiyar.simplertask.data.model.TaskAction
 import io.github.jwtiyar.simplertask.utils.LocaleManager
@@ -45,7 +46,6 @@ import io.github.jwtiyar.simplertask.ui.adapters.TaskAdapter
 import io.github.jwtiyar.simplertask.ui.adapters.TaskPagingAdapter
 import io.github.jwtiyar.simplertask.service.NotificationHelper
 import io.github.jwtiyar.simplertask.ui.dialogs.TaskDialogManager
-import io.github.jwtiyar.simplertask.data.local.TaskDatabase
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
@@ -62,6 +62,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import android.content.res.Configuration
 
+@AndroidEntryPoint
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -71,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var dialogManager: TaskDialogManager
     private lateinit var localeManager: LocaleManager
-    private lateinit var taskViewModel: TaskViewModel
+    private val taskViewModel: TaskViewModel by viewModels()
     private lateinit var backupManager: BackupManager
 
     private var currentTaskFilter: TaskViewModel.TaskFilter = TaskViewModel.TaskFilter.PENDING
@@ -116,12 +117,6 @@ class MainActivity : AppCompatActivity() {
     notificationHelper = NotificationHelper(this)
     dialogManager = TaskDialogManager(this)
     backupManager = BackupManager(this)
-
-    // Manual DI wiring (could be moved to a dedicated provider later)
-    val database = TaskDatabase.getDatabase(this)
-    val repository = io.github.jwtiyar.simplertask.data.repository.TaskRepository(database.taskDao())
-    val factory = io.github.jwtiyar.simplertask.viewmodel.TaskViewModelFactory(repository)
-    taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
 
     // Apply window insets to top app bar and scrolling content so they don't overlap system bars
     ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->

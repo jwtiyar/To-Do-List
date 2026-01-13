@@ -1,8 +1,8 @@
 package io.github.jwtiyar.simplertask.viewmodel
 
-import io.github.jwtiyar.simplertask.Priority
-import io.github.jwtiyar.simplertask.Task
-import io.github.jwtiyar.simplertask.repository.TaskRepository
+import io.github.jwtiyar.simplertask.data.local.entity.Priority
+import io.github.jwtiyar.simplertask.data.local.entity.Task
+import io.github.jwtiyar.simplertask.data.repository.TaskRepository
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.coVerify

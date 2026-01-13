@@ -1,7 +1,7 @@
 package io.github.jwtiyar.simplertask
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import io.github.jwtiyar.simplertask.repository.TaskRepository
+import io.github.jwtiyar.simplertask.data.repository.TaskRepository
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf

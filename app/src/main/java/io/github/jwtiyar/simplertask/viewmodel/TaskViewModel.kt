@@ -1,8 +1,8 @@
 package io.github.jwtiyar.simplertask.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import io.github.jwtiyar.simplertask.data.local.entity.Priority
 import io.github.jwtiyar.simplertask.data.repository.TaskRepository
@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import androidx.paging.cachedIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import javax.inject.Inject
 
 /**
  * ViewModel managing task UI state & operations.
@@ -24,8 +25,9 @@ import kotlinx.coroutines.FlowPreview
  *
  * All write operations are launched in [viewModelScope]. Repository handles dispatcher switching.
  */
+@HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-class TaskViewModel(
+class TaskViewModel @Inject constructor(
     private val repository: TaskRepository
 ) : ViewModel() {
     
