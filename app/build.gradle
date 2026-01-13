@@ -5,6 +5,15 @@ plugins {
     id 'com.google.dagger.hilt.android'
 }
 
+// Apply google-services plugin only for googlePlay flavors if JSON is present
+def isGooglePlayRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('googleplay') }
+def googleServicesJson = file("google-services.json")
+if (isGooglePlayRequested && googleServicesJson.exists()) {
+    apply plugin: 'com.google.gms.google-services'
+} else if (isGooglePlayRequested) {
+    println "⚠️ Skipping Google Services plugin: google-services.json not found"
+}
+
 // Load signing config from keystore.properties (not tracked by git)
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
@@ -20,8 +29,8 @@ android {
         applicationId = "io.github.jwtiyar.simplertask"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 7
+        versionName = "1.5"
         
         // App metadata
         resValue "string", "app_name", "To-Do: Task List & Reminder"
@@ -34,6 +43,19 @@ android {
         
         // Archive name configuration
         setProperty("archivesBaseName", "TodoTaskReminder-v$versionName")
+    }
+
+    flavorDimensions "distribution"
+    productFlavors {
+        googlePlay {
+            dimension "distribution"
+            // Standard version
+        }
+        fdroid {
+            dimension "distribution"
+            // No Google Services
+            applicationIdSuffix ".fdroid"
+        }
     }
 
     // Signing configuration for release builds
@@ -163,5 +185,9 @@ dependencies {
     // Hilt Dependency Injection
     implementation 'com.google.dagger:hilt-android:2.51.1'
     ksp 'com.google.dagger:hilt-compiler:2.51.1'
+
+    // Firebase (googlePlay flavor only)
+    googlePlayImplementation(platform("com.google.firebase:firebase-bom:34.1.0"))
+    googlePlayImplementation("com.google.firebase:firebase-analytics")
 }
 
