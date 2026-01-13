@@ -20,8 +20,8 @@ android {
         applicationId = "io.github.jwtiyar.simplertask"
         minSdk = 26
         targetSdk = 36
-        versionCode = 7
-        versionName = "1.5"
+        versionCode = 1
+        versionName = "1.0"
         
         // App metadata
         resValue "string", "app_name", "To-Do: Task List & Reminder"
