@@ -6,9 +6,9 @@ plugins {
     // Google services plugin applied conditionally below for release only
 }
 
-// Apply google-services plugin only when building a release variant to avoid missing client error for debug suffix package
-def isReleaseBuildRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
-if (isReleaseBuildRequested) {
+// Apply google-services plugin only for googlePlay flavors
+def isGooglePlayRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('googleplay') }
+if (isGooglePlayRequested) {
     apply plugin: 'com.google.gms.google-services'
 }
 
@@ -41,6 +41,19 @@ android {
         
         // Archive name configuration
         setProperty("archivesBaseName", "TodoTaskReminder-v$versionName")
+    }
+
+    flavorDimensions "distribution"
+    productFlavors {
+        googlePlay {
+            dimension "distribution"
+            // Standard version
+        }
+        fdroid {
+            dimension "distribution"
+            // No Google Services
+            applicationIdSuffix ".fdroid"
+        }
     }
 
     // Signing configuration for release builds
@@ -172,8 +185,8 @@ dependencies {
     implementation 'com.google.dagger:hilt-android:2.51.1'
     ksp 'com.google.dagger:hilt-compiler:2.51.1'
 
-    // Firebase BOM
-    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-    implementation("com.google.firebase:firebase-analytics")
+    // Firebase (googlePlay flavor only)
+    googlePlayImplementation(platform("com.google.firebase:firebase-bom:34.1.0"))
+    googlePlayImplementation("com.google.firebase:firebase-analytics")
 }
 
