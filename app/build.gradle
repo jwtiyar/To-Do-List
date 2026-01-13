@@ -3,13 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp' version '2.0.0-1.0.21'
     id 'com.google.dagger.hilt.android'
-    // Google services plugin applied conditionally below for release only
-}
-
-// Apply google-services plugin only for googlePlay flavors
-def isGooglePlayRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('googleplay') }
-if (isGooglePlayRequested) {
-    apply plugin: 'com.google.gms.google-services'
 }
 
 // Load signing config from keystore.properties (not tracked by git)
@@ -31,7 +24,7 @@ android {
         versionName = "1.5"
         
         // App metadata
-    resValue "string", "app_name", "To-Do: Task List & Reminder"
+        resValue "string", "app_name", "To-Do: Task List & Reminder"
         resValue "string", "app_version", versionName
         
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -41,19 +34,6 @@ android {
         
         // Archive name configuration
         setProperty("archivesBaseName", "TodoTaskReminder-v$versionName")
-    }
-
-    flavorDimensions "distribution"
-    productFlavors {
-        googlePlay {
-            dimension "distribution"
-            // Standard version
-        }
-        fdroid {
-            dimension "distribution"
-            // No Google Services
-            applicationIdSuffix ".fdroid"
-        }
     }
 
     // Signing configuration for release builds
@@ -109,9 +89,9 @@ android {
         buildConfig = true
     }
     lint {
-    // Temporarily allow build to succeed while backfilling missing translations
-    disable 'MissingTranslation'
-    abortOnError = false
+        // Temporarily allow build to succeed while backfilling missing translations
+        disable 'MissingTranslation'
+        abortOnError = false
     }
 }
 
@@ -135,6 +115,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.5.2'
     androidTestImplementation 'androidx.test:rules:1.5.0'
     androidTestImplementation 'androidx.room:room-testing:2.6.1'
+    
     // Core Android KTX
     implementation 'androidx.core:core-ktx:1.16.0'
     implementation 'androidx.appcompat:appcompat:1.7.1'
@@ -164,10 +145,8 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.9.3'
     implementation 'androidx.navigation:navigation-ui-ktx:2.9.3'
 
-    
     // Splash Screen API
     implementation 'androidx.core:core-splashscreen:1.0.1'
-    // (Removed duplicate test deps introduced earlier)
 
     // Room components
     implementation 'androidx.room:room-runtime:2.7.2'
@@ -184,9 +163,5 @@ dependencies {
     // Hilt Dependency Injection
     implementation 'com.google.dagger:hilt-android:2.51.1'
     ksp 'com.google.dagger:hilt-compiler:2.51.1'
-
-    // Firebase (googlePlay flavor only)
-    googlePlayImplementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-    googlePlayImplementation("com.google.firebase:firebase-analytics")
 }
 
