@@ -23,17 +23,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.paging.LoadState
-import androidx.paging.LoadStateAdapter
-import androidx.paging.CombinedLoadStates
-import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import android.view.ViewGroup
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.jwtiyar.simplertask.databinding.ActivityMainBinding
@@ -43,18 +39,17 @@ import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
 import io.github.jwtiyar.simplertask.ui.UiEvent
 import io.github.jwtiyar.simplertask.data.backup.BackupManager
 import io.github.jwtiyar.simplertask.ui.adapters.TaskAdapter
-import io.github.jwtiyar.simplertask.ui.adapters.TaskPagingAdapter
+import io.github.jwtiyar.simplertask.ui.fragments.TaskListFragment
 import io.github.jwtiyar.simplertask.service.NotificationHelper
 import io.github.jwtiyar.simplertask.ui.dialogs.TaskDialogManager
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.google.android.material.search.SearchView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.MutableSharedFlow
 import io.github.jwtiyar.simplertask.utils.requestPermissionCompat
-import io.github.jwtiyar.simplertask.utils.setupVertical
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -66,8 +61,6 @@ import android.content.res.Configuration
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    // Legacy list adapter kept for search results; main list now uses paging
-    private lateinit var taskAdapter: TaskPagingAdapter
     private lateinit var searchAdapter: TaskAdapter
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var dialogManager: TaskDialogManager
@@ -92,7 +85,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
-    // language menu removed
     }
 
     override fun attachBaseContext(newBase: Context) {
@@ -102,84 +94,100 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Apply locale BEFORE calling super.onCreate() to ensure it's applied correctly
         localeManager = LocaleManager(applicationContext)
         localeManager.setAppLocale()
-    super.onCreate(savedInstanceState)
-    // Enable modern edge-to-edge rendering
-    enableEdgeToEdge()
-    WindowCompat.setDecorFitsSystemWindows(window, false)
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         
-    binding = ActivityMainBinding.inflate(layoutInflater)
-    setContentView(binding.root)
-    setSupportActionBar(binding.topAppBar)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.topAppBar)
 
-    notificationHelper = NotificationHelper(this)
-    dialogManager = TaskDialogManager(this)
-    backupManager = BackupManager(this)
+        notificationHelper = NotificationHelper(this)
+        dialogManager = TaskDialogManager(this)
+        backupManager = BackupManager(this)
 
-    // Apply window insets to top app bar and scrolling content so they don't overlap system bars
-    ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
-        val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-        val density = resources.displayMetrics.density
-    val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    // Slightly lower in landscape (closer to bottom) but not as drastic
-    val baseFabBottomMarginDp = if (isLandscape) 96 else 112
-        val baseFabBottomMarginPx = (baseFabBottomMarginDp * density).toInt()
-        val fabDefaultHeightPx = (56 * density).toInt()
-    val gapPx = (if (isLandscape) 16 else 24 * density).toInt() // modest gap in landscape
+        // Apply window insets
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val density = resources.displayMetrics.density
+            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val baseFabBottomMarginDp = if (isLandscape) 96 else 112
+            val baseFabBottomMarginPx = (baseFabBottomMarginDp * density).toInt()
 
-        // Top inset padding applied to AppBar parent, keep toolbar padding zero
-        (binding.topAppBar.parent as? View)?.setPadding(0, systemBars.top, 0, 0)
-        binding.topAppBar.setPadding(0, 0, 0, 0)
+            (binding.topAppBar.parent as? View)?.setPadding(0, systemBars.top, 0, 0)
+            binding.topAppBar.setPadding(0, 0, 0, 0)
 
-        val fabLp = (binding.fabAddTask.layoutParams as? android.view.ViewGroup.MarginLayoutParams)
-        val fabHeight = binding.fabAddTask.height.takeIf { it > 0 } ?: binding.fabAddTask.measuredHeight.takeIf { it > 0 } ?: fabDefaultHeightPx
-
-        // Set FAB bottom margin = system bars + base design margin so it sits higher above bottom buttons
-        fabLp?.let { lp ->
-            lp.bottomMargin = systemBars.bottom + baseFabBottomMarginPx
-            binding.fabAddTask.layoutParams = lp
+            val fabLp = (binding.fabAddTask.layoutParams as? ViewGroup.MarginLayoutParams)
+            fabLp?.let { lp ->
+                lp.bottomMargin = systemBars.bottom + baseFabBottomMarginPx
+                binding.fabAddTask.layoutParams = lp
+            }
+            insets
         }
 
-        val requiredContentBottom = systemBars.bottom + baseFabBottomMarginPx + fabHeight + gapPx
-        // Apply to scroll content child and recycler ensuring not to shrink existing padding
-        (binding.nestedScrollView.getChildAt(0))?.let { child ->
-            val current = child.paddingBottom
-            if (current < requiredContentBottom) child.updatePadding(bottom = requiredContentBottom)
-        }
-        val currentRvPad = binding.recyclerView.paddingBottom
-        if (currentRvPad < requiredContentBottom) binding.recyclerView.updatePadding(bottom = requiredContentBottom)
+        binding.fabAddTask.post { binding.root.requestApplyInsets() }
 
-        insets
+        observeViewModel()
+        checkAndRequestPostNotificationPermission()
+        checkAndRequestExactAlarmPermission()
+        setupViewPager()
+        setupButtons()
+        setupSearchBar()
+        setupNavigationDrawer()
+        setupBackPressHandler()
     }
 
-    // Re-apply after first layout pass to capture real FAB height
-    binding.fabAddTask.post { binding.root.requestApplyInsets() }
+    /**
+     * ViewPager2 adapter for swipe navigation between Pending and Completed tabs.
+     */
+    private inner class TasksPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
+        private val filters = listOf(
+            TaskViewModel.TaskFilter.PENDING,
+            TaskViewModel.TaskFilter.COMPLETED
+        )
 
-    observeViewModel()
-    checkAndRequestPostNotificationPermission()
-    checkAndRequestExactAlarmPermission()
-    setupRecyclerView()
-    setupTabLayout()
-    setupButtons()
-    setupSearchBar()
-    setupNavigationDrawer()
-    setupBackPressHandler()
-    
-    // Load initial tasks
-    loadTasks()
+        override fun getItemCount(): Int = filters.size
+
+        override fun createFragment(position: Int): Fragment {
+            return TaskListFragment.newInstance(filters[position])
+        }
+    }
+
+    private fun setupViewPager() {
+        val pagerAdapter = TasksPagerAdapter(this)
+        binding.viewPager.adapter = pagerAdapter
+
+        // Link TabLayout with ViewPager2
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            when (position) {
+                0 -> {
+                    tab.text = getString(R.string.tab_pending)
+                    tab.setIcon(R.drawable.ic_pending_24dp)
+                }
+                1 -> {
+                    tab.text = getString(R.string.tab_completed)
+                    tab.setIcon(R.drawable.ic_completed_24dp)
+                }
+            }
+        }.attach()
+
+        // Update currentTaskFilter when page changes
+        binding.viewPager.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                currentTaskFilter = when (position) {
+                    0 -> TaskViewModel.TaskFilter.PENDING
+                    1 -> TaskViewModel.TaskFilter.COMPLETED
+                    else -> TaskViewModel.TaskFilter.PENDING
+                }
+            }
+        })
     }
 
     private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observe ViewModel data
-                launch {
-                    taskViewModel.pagedTasks.collectLatest { pagingData ->
-                        taskAdapter.submitData(pagingData)
-                    }
-                }
                 // search results
                 launch {
                     taskViewModel.searchResults.collect { results ->
@@ -216,8 +224,9 @@ class MainActivity : AppCompatActivity() {
         searchAdapter = TaskAdapter(
             emptyList(),
             onTaskClick = { task ->
-                taskViewModel.updateTask(task)
-                val message = if (task.isCompleted) {
+                val updatedTask = task.copy(isCompleted = !task.isCompleted)
+                taskViewModel.updateTask(updatedTask)
+                val message = if (updatedTask.isCompleted) {
                     notificationHelper.cancelNotification(task)
                     getString(R.string.task_completed, task.title)
                 } else {
@@ -263,166 +272,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupTabLayout() {
-        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                val newFilter = when (tab?.position) {
-                    0 -> TaskViewModel.TaskFilter.PENDING
-                    1 -> TaskViewModel.TaskFilter.COMPLETED
-                    else -> TaskViewModel.TaskFilter.PENDING
-                }
-                if (newFilter != currentTaskFilter) {
-                    currentTaskFilter = newFilter
-                    loadTasks()
-                }
-            }
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
-        })
+    private fun showEditTaskDialog(task: Task) { 
+        dialogManager.showEditTaskDialog(task) { taskViewModel.updateTask(it) } 
     }
-
-    private fun loadTasks() { 
-        taskViewModel.loadTasks(currentTaskFilter) 
-    }
-
-    private fun setupRecyclerView() {
-        taskAdapter = TaskPagingAdapter(
-            onTaskClick = { task ->
-                taskViewModel.updateTask(task)
-                val message = if (task.isCompleted) {
-                    notificationHelper.cancelNotification(task)
-                    getString(R.string.task_completed, task.title)
-                } else {
-                    if (task.dueDateMillis != null) notificationHelper.scheduleNotification(task)
-                    getString(R.string.task_pending, task.title)
-                }
-                taskViewModel.postToast(message)
-            },
-            onEditClick = { task ->
-                showEditTaskDialog(task)
-                binding.searchView.hide()
-            },
-            onTaskAction = { task, action ->
-                val updated = when (action) {
-                    TaskAction.SAVE -> task.copy(isSaved = true)
-                    TaskAction.UNSAVE -> task.copy(isSaved = false)
-                    TaskAction.ARCHIVE -> task.copy(isArchived = true, isSaved = false)
-                    TaskAction.UNARCHIVE -> task.copy(isArchived = false)
-                }
-                taskViewModel.updateTask(updated)
-                val msgRes = when (action) {
-                    TaskAction.SAVE -> R.string.task_saved
-                    TaskAction.UNSAVE -> R.string.task_unsaved
-                    TaskAction.ARCHIVE -> R.string.task_archived
-                    TaskAction.UNARCHIVE -> R.string.task_unarchived
-                }
-                taskViewModel.postToast(getString(msgRes))
-            }
-        )
-        
-        // Setup main list RecyclerView with vertical layout & footer
-        val concatAdapter = taskAdapter.withLoadStateFooter(TaskLoadStateAdapter { taskAdapter.retry() })
-        
-        binding.recyclerView.setupVertical(concatAdapter)
-        
-        // Add adapter observer
-        concatAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-            override fun onChanged() {
-                // Adapter data changed
-            }
-            
-            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                // Items inserted
-            }
-        })
-        binding.recyclerView.setOnCreateContextMenuListener(null)
-        binding.recyclerView.isLongClickable = false
-
-        // Defensive: also disable long press context menu on parent scroll container
-        binding.nestedScrollView.isLongClickable = false
-        (binding.nestedScrollView.getChildAt(0) as? android.widget.LinearLayout)?.apply {
-            setOnCreateContextMenuListener(null)
-            isLongClickable = false
-        }
-
-        // Configure SwipeRefreshLayout colors (use prominent brand colors for visibility)
-        binding.swipeRefresh.setColorSchemeResources(
-            R.color.primary,
-            R.color.secondary,
-            R.color.tertiary
-        )
-
-        // Track refresh start to enforce a minimum spinner visibility for perceived smoothness
-        var refreshStartTime = 0L
-        val MIN_SHOW_TIME_MS = 900L
-
-        // Swipe-to-refresh triggers refresh of paging source (record start time)
-        binding.swipeRefresh.setOnRefreshListener {
-            refreshStartTime = System.currentTimeMillis()
-            taskAdapter.refresh()
-        }
-
-        // Observe load states to show/hide refresh indicator & surface errors
-        lifecycleScope.launch {
-            taskAdapter.loadStateFlow.collect { loadStates: CombinedLoadStates ->
-                val isLoading = loadStates.refresh is LoadState.Loading
-                if (isLoading) {
-                    if (!binding.swipeRefresh.isRefreshing) {
-                        refreshStartTime = System.currentTimeMillis()
-                        binding.swipeRefresh.isRefreshing = true
-                    }
-                } else {
-                    if (binding.swipeRefresh.isRefreshing) {
-                        val elapsed = System.currentTimeMillis() - refreshStartTime
-                        val remaining = MIN_SHOW_TIME_MS - elapsed
-                        if (remaining > 0) {
-                            binding.swipeRefresh.postDelayed({ binding.swipeRefresh.isRefreshing = false }, remaining)
-                        } else {
-                            binding.swipeRefresh.isRefreshing = false
-                        }
-                    }
-                }
-
-                val errorState = loadStates.refresh as? LoadState.Error
-                    ?: loadStates.append as? LoadState.Error
-                    ?: loadStates.prepend as? LoadState.Error
-                errorState?.let { taskViewModel.postSnackbar(it.error.message ?: getString(R.string.error_generic)) }
-            }
-        }
-    }
-
-    // Simple LoadStateAdapter for footer progress & retry
-    private inner class TaskLoadStateAdapter(private val onRetry: () -> Unit) : LoadStateAdapter<LoadStateViewHolder>() {
-        override fun onBindViewHolder(holder: LoadStateViewHolder, loadState: LoadState) = holder.bind(loadState)
-        override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): LoadStateViewHolder {
-            val progress = android.widget.ProgressBar(parent.context).apply { isIndeterminate = true }
-            val retryButton = com.google.android.material.button.MaterialButton(parent.context).apply {
-                text = parent.context.getString(R.string.retry)
-                setOnClickListener { onRetry() }
-                visibility = View.GONE
-            }
-            val container = android.widget.LinearLayout(parent.context).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                gravity = android.view.Gravity.CENTER
-                setPadding(24,24,24,24)
-                addView(progress, android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
-                addView(retryButton, android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
-            }
-            return LoadStateViewHolder(container, progress, retryButton)
-        }
-    }
-
-    private class LoadStateViewHolder(view: View, private val progress: android.widget.ProgressBar, private val retryBtn: com.google.android.material.button.MaterialButton) : RecyclerView.ViewHolder(view) {
-        fun bind(loadState: LoadState) {
-            when (loadState) {
-                is LoadState.Loading -> { progress.visibility = View.VISIBLE; retryBtn.visibility = View.GONE }
-                is LoadState.Error -> { progress.visibility = View.GONE; retryBtn.visibility = View.VISIBLE }
-                is LoadState.NotLoading -> { progress.visibility = View.GONE; retryBtn.visibility = View.GONE }
-            }
-        }
-    }
-
-    private fun showEditTaskDialog(task: Task) { dialogManager.showEditTaskDialog(task) { taskViewModel.updateTask(it) } }
 
     private fun setupButtons() {
         binding.fabAddTask.setOnClickListener { showAddTaskDialog() }
@@ -452,25 +304,8 @@ class MainActivity : AppCompatActivity() {
         dialogManager.showAddTaskDialog { task -> 
             taskViewModel.addTask(task.title, task.description, task.priority, task.dueDateMillis)
             
-            // Schedule notification if reminder is set
             if (task.dueDateMillis != null) {
                 notificationHelper.scheduleNotification(task)
-            }
-            
-            // Enhanced refresh and scroll to top for new task visibility
-            lifecycleScope.launch {
-                // Small delay to ensure DB operation completes
-                kotlinx.coroutines.delay(300)
-                
-                // Refresh the adapter
-                taskAdapter.refresh()
-                
-                // Scroll to top to show the new task
-                binding.recyclerView.smoothScrollToPosition(0)
-                
-                // Additional fallback: if still not visible, force scroll after another delay
-                kotlinx.coroutines.delay(500)
-                binding.recyclerView.scrollToPosition(0)
             }
         } 
     }
@@ -534,13 +369,13 @@ class MainActivity : AppCompatActivity() {
         R.id.action_about -> { showAboutDialog(); true }
         R.id.action_export_backup -> { startExportBackup(); true }
         R.id.action_import_backup -> { startImportBackup(); true }
-        // Removed language selection option
         else -> super.onOptionsItemSelected(item)
     }
 
-    // Removed showLanguageSelectionDialog()
-
-    private fun showAboutDialog() { val v = layoutInflater.inflate(R.layout.dialog_about, null); AlertDialog.Builder(this).setView(v).setTitle(getString(R.string.dialog_about_title)).setPositiveButton(getString(R.string.button_ok), null).show() }
+    private fun showAboutDialog() { 
+        val v = layoutInflater.inflate(R.layout.dialog_about, null)
+        AlertDialog.Builder(this).setView(v).setTitle(getString(R.string.dialog_about_title)).setPositiveButton(getString(R.string.button_ok), null).show() 
+    }
 
     private fun showThemeSelectionDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_theme_selection, null)
@@ -549,7 +384,6 @@ class MainActivity : AppCompatActivity() {
         val radioDark = dialogView.findViewById<RadioButton>(R.id.radioDark)
         val radioSystem = dialogView.findViewById<RadioButton>(R.id.radioSystem)
 
-        // Set current selection
         when (AppCompatDelegate.getDefaultNightMode()) {
             AppCompatDelegate.MODE_NIGHT_NO -> radioLight.isChecked = true
             AppCompatDelegate.MODE_NIGHT_YES -> radioDark.isChecked = true
@@ -586,23 +420,45 @@ class MainActivity : AppCompatActivity() {
         navigationView.setCheckedItem(R.id.nav_all_tasks)
         navigationView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_all_tasks -> { currentTaskFilter = TaskViewModel.TaskFilter.PENDING; binding.tabLayout.getTabAt(0)?.select(); loadTasks(); updateUI(getString(R.string.nav_all_tasks)); navigationView.setCheckedItem(R.id.nav_all_tasks) }
-                R.id.nav_saved_tasks -> { currentTaskFilter = TaskViewModel.TaskFilter.SAVED; loadTasks(); updateUI(getString(R.string.nav_saved_tasks)); navigationView.setCheckedItem(R.id.nav_saved_tasks) }
-                R.id.nav_archive -> { currentTaskFilter = TaskViewModel.TaskFilter.ARCHIVED; loadTasks(); updateUI(getString(R.string.nav_archive)); navigationView.setCheckedItem(R.id.nav_archive) }
+                R.id.nav_all_tasks -> { 
+                    currentTaskFilter = TaskViewModel.TaskFilter.PENDING
+                    binding.viewPager.currentItem = 0
+                    binding.tabLayout.visibility = View.VISIBLE
+                    updateUI(getString(R.string.nav_all_tasks))
+                    navigationView.setCheckedItem(R.id.nav_all_tasks) 
+                }
+                R.id.nav_saved_tasks -> { 
+                    currentTaskFilter = TaskViewModel.TaskFilter.SAVED
+                    taskViewModel.loadTasks(TaskViewModel.TaskFilter.SAVED)
+                    binding.tabLayout.visibility = View.GONE
+                    updateUI(getString(R.string.nav_saved_tasks))
+                    navigationView.setCheckedItem(R.id.nav_saved_tasks) 
+                }
+                R.id.nav_archive -> { 
+                    currentTaskFilter = TaskViewModel.TaskFilter.ARCHIVED
+                    taskViewModel.loadTasks(TaskViewModel.TaskFilter.ARCHIVED)
+                    binding.tabLayout.visibility = View.GONE
+                    updateUI(getString(R.string.nav_archive))
+                    navigationView.setCheckedItem(R.id.nav_archive) 
+                }
             }
-            drawerLayout.closeDrawer(GravityCompat.START); true
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
         }
     }
 
     private fun updateUI(title: String) {
         binding.topAppBar.title = title
-        binding.tabLayout.visibility = when (currentTaskFilter) {
-            TaskViewModel.TaskFilter.PENDING, TaskViewModel.TaskFilter.COMPLETED -> View.VISIBLE
-            else -> View.GONE
-        }
     }
 
-    private fun setupBackPressHandler() { onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) { override fun handleOnBackPressed() { val drawer = binding.drawerLayout; if (drawer.isDrawerOpen(GravityCompat.START)) drawer.closeDrawer(GravityCompat.START) else finish() } }) }
+    private fun setupBackPressHandler() { 
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) { 
+            override fun handleOnBackPressed() { 
+                val drawer = binding.drawerLayout
+                if (drawer.isDrawerOpen(GravityCompat.START)) drawer.closeDrawer(GravityCompat.START) else finish() 
+            } 
+        }) 
+    }
     
     // Backup and Restore Methods
     
