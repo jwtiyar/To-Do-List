@@ -5,6 +5,15 @@ plugins {
     id 'com.google.dagger.hilt.android'
 }
 
+
+
+// Load signing config from keystore.properties (not tracked by git)
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = 'io.github.jwtiyar.simplertask'
     compileSdk = 36
@@ -29,6 +38,9 @@ android {
         setProperty("archivesBaseName", "TodoTaskReminder-v$versionName")
     }
 
+
+
+    // Signing configuration for release builds
     signingConfigs {
         release {
             storeFile file(keystoreProperties['storeFile'] ?: '../keystore/simplertask-release.jks')
@@ -40,6 +52,7 @@ android {
 
     buildTypes {
         debug {
+            // Allow installing alongside Play (release) build
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
             debuggable = true
@@ -154,5 +167,6 @@ dependencies {
     // Hilt Dependency Injection
     implementation 'com.google.dagger:hilt-android:2.51.1'
     ksp 'com.google.dagger:hilt-compiler:2.51.1'
+
 }
 
