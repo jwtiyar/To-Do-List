@@ -10,14 +10,6 @@ A professional-grade, privacy-focused task management application for Android.
 - **Modern UI**: Material Design 3 with Light/Dark mode.
 - **Privacy**: No tracking, no ads, no cloud required.
 
-## Technical Stack
-
-- MVVM Architecture
-- Room Database
-- Hilt Dependency Injection
-- Paging 3
-- Kotlin Coroutines & Flow
-
 ## Build
 
 The app uses standard Gradle. You can build it using:
