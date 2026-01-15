@@ -54,7 +54,7 @@ android {
         fdroid {
             dimension "distribution"
             // No Google Services
-            applicationIdSuffix ".fdroid"
+            
         }
     }
 
