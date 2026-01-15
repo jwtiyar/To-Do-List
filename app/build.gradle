@@ -168,8 +168,5 @@ dependencies {
     implementation 'com.google.dagger:hilt-android:2.51.1'
     ksp 'com.google.dagger:hilt-compiler:2.51.1'
 
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-    implementation("com.google.firebase:firebase-analytics")
 }
 
