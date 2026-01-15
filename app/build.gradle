@@ -10,7 +10,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "io.github.jwtiyar.simplertask.fdroid"
+        applicationId = "io.github.jwtiyar.simplertask"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
