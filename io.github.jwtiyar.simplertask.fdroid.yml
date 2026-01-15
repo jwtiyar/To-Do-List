@@ -29,14 +29,14 @@ RepoType: git
 Repo: https://github.com/jwtiyar/To-Do-List.git
 
 Builds:
-  - versionName: '1.0'
-    versionCode: 1
-    commit: v1.0
+  - versionName: '1.2'
+    versionCode: 3
+    commit: v1.2
     subdir: app
     gradle:
       - fdroidRelease
 
 AutoUpdateMode: Version v%v
 UpdateCheckMode: Tags
-CurrentVersion: '1.0'
-CurrentVersionCode: 1
+CurrentVersion: '1.2'
+CurrentVersionCode: 3
