@@ -2,10 +2,10 @@ Categories:
   - Productivity
   - Time
 License: GPL-3.0-only
-AuthorName: jwtiyar
-WebSite: https://github.com/jwtiyar/To-Do-List
+AuthorName: Jwtiyar Nariman
 SourceCode: https://github.com/jwtiyar/To-Do-List
 IssueTracker: https://github.com/jwtiyar/To-Do-List/issues
+
 AutoName: 'To-Do: Task List & Reminder'
 
 RepoType: git
