@@ -9,8 +9,8 @@ AutoName: 'To-Do: Task List & Reminder'
 
 Summary: A professional-grade, privacy-focused task management app
 
-Description: |-
-  To-Do: Task List & Reminder is a professional-grade task management application designed for simplicity and efficiency
+Description: 'To-Do: Task List & Reminder is a professional-grade task management
+  application designed for simplicity and efficiency'
 
 RepoType: git
 Repo: https://github.com/jwtiyar/To-Do-List.git
