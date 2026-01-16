@@ -1,7 +1,7 @@
 Categories:
   - Task
 License: GPL-3.0-only
-AuthorName: Jwtiyar Nariman
+AuthorName: jwtiyar
 SourceCode: https://github.com/jwtiyar/To-Do-List
 IssueTracker: https://github.com/jwtiyar/To-Do-List/issues
 
@@ -11,8 +11,6 @@ Summary: A professional-grade, privacy-focused task management app.
 
 Description: |-
   To-Do: Task List & Reminder is a professional-grade task management application designed for simplicity and efficiency.
-
-  Built with modern Android architecture (MVVM, Hilt, Room, Paging 3).
 
 RepoType: git
 Repo: https://github.com/jwtiyar/To-Do-List.git
