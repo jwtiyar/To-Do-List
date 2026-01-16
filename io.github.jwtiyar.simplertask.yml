@@ -6,14 +6,12 @@ SourceCode: https://github.com/jwtiyar/To-Do-List
 IssueTracker: https://github.com/jwtiyar/To-Do-List/issues
 
 AutoName: 'To-Do: Task List & Reminder'
-Summary: A professional-grade, privacy-focused task management app
-Description: 'To-Do: Task List & Reminder is a professional-grade task management
-  application designed for simplicity and efficiency'
 
 RepoType: git
 Repo: https://github.com/jwtiyar/To-Do-List.git
 
 Builds:
+ 
   - versionName: '1.3'
     versionCode: 4
     commit: v1.3
