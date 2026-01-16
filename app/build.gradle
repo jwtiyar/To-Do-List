@@ -29,13 +29,8 @@ android {
         applicationId = "io.github.jwtiyar.simplertask"
         minSdk = 26
         targetSdk = 36
-<<<<<<< HEAD
         versionCode = 3
         versionName = "1.2"
-=======
-        versionCode = 7
-        versionName = "1.5"
->>>>>>> bd3f3f5 (Sync version reset to 1.0)
         
         // App metadata
         resValue "string", "app_name", "To-Do: Task List & Reminder"
@@ -190,12 +185,5 @@ dependencies {
     // Hilt Dependency Injection
     implementation 'com.google.dagger:hilt-android:2.51.1'
     ksp 'com.google.dagger:hilt-compiler:2.51.1'
-
-<<<<<<< HEAD
-=======
-    // Firebase (googlePlay flavor only)
-    googlePlayImplementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-    googlePlayImplementation("com.google.firebase:firebase-analytics")
->>>>>>> bd3f3f5 (Sync version reset to 1.0)
 }
 
