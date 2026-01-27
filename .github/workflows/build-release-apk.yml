@@ -28,13 +28,12 @@ jobs:
 
       - name: Restore keystore from secret
         run: |
-          mkdir -p app/keystore
-          printf "%s" "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/keystore/simplertask-release.jks
-
+          mkdir -p ${{ github.workspace }}/keystore
+          printf "%s" "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > ${{ github.workspace }}/keystore/simplertask-release.jks
 
       - name: Create keystore.properties
         run: |
-          echo "storeFile=keystore/simplertask-release.jks" > keystore.properties
+          echo "storeFile=${{ github.workspace }}/keystore/simplertask-release.jks" > keystore.properties
           echo "storePassword=$KEYSTORE_PASSWORD" >> keystore.properties
           echo "keyAlias=$KEY_ALIAS" >> keystore.properties
           echo "keyPassword=$KEY_PASSWORD" >> keystore.properties
