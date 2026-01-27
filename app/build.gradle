@@ -89,9 +89,11 @@ android {
             crunchPngs = true
             zipAlignEnabled = true
 
-            // Enable signing for release builds if keystore exists
-            if (signingConfigs.release.storeFile) {
-                signingConfig signingConfigs.release
+            // Enable signing for release builds only if the signing config exists and has a keystore
+            // F-Droid removes the signingConfigs block entirely, so we must check for existence first.
+            def releaseSigning = signingConfigs.findByName("release")
+            if (releaseSigning != null && releaseSigning.storeFile) {
+                signingConfig releaseSigning
             }
 
             buildConfigField "boolean", "DEBUG_MODE", "false"
