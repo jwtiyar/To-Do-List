@@ -23,12 +23,12 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = 'io.github.jwtiyar.simplertask'
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "io.github.jwtiyar.simplertask"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 4
         versionName = "1.3"
         
@@ -121,10 +121,7 @@ android {
     }
 }
 
-// Add this block to specify the JVM toolchain
-kotlin {
-    jvmToolchain(17)
-}
+
 
 dependencies {
     // Unit testing
