@@ -28,8 +28,8 @@ jobs:
 
       - name: Restore keystore from secret
         run: |
-          mkdir -p keystore
-          printf "%s" "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore/simplertask-release.jks
+          mkdir -p app/keystore
+          printf "%s" "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/keystore/simplertask-release.jks
 
 
       - name: Create keystore.properties
