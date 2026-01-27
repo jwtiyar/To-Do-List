@@ -29,9 +29,8 @@ jobs:
       - name: Restore keystore from secret
         run: |
           mkdir -p keystore
-          echo "$KEYSTORE_BASE64" | base64 -d > keystore/simplertask-release.jks
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          printf "%s" "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore/simplertask-release.jks
+
 
       - name: Create keystore.properties
         run: |
