@@ -11,9 +11,9 @@ RepoType: git
 Repo: https://github.com/jwtiyar/To-Do-List.git
 
 Builds:
-  - versionName: '1.3.1'
+  - versionName: 1.3.1
     versionCode: 8
-    commit: v1.3.1
+    commit: 50d9bce62ed222f7ed9c06399c512a878bd6adea
     subdir: app
     gradle:
       - fdroid
@@ -23,5 +23,5 @@ AllowedAPKSigningKeys: 486dad3257453c1103a83dfbeb19e0674fb74c5d542880ca93188515f
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: '1.3.1'
+CurrentVersion: 1.3.1
 CurrentVersionCode: 8
