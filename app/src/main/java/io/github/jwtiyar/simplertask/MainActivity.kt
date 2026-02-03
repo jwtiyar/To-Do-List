@@ -308,11 +308,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun showAddTaskDialog() { 
         dialogManager.showAddTaskDialog { task -> 
-            taskViewModel.addTask(task.title, task.description, task.priority, task.dueDateMillis)
-            
-            if (task.dueDateMillis != null) {
-                notificationHelper.scheduleNotification(task)
-            }
+            taskViewModel.addTask(
+                title = task.title, 
+                description = task.description, 
+                priority = task.priority, 
+                dueDateMillis = task.dueDateMillis,
+                onTaskInserted = { insertedTask ->
+                    // Schedule notification with the task that has the correct database ID
+                    if (insertedTask.dueDateMillis != null) {
+                        notificationHelper.scheduleNotification(insertedTask)
+                    }
+                }
+            )
         } 
     }
 

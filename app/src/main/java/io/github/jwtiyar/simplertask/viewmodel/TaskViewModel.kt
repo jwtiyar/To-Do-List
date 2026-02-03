@@ -156,10 +156,12 @@ class TaskViewModel @Inject constructor(
      * @param description The description of the task
      * @param priority The priority of the task (default is MEDIUM)
      * @param dueDateMillis Optional due date for the task in milliseconds
+     * @param onTaskInserted Optional callback that receives the inserted task with its database ID
      *
      * Behavior:
      * - Creates a new Task object and inserts it into the repository
-    * - Errors during this process will be emitted as snackbar events
+     * - Calls onTaskInserted callback with the task containing the database-assigned ID
+     * - Errors during this process will be emitted as snackbar events
      *
      * Threading:
      * - Launched in viewModelScope
@@ -168,7 +170,8 @@ class TaskViewModel @Inject constructor(
         title: String,
         description: String,
         priority: Priority = Priority.MEDIUM,
-        dueDateMillis: Long? = null
+        dueDateMillis: Long? = null,
+        onTaskInserted: ((Task) -> Unit)? = null
     ) {
         launchWithError(
             onError = { 
@@ -176,7 +179,13 @@ class TaskViewModel @Inject constructor(
             }
         ) {
             val task = Task(title = title, description = description, priority = priority, dueDateMillis = dueDateMillis)
-            repository.insertTask(task)
+            val insertedId = repository.insertTask(task)
+            
+            // Create a copy of the task with the actual database ID
+            val insertedTask = task.copy(id = insertedId.toInt())
+            
+            // Call the callback with the inserted task (now has the correct ID)
+            onTaskInserted?.invoke(insertedTask)
             
             // Immediate refresh trigger - increment multiple times for faster response
             val currentTrigger = pagingRefreshTrigger.value
