@@ -13,16 +13,25 @@ Repo: https://github.com/jwtiyar/To-Do-List.git
 Builds:
   - versionName: 1.3.1
     versionCode: 8
-    commit: v1.3.1
+    commit: 6fb7984a6a4c617b4c33cb40eafd4a54c17ee3de
     subdir: app
     gradle:
       - fdroid
     binary: 
       https://github.com/jwtiyar/To-Do-List/releases/download/v1.3.1/TodoTaskReminder-v1.3.1-fdroid-release.apk
 
+  - versionName: 1.3.2
+    versionCode: 9
+    commit: 3762e2c62c7c3dbb9fabef1aaec6cefdbacfdd95
+    subdir: app
+    gradle:
+      - fdroid
+    binary: 
+      https://github.com/jwtiyar/To-Do-List/releases/download/v1.3.2/TodoTaskReminder-v1.3.2-fdroid-release.apk
+
 AllowedAPKSigningKeys: 486dad3257453c1103a83dfbeb19e0674fb74c5d542880ca93188515f0cb4aa9
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 1.3.1
-CurrentVersionCode: 8
+CurrentVersion: 1.3.2
+CurrentVersionCode: 9
