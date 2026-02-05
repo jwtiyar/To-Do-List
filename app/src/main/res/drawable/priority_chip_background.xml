@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Selected High Priority -->
+    <item android:id="@+id/high" android:state_checked="true">
+        <shape>
+            <solid android:color="#F9DEDC" />
+            <corners android:radius="8dp" />
+            <stroke android:width="2dp" android:color="#B3261E" />
+        </shape>
+    </item>
+    <!-- Selected Medium Priority -->
+    <item android:id="@+id/medium" android:state_checked="true">
+        <shape>
+            <solid android:color="#FFF4E5" />
+            <corners android:radius="8dp" />
+            <stroke android:width="2dp" android:color="#FFB100" />
+        </shape>
+    </item>
+    <!-- Selected Low Priority -->
+    <item android:id="@+id/low" android:state_checked="true">
+        <shape>
+            <solid android:color="#E8F5E9" />
+            <corners android:radius="8dp" />
+            <stroke android:width="2dp" android:color="#4CAF50" />
+        </shape>
+    </item>
+    <!-- Unselected -->
+    <item>
+        <shape>
+            <solid android:color="@color/surface_variant" />
+            <corners android:radius="8dp" />
+            <stroke android:width="1dp" android:color="@color/outline" />
+        </shape>
+    </item>
+</selector>

@@ -51,6 +51,9 @@
     
     <!-- Dialog strings -->
     <string name="dialog_add_task_title">Add New Task</string>
+    <string name="task_add_subtitle">Keep it short, clear, and actionable.</string>
+    <string name="task_title_placeholder">e.g., Pay rent</string>
+    <string name="task_description_placeholder">Notes or details (optional)</string>
     <string name="dialog_edit_task_title">Edit Task</string>
     <string name="dialog_about_title">About</string>
     <string name="dialog_theme_title">Choose App Theme</string>
