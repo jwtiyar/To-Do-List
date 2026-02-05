@@ -279,7 +279,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showEditTaskDialog(task: Task) { 
-        dialogManager.showEditTaskDialog(task) { taskViewModel.updateTask(it) } 
+        dialogManager.showEditTaskDialog(task) { updatedTask ->
+            // Cancel old notification before updating
+            notificationHelper.cancelNotification(task)
+            
+            // Update the task in database
+            taskViewModel.updateTask(updatedTask)
+            
+            // Reschedule notification if the task has a due date and is not completed
+            NotificationHelper.scheduleOrToggle(notificationHelper, updatedTask)
+        } 
     }
 
     private fun setupButtons() {

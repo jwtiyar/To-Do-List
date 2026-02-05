@@ -10,6 +10,7 @@ import android.os.Build // Keep for VERSION_CODES.S
 import androidx.core.app.NotificationCompat
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import io.github.jwtiyar.simplertask.MainActivity
+import io.github.jwtiyar.simplertask.R
 
 class NotificationHelper(private val context: Context) {
     
@@ -118,6 +119,7 @@ class NotificationHelper(private val context: Context) {
     
     fun cancelNotification(task: Task) {
         task.notificationId?.let { notificationId ->
+            // Cancel the scheduled alarm
             val intent = Intent(context, NotificationReceiver::class.java)
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
@@ -130,6 +132,9 @@ class NotificationHelper(private val context: Context) {
                 alarmManager.cancel(it)
                 it.cancel()
             }
+            
+            // Also dismiss the notification if it's already showing in the notification drawer
+            notificationManager.cancel(notificationId)
             
             task.notificationId = null
         }
@@ -148,7 +153,7 @@ class NotificationHelper(private val context: Context) {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle("Task Reminder: $title")
             .setContentText(description)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_notification_reminder)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
