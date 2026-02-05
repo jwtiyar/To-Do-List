@@ -35,9 +35,9 @@ class NotificationActionReceiver : BroadcastReceiver() {
             return
         }
 
-        // Dismiss the notification immediately from the drawer
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-        notificationManager.cancel(taskId)
+        // Use the new smart dismissal logic from NotificationHelper
+        val notificationHelper = NotificationHelper(context.applicationContext)
+        notificationHelper.dismissNotification(taskId)
 
         val pendingResult = goAsync()
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

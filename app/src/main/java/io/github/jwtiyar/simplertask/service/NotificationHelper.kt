@@ -18,8 +18,8 @@ class NotificationHelper(private val context: Context) {
         const val CHANNEL_ID = "task_reminders"
         const val CHANNEL_NAME = "Task Reminders"
         const val CHANNEL_DESCRIPTION = "Notifications for task reminders"
-        private const val GROUP_KEY_TASKS = "io.github.jwtiyar.simplertask.TASK_GROUP"
-        private const val SUMMARY_ID = 0 // Unique ID for the summary notification
+        const val GROUP_KEY_TASKS = "io.github.jwtiyar.simplertask.TASK_GROUP"
+        const val SUMMARY_ID = 0 // Unique ID for the summary notification
         
         fun scheduleOrToggle(helper: NotificationHelper, task: Task) {
             if (task.isCompleted) {
@@ -141,9 +141,27 @@ class NotificationHelper(private val context: Context) {
             }
             
             // Also dismiss the notification if it's already showing in the notification drawer
-            notificationManager.cancel(notificationId)
+            dismissNotification(notificationId)
             
             task.notificationId = null
+        }
+    }
+
+    /**
+     * Dismisses a specific notification and checks if the summary should also be removed.
+     */
+    fun dismissNotification(taskId: Int) {
+        notificationManager.cancel(taskId)
+        
+        // Check if any other notifications in this group are still active
+        val activeNotifications = notificationManager.activeNotifications
+        val taskNotificationsCount = activeNotifications.count { 
+            it.id != SUMMARY_ID && it.notification.group == GROUP_KEY_TASKS 
+        }
+
+        // If no more task notifications exist, remove the summary/header too
+        if (taskNotificationsCount == 0) {
+            notificationManager.cancel(SUMMARY_ID)
         }
     }
     
