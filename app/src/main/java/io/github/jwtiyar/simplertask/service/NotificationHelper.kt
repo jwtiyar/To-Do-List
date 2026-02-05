@@ -235,15 +235,13 @@ class NotificationHelper(private val context: Context) {
         
         notificationManager.notify(taskId, notification)
 
-        // Create/Update the summary notification
+        // Only show summary if we have at least one notification (actually Android handles this, 
+        // but it's good practice to keep the summary updated)
         val summaryNotification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle("Task Reminders")
-            // setContentText is used for devices older than API 24
-            .setContentText("You have pending task reminders")
+            .setContentTitle("Tasks")
+            .setContentText("Check your upcoming tasks")
             .setSmallIcon(R.drawable.ic_notification_reminder)
-            // Build summary info into Extender for devices that support it
-            .setStyle(NotificationCompat.InboxStyle()
-                .setSummaryText("Task Reminders"))
+            .setStyle(NotificationCompat.InboxStyle().setSummaryText("Task Reminders"))
             .setGroup(GROUP_KEY_TASKS)
             .setGroupSummary(true)
             .setAutoCancel(true)
@@ -251,7 +249,7 @@ class NotificationHelper(private val context: Context) {
 
         notificationManager.notify(SUMMARY_ID, summaryNotification)
         
-        android.util.Log.d("NotificationHelper", "Notification posted for task $taskId with action buttons and priority $priority (Grouped)")
+        android.util.Log.d("NotificationHelper", "Notification posted for task $taskId (Priority: $priority)")
     }
 
     /**

@@ -35,6 +35,10 @@ class NotificationActionReceiver : BroadcastReceiver() {
             return
         }
 
+        // Dismiss the notification immediately from the drawer
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+        notificationManager.cancel(taskId)
+
         val pendingResult = goAsync()
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -55,20 +59,13 @@ class NotificationActionReceiver : BroadcastReceiver() {
     private suspend fun handleComplete(context: Context, taskId: Int) {
         Log.d("NotificationAction", "Completing task $taskId")
         
-        // Get the task and mark it as completed
+        // Get the task and mark it as completed in database
         val task = repository.getTaskById(taskId.toLong())
-        if (task != null) {
-            val completedTask = task.copy(isCompleted = true)
+        task?.let {
+            val completedTask = it.copy(isCompleted = true)
             repository.updateTask(completedTask)
-            
-            // Cancel the notification
-            val notificationHelper = NotificationHelper(context.applicationContext)
-            notificationHelper.cancelNotification(completedTask)
-            
             Log.d("NotificationAction", "Task $taskId marked as completed")
-        } else {
-            Log.e("NotificationAction", "Task $taskId not found")
-        }
+        } ?: Log.e("NotificationAction", "Task $taskId not found")
     }
 
     private suspend fun handleSnooze(context: Context, taskId: Int) {
@@ -76,23 +73,20 @@ class NotificationActionReceiver : BroadcastReceiver() {
         
         // Get the task
         val task = repository.getTaskById(taskId.toLong())
-        if (task != null) {
+        task?.let {
             val notificationHelper = NotificationHelper(context.applicationContext)
-            
-            // Cancel current notification
-            notificationHelper.cancelNotification(task)
             
             // Update task with new due date (10 minutes from now)
             val newDueDate = System.currentTimeMillis() + SNOOZE_DURATION_MILLIS
-            val snoozedTask = task.copy(dueDateMillis = newDueDate)
+            val snoozedTask = it.copy(dueDateMillis = newDueDate)
+            
+            // Persist the new time so it survives reboots
             repository.updateTask(snoozedTask)
             
-            // Reschedule notification
+            // Re-schedule the alarm
             notificationHelper.scheduleNotification(snoozedTask)
             
-            Log.d("NotificationAction", "Task $taskId snoozed for 10 minutes")
-        } else {
-            Log.e("NotificationAction", "Task $taskId not found")
-        }
+            Log.d("NotificationAction", "Task $taskId snoozed for 10 minutes (New time: $newDueDate)")
+        } ?: Log.e("NotificationAction", "Task $taskId not found")
     }
 }
