@@ -11,9 +11,11 @@ class NotificationReceiver : BroadcastReceiver() {
         val taskId = intent.getIntExtra("task_id", -1)
         val taskTitle = intent.getStringExtra("task_title") ?: ""
         val taskDescription = intent.getStringExtra("task_description") ?: ""
+        val taskPriority = intent.getStringExtra("task_priority") ?: "MEDIUM"
+        
         if (taskId != -1) {
             val notificationHelper = NotificationHelper(context)
-            notificationHelper.showNotification(taskId, taskTitle, taskDescription)
+            notificationHelper.showNotification(taskId, taskTitle, taskDescription, taskPriority)
         }
     }
 } 

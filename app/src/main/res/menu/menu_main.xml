@@ -7,6 +7,11 @@
         android:icon="@android:drawable/ic_menu_manage"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_notification_settings"
+        android:title="Notification Settings"
+        android:icon="@android:drawable/ic_lock_idle_alarm"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_export_backup"
         android:title="Export Backup"
         android:icon="@android:drawable/ic_menu_save"
@@ -16,7 +21,7 @@
         android:title="Import Backup"
         android:icon="@android:drawable/ic_menu_upload"
         app:showAsAction="never" />
-    <item
+     <item
         android:id="@+id/action_about"
         android:title="@string/menu_about"
         android:icon="@android:drawable/ic_menu_info_details"

@@ -359,6 +359,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_theme -> { showThemeSelectionDialog(); true }
+        R.id.action_notification_settings -> { notificationHelper.openNotificationSettings(); true }
         R.id.action_about -> { showAboutDialog(); true }
         R.id.action_export_backup -> { startExportBackup(); true }
         R.id.action_import_backup -> { startImportBackup(); true }
