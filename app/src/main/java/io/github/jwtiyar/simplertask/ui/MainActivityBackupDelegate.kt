@@ -20,6 +20,10 @@ class MainActivityBackupDelegate(
     private val backupManager: BackupManager
 ) {
 
+    fun generateBackupFilename(): String {
+        return backupManager.generateBackupFilename()
+    }
+
     fun exportBackupToUri(uri: Uri) {
         activity.lifecycleScope.launch {
             try {
