@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter
 import io.github.jwtiyar.simplertask.data.model.TaskAction
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import io.github.jwtiyar.simplertask.data.local.entity.Priority
+import io.github.jwtiyar.simplertask.data.local.entity.isRecurring
 import io.github.jwtiyar.simplertask.R
 import java.util.Locale
 import java.time.Instant
@@ -71,28 +72,90 @@ class TaskAdapter(
         fun bind(task: Task) {
             binding.apply {
                 taskTitle.text = task.title
-                taskDescription.text = task.description
-                chipPriority.text = when (task.priority) { 
-                    Priority.LOW -> root.context.getString(R.string.priority_low)
-                    Priority.MEDIUM -> root.context.getString(R.string.priority_medium)
-                    Priority.HIGH -> root.context.getString(R.string.priority_high) 
+
+                // Handle description visibility and content
+                if (task.description.isNotBlank()) {
+                    taskDescription.text = task.description
+                    taskDescription.visibility = View.VISIBLE
+                } else {
+                    taskDescription.visibility = View.GONE
                 }
-                val chipColor = when (task.priority) { 
-                    Priority.LOW -> R.color.priority_low
-                    Priority.MEDIUM -> R.color.priority_medium
-                    Priority.HIGH -> R.color.priority_high 
+
+                // Enhanced priority chip styling
+                val (chipText, chipColor, chipTextColor) = when (task.priority) {
+                    Priority.LOW -> Triple(
+                        root.context.getString(R.string.priority_low),
+                        root.context.getColor(R.color.priority_low),
+                        root.context.getColor(android.R.color.white)
+                    )
+                    Priority.MEDIUM -> Triple(
+                        root.context.getString(R.string.priority_medium),
+                        root.context.getColor(R.color.priority_medium),
+                        root.context.getColor(android.R.color.black)
+                    )
+                    Priority.HIGH -> Triple(
+                        root.context.getString(R.string.priority_high),
+                        root.context.getColor(R.color.priority_high),
+                        root.context.getColor(android.R.color.white)
+                    )
                 }
-                chipPriority.setBackgroundResource(R.drawable.chip_priority_bg)
-                chipPriority.background.setTint(root.context.getColor(chipColor))
+
+                chipPriority.text = chipText
+                chipPriority.setTextColor(chipTextColor)
+                chipPriority.chipBackgroundColor = android.content.res.ColorStateList.valueOf(chipColor)
 
                 taskCheckBox.setOnCheckedChangeListener(null)
                 taskCheckBox.isChecked = task.isCompleted
 
+                // Enhanced due date display
                 if (task.dueDateMillis != null) {
-                    val ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.dueDateMillis!!), ZoneId.systemDefault())
-                    taskScheduledTime.text = root.context.getString(R.string.due_prefix, ldt.format(timeFormatter))
+                    val dueInstant = Instant.ofEpochMilli(task.dueDateMillis!!)
+                    val now = Instant.now()
+                    val ldt = LocalDateTime.ofInstant(dueInstant, ZoneId.systemDefault())
+
+                    val timeText = when {
+                        dueInstant.isBefore(now) -> {
+                            // Overdue - show in error color
+                            taskScheduledTime.setTextColor(root.context.getColor(android.R.color.holo_red_dark))
+                            "Overdue: ${ldt.format(timeFormatter)}"
+                        }
+                        dueInstant.isBefore(now.plusSeconds(86400)) -> { // Next 24 hours
+                            // Due soon - show in warning color
+                            taskScheduledTime.setTextColor(root.context.getColor(android.R.color.holo_orange_dark))
+                            root.context.getString(R.string.due_prefix, ldt.format(timeFormatter))
+                        }
+                        else -> {
+                            // Future - show in primary color
+                            taskScheduledTime.setTextColor(root.context.getColor(android.R.color.darker_gray))
+                            root.context.getString(R.string.due_prefix, ldt.format(timeFormatter))
+                        }
+                    }
+                    taskScheduledTime.text = timeText
                     taskScheduledTime.visibility = View.VISIBLE
-                } else taskScheduledTime.visibility = View.GONE
+                } else {
+                    taskScheduledTime.visibility = View.GONE
+                }
+
+                // Enhanced recurring indicator
+                iconRecurring.visibility = if (task.isRecurring()) View.VISIBLE else View.GONE
+
+                // Category indicator - simple color dot for now
+                if (task.categoryId != null) {
+                    categoryIndicator.visibility = View.VISIBLE
+                    // Use different colors based on category ID
+                    val color = when (task.categoryId) {
+                        1 -> android.graphics.Color.parseColor("#1E88E5") // Work - Blue
+                        2 -> android.graphics.Color.parseColor("#43A047") // Personal - Green
+                        3 -> android.graphics.Color.parseColor("#E53935") // Health - Red
+                        4 -> android.graphics.Color.parseColor("#8E24AA") // Learning - Purple
+                        5 -> android.graphics.Color.parseColor("#FF9800") // Shopping - Orange
+                        6 -> android.graphics.Color.parseColor("#0097A7") // Home - Teal
+                        else -> android.graphics.Color.parseColor("#757575") // Default - Gray
+                    }
+                    categoryIndicator.background.setTint(color)
+                } else {
+                    categoryIndicator.visibility = View.GONE
+                }
 
                 updateVisualState(task)
 
@@ -102,6 +165,15 @@ class TaskAdapter(
                         previousCheckedState = isChecked
                         val current = task.copy(isCompleted = isChecked)
                         updateVisualState(current)
+
+                        // Add smooth animation for completion
+                        if (isChecked) {
+                            val animation = android.view.animation.AnimationUtils.loadAnimation(
+                                root.context, R.anim.task_complete_fade
+                            )
+                            root.startAnimation(animation)
+                        }
+
                         onTaskClick(current)
                     }
                 }
@@ -137,13 +209,29 @@ class TaskAdapter(
         private fun updateVisualState(task: Task) {
             binding.apply {
                 if (task.isCompleted) {
+                    // Completed state - subtle strikethrough and muted appearance
                     taskTitle.paintFlags = taskTitle.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                    taskTitle.setTextColor(root.context.getColor(android.R.color.darker_gray))
                     taskDescription.paintFlags = taskDescription.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
-                    root.alpha = 0.6f
+                    taskDescription.setTextColor(root.context.getColor(android.R.color.darker_gray))
+
+                    // Subtle background tint for completed tasks
+                    root.setCardBackgroundColor(root.context.getColor(android.R.color.white))
+
+                    // Disable checkbox interaction
+                    taskCheckBox.isEnabled = false
                 } else {
+                    // Active state - normal appearance
                     taskTitle.paintFlags = taskTitle.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    taskTitle.setTextColor(root.context.getColor(android.R.color.black))
                     taskDescription.paintFlags = taskDescription.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                    root.alpha = 1f
+                    taskDescription.setTextColor(root.context.getColor(android.R.color.darker_gray))
+
+                    // Normal background
+                    root.setCardBackgroundColor(root.context.getColor(android.R.color.white))
+
+                    // Enable checkbox interaction
+                    taskCheckBox.isEnabled = true
                 }
             }
         }

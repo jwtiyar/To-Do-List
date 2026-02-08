@@ -39,12 +39,9 @@ class BootReceiver : BroadcastReceiver() {
         scope.launch {
             try {
                 val notificationHelper = NotificationHelper(context.applicationContext)
-                
-                // Get all pending (non-completed) tasks with due dates
-                val pendingTasks = repository.getPendingTasks().first()
-                val tasksWithReminders = pendingTasks.filter { task ->
-                    task.dueDateMillis != null && task.dueDateMillis!! > System.currentTimeMillis()
-                }
+
+                // Get all pending (non-completed) tasks with future due dates
+                val tasksWithReminders = repository.getPendingTasksForBootReschedule()
 
                 Log.d("BootReceiver", "Found ${tasksWithReminders.size} tasks to reschedule")
 

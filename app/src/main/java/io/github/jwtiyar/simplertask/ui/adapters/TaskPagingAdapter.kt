@@ -20,7 +20,9 @@ import java.util.Locale
 class TaskPagingAdapter(
     private val onTaskClick: (Task) -> Unit,
     private val onEditClick: (Task) -> Unit,
-    private val onTaskAction: (Task, TaskAction) -> Unit
+    private val onTaskAction: (Task, TaskAction) -> Unit,
+    private val onSwipeComplete: (Task) -> Unit = {},
+    private val onSwipeDelete: (Task) -> Unit = {}
 ) : PagingDataAdapter<Task, TaskPagingAdapter.TaskVH>(DIFF) {
 
     companion object {
@@ -33,6 +35,18 @@ class TaskPagingAdapter(
             }
         }
     private var currentDialog: androidx.appcompat.app.AlertDialog? = null
+    }
+
+    fun getTaskAtPosition(position: Int): Task? {
+        return getItem(position)
+    }
+
+    fun handleSwipeComplete(task: Task) {
+        onSwipeComplete(task)
+    }
+
+    fun handleSwipeDelete(task: Task) {
+        onSwipeDelete(task)
     }
 
     private val timeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' HH:mm", Locale.getDefault())

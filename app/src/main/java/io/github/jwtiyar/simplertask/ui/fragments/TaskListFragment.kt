@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.jwtiyar.simplertask.R
@@ -19,6 +20,7 @@ import io.github.jwtiyar.simplertask.data.model.TaskAction
 import io.github.jwtiyar.simplertask.databinding.FragmentTaskListBinding
 import io.github.jwtiyar.simplertask.service.NotificationHelper
 import io.github.jwtiyar.simplertask.ui.adapters.TaskPagingAdapter
+import io.github.jwtiyar.simplertask.ui.adapters.TaskSwipeCallback
 import io.github.jwtiyar.simplertask.ui.dialogs.TaskDialogManager
 import io.github.jwtiyar.simplertask.utils.setupVertical
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
@@ -77,7 +79,7 @@ class TaskListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         observeViewModel()
-        // Load tasks for this fragment's filter
+        // Set the initial filter for this fragment (paging will handle the rest)
         taskViewModel.loadTasks(filterType)
     }
 
@@ -98,10 +100,10 @@ class TaskListFragment : Fragment() {
                 dialogManager.showEditTaskDialog(task) { updatedTask ->
                     // Cancel old notification before updating
                     notificationHelper.cancelNotification(task)
-                    
+
                     // Update the task in database
                     taskViewModel.updateTask(updatedTask)
-                    
+
                     // Reschedule notification if the task has a due date and is not completed
                     NotificationHelper.scheduleOrToggle(notificationHelper, updatedTask)
                 }
@@ -121,10 +123,22 @@ class TaskListFragment : Fragment() {
                     TaskAction.UNARCHIVE -> R.string.task_unarchived
                 }
                 taskViewModel.postToast(getString(msgRes))
+            },
+            onSwipeComplete = { task ->
+                // Handle swipe to complete
+                taskViewModel.toggleTaskCompletion(task)
+                taskViewModel.postToast(getString(R.string.task_completed, task.title))
+            },
+            onSwipeDelete = { task ->
+                // Handle swipe to delete with confirmation
+                showDeleteConfirmationDialog(task)
             }
         )
 
         binding.recyclerView.setupVertical(taskAdapter)
+
+        // Setup swipe actions
+        setupSwipeActions()
 
         // SwipeRefresh setup
         binding.swipeRefresh.setColorSchemeResources(
@@ -181,7 +195,17 @@ class TaskListFragment : Fragment() {
                         taskAdapter.submitData(pagingData)
                     }
                 }
-                
+
+                // Observe adapter load state to show/hide empty state
+                launch {
+                    taskAdapter.loadStateFlow.collectLatest { loadState ->
+                        val isEmpty = loadState.refresh is androidx.paging.LoadState.NotLoading &&
+                                    taskAdapter.itemCount == 0
+                        binding.emptyStateView.visibility = if (isEmpty) View.VISIBLE else View.GONE
+                        binding.swipeRefresh.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                    }
+                }
+
                 launch {
                     taskViewModel.events.collect { event ->
                         when (event) {
@@ -199,8 +223,35 @@ class TaskListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Reload tasks when fragment becomes visible
-        taskViewModel.loadTasks(filterType)
+        // Fragment resumed - paging will handle data automatically
+    }
+
+    private fun setupSwipeActions() {
+        val swipeCallback = TaskSwipeCallback(
+            context = requireContext(),
+            onSwipeComplete = { task ->
+                taskViewModel.toggleTaskCompletion(task)
+                taskViewModel.postToast(getString(R.string.task_completed, task.title))
+            },
+            onSwipeDelete = { task ->
+                showDeleteConfirmationDialog(task)
+            }
+        )
+
+        val itemTouchHelper = ItemTouchHelper(swipeCallback)
+        itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+    }
+
+    private fun showDeleteConfirmationDialog(task: Task) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.delete_task_title, task.title))
+            .setMessage(R.string.delete_task_confirmation)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                taskViewModel.deleteTask(task)
+                taskViewModel.postToast(getString(R.string.task_deleted, task.title))
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     override fun onDestroyView() {
