@@ -13,5 +13,9 @@
             android:id="@+id/nav_archive"
             android:title="@string/nav_archive"
             android:icon="@drawable/ic_menu_archive" />
+        <item
+            android:id="@+id/nav_recurring"
+            android:title="@string/nav_recurring_tasks"
+            android:icon="@drawable/ic_menu_saved_tasks" />
     </group>
 </menu>

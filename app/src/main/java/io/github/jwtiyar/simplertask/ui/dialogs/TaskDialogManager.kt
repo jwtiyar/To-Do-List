@@ -2,7 +2,12 @@ package io.github.jwtiyar.simplertask.ui.dialogs
 
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.EditText
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
@@ -14,7 +19,9 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import io.github.jwtiyar.simplertask.R
 import io.github.jwtiyar.simplertask.data.local.entity.Priority
+import io.github.jwtiyar.simplertask.data.local.entity.RecurrenceType
 import io.github.jwtiyar.simplertask.data.local.entity.Task
+import io.github.jwtiyar.simplertask.data.local.entity.Category
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -34,6 +41,22 @@ class TaskDialogManager(private val context: FragmentActivity) {
         val btnDate = view.findViewById<MaterialButton>(R.id.btnDatePicker)
         val btnTime = view.findViewById<MaterialButton>(R.id.btnTimePicker)
 
+        // Recurrence UI elements
+        val switchRecurring = view.findViewById<MaterialSwitch>(R.id.switchRecurring)
+        val recurrenceDetailsLayout = view.findViewById<View>(R.id.recurrenceDetailsLayout)
+        val editRecurrenceInterval = view.findViewById<EditText>(R.id.editRecurrenceInterval)
+        val spinnerRecurrenceType = view.findViewById<Spinner>(R.id.spinnerRecurrenceType)
+        val radioGroupRecurrenceEnd = view.findViewById<RadioGroup>(R.id.radioGroupRecurrenceEnd)
+        val btnRecurrenceEndDate = view.findViewById<MaterialButton>(R.id.btnRecurrenceEndDate)
+
+
+        // Category selection
+        val spinnerCategory = view.findViewById<AutoCompleteTextView>(R.id.spinnerCategory)
+        val categoryNames = arrayOf("No Category", "Work", "Personal", "Health", "Learning", "Shopping", "Home")
+        val categoryAdapter = ArrayAdapter(context, android.R.layout.simple_dropdown_item_1line, categoryNames)
+        spinnerCategory.setAdapter(categoryAdapter)
+        spinnerCategory.setText("No Category", false)
+
         // Set default priority to MEDIUM
         chipGroup.check(R.id.chipMedium)
 
@@ -41,6 +64,23 @@ class TaskDialogManager(private val context: FragmentActivity) {
         var selectedDate: Long? = null
         var selectedHour: Int = 9
         var selectedMinute: Int = 0
+
+        // Recurrence variables
+        var recurrenceType: RecurrenceType? = null
+        var recurrenceInterval: Int = 1
+        var recurrenceEndDate: Long? = null
+        var selectedEndDate: Long? = null
+
+        // Setup recurrence type spinner
+        val recurrenceTypes = arrayOf(
+            context.getString(R.string.recurrence_daily),
+            context.getString(R.string.recurrence_weekly),
+            context.getString(R.string.recurrence_monthly)
+        )
+        val spinnerAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, recurrenceTypes)
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerRecurrenceType.adapter = spinnerAdapter
+        spinnerRecurrenceType.setSelection(0) // Default to daily
         
         fun updateDueDateMillis() {
             selectedDate?.let { dateMillis ->
@@ -105,8 +145,19 @@ class TaskDialogManager(private val context: FragmentActivity) {
             }
             timePicker.show(context.supportFragmentManager, "TIME_PICKER")
         }
-        
+
         updateButtonTexts()
+
+        // Recurrence setup
+        switchRecurring.setOnCheckedChangeListener { _, checked ->
+            recurrenceDetailsLayout.visibility = if (checked) View.VISIBLE else View.GONE
+            if (!checked) {
+                recurrenceType = null
+                recurrenceInterval = 1
+                recurrenceEndDate = null
+                selectedEndDate = null
+            }
+        }
 
         AlertDialog.Builder(context)
             .setView(view)
@@ -119,7 +170,51 @@ class TaskDialogManager(private val context: FragmentActivity) {
                         R.id.chipMedium -> Priority.MEDIUM
                         else -> Priority.LOW
                     }
-                    val task = Task(id = 0, title = title, description = desc, priority = priority, dueDateMillis = dueDateMillis)
+
+
+                    // Handle recurrence settings
+                    if (switchRecurring.isChecked) {
+                        recurrenceType = when (spinnerRecurrenceType.selectedItemPosition) {
+                            0 -> RecurrenceType.DAILY
+                            1 -> RecurrenceType.WEEKLY
+                            2 -> RecurrenceType.MONTHLY
+                            else -> RecurrenceType.DAILY
+                        }
+                        recurrenceInterval = editRecurrenceInterval.text?.toString()?.toIntOrNull() ?: 1
+                        recurrenceEndDate = if (radioGroupRecurrenceEnd.checkedRadioButtonId == R.id.radioEndDate) {
+                            selectedEndDate
+                        } else null
+                    }
+
+                    // Create the task with recurrence settings
+                    // Handle category selection
+                    val selectedCategory = when (spinnerCategory.text.toString()) {
+                        "Work" -> 1
+                        "Personal" -> 2
+                        "Health" -> 3
+                        "Learning" -> 4
+                        "Shopping" -> 5
+                        "Home" -> 6
+                        else -> null
+                    }
+
+                    // Create the task with recurrence and category settings
+                    val task = if (recurrenceType != null) {
+                        Task(
+                            id = 0,
+                            title = title,
+                            description = desc,
+                            priority = priority,
+                            dueDateMillis = dueDateMillis,
+                            recurrenceType = recurrenceType,
+                            recurrenceInterval = recurrenceInterval,
+                            recurrenceEndDate = recurrenceEndDate,
+                            categoryId = selectedCategory
+                        )
+                    } else {
+                        Task(id = 0, title = title, description = desc, priority = priority, dueDateMillis = dueDateMillis, categoryId = selectedCategory)
+                    }
+
                     onTaskAdded(task)
                 }
             }

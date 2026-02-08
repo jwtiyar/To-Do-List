@@ -72,6 +72,7 @@
     <string name="nav_all_tasks">All Tasks</string>
     <string name="nav_saved_tasks">Saved Tasks</string>
     <string name="nav_archive">Archive</string>
+    <string name="nav_recurring_tasks">Recurring Tasks</string>
     
     <!-- Theme selection strings -->
     <string name="theme_dialog_title">Choose App Theme</string>
@@ -135,4 +136,24 @@
     <string name="dialog_import_title">Import Backup</string>
     <string name="button_import">Import</string>
     <string name="error_import_tasks">Failed to import tasks: %s</string>
+
+    <!-- Recurrence strings -->
+    <string name="recurring_task">Make this task recurring</string>
+    <string name="repeat_every">Repeat every:</string>
+    <string name="end_recurrence">End recurrence:</string>
+    <string name="never">Never (repeat indefinitely)</string>
+    <string name="on_date">On date:</string>
+    <string name="select_end_date">Select end date</string>
+    <string name="recurrence_daily">day(s)</string>
+    <string name="recurrence_weekly">week(s)</string>
+    <string name="recurrence_monthly">month(s)</string>
+    <string name="recurrence_custom">custom</string>
+    <string name="recurring_task_created">Recurring task created</string>
+    <string name="next_occurrence_created">Next occurrence created</string>
+
+    <!-- Swipe Actions -->
+    <string name="delete_task_title">Delete "%1$s"?</string>
+    <string name="delete_task_confirmation">This action cannot be undone. The task will be permanently deleted.</string>
+    <string name="delete">Delete</string>
+    <string name="task_deleted">Task deleted: %1$s</string>
 </resources>

@@ -11,6 +11,8 @@ import androidx.room.PrimaryKey
         Index("isArchived"),
         Index("isSaved"),
         Index("dueDateMillis"),
+        Index("recurrenceType"),
+        Index("categoryId"),
         // Composite index to accelerate common filter + ordering by id desc
         Index(value = ["isArchived", "isCompleted", "id"], name = "idx_task_archived_completed_id")
     ]
@@ -25,7 +27,13 @@ data class Task(
     var isArchived: Boolean = false,
     var dueDateMillis: Long? = null,
     var notificationId: Int? = null,
-    var priority: Priority = Priority.MEDIUM
+    var priority: Priority = Priority.MEDIUM,
+    // Recurring task fields
+    var recurrenceType: RecurrenceType? = null,
+    var recurrenceInterval: Int = 1, // every N days/weeks/months
+    var recurrenceEndDate: Long? = null, // when to stop recurring (null = indefinite)
+    var parentTaskId: Int? = null, // ID of the original recurring task
+    var categoryId: Int? = null // Reference to Category.id
 ) {
     /**
      * Custom equals implementation that compares all fields except notificationId
@@ -67,4 +75,46 @@ data class Task(
 
 enum class Priority {
     LOW, MEDIUM, HIGH
+}
+
+enum class RecurrenceType {
+    DAILY, WEEKLY, MONTHLY, CUSTOM
+}
+
+fun Task.isRecurring(): Boolean = recurrenceType != null
+
+fun Task.getNextDueDate(): Long? {
+    if (!isRecurring() || dueDateMillis == null) return null
+
+    val currentDueDate = dueDateMillis!!
+    val calendar = java.util.Calendar.getInstance().apply {
+        timeInMillis = currentDueDate
+    }
+
+    when (recurrenceType) {
+        RecurrenceType.DAILY -> {
+            calendar.add(java.util.Calendar.DAY_OF_MONTH, recurrenceInterval)
+        }
+        RecurrenceType.WEEKLY -> {
+            calendar.add(java.util.Calendar.WEEK_OF_YEAR, recurrenceInterval)
+        }
+        RecurrenceType.MONTHLY -> {
+            calendar.add(java.util.Calendar.MONTH, recurrenceInterval)
+        }
+        RecurrenceType.CUSTOM -> {
+            // For custom recurrence, we could implement more complex logic here
+            // For now, treat as daily
+            calendar.add(java.util.Calendar.DAY_OF_MONTH, recurrenceInterval)
+        }
+        null -> return null
+    }
+
+    val nextDueDate = calendar.timeInMillis
+
+    // Check if we've exceeded the end date
+    return if (recurrenceEndDate != null && nextDueDate > recurrenceEndDate!!) {
+        null // No more occurrences
+    } else {
+        nextDueDate
+    }
 }
