@@ -8,6 +8,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.jwtiyar.simplertask.data.local.TaskDatabase
 import io.github.jwtiyar.simplertask.data.local.dao.TaskDao
+import io.github.jwtiyar.simplertask.data.local.dao.CategoryDao
 import io.github.jwtiyar.simplertask.data.repository.TaskRepository
 import javax.inject.Singleton
 
@@ -32,7 +33,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTaskRepository(taskDao: TaskDao): TaskRepository {
-        return TaskRepository(taskDao)
+    fun provideCategoryDao(database: TaskDatabase): CategoryDao {
+        return database.categoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTaskRepository(taskDao: TaskDao, categoryDao: CategoryDao): TaskRepository {
+        return TaskRepository(taskDao, categoryDao)
     }
 }
