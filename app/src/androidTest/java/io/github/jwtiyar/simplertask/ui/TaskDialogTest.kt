@@ -2,12 +2,11 @@ package io.github.jwtiyar.simplertask.ui
 
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.github.jwtiyar.simplertask.MainActivity
 import io.github.jwtiyar.simplertask.R
 import org.junit.Rule
 import org.junit.Test
@@ -21,68 +20,74 @@ class TaskDialogTest {
 
     @Test
     fun fab_clickOpensAddTaskDialog() {
-        onView(withId(R.id.fab_add_task)).perform(click())
-        onView(withId(R.id.editTextTitle)).check(matches(isDisplayed()))
+        onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.editTextTitle))
+            .check(matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
     fun dialog_titleIsDisplayed() {
-        onView(withId(R.id.fab_add_task)).perform(click())
-        onView(withId(R.id.dialogTitle)).check(matches(isDisplayed()))
+        onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.dialogTitle))
+            .check(matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
     fun dialog_titleInputFieldExists() {
-        onView(withId(R.id.fab_add_task)).perform(click())
-        onView(withId(R.id.editTextTitle)).check(matches(isDisplayed()))
+        onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.editTextTitle))
+            .check(matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
     fun dialog_descriptionInputFieldExists() {
-        onView(withId(R.id.fab_add_task)).perform(click())
-        onView(withId(R.id.editTextDescription)).check(matches(isDisplayed()))
+        onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.editTextDescription))
+            .check(matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
     fun dialog_priorityChipsExist() {
-        onView(withId(R.id.fab_add_task)).perform(click())
-        onView(withId(R.id.chipLow)).check(matches(isDisplayed()))
-        onView(withId(R.id.chipMedium)).check(matches(isDisplayed()))
-        onView(withId(R.id.chipHigh)).check(matches(isDisplayed()))
+        onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.chipLow))
+            .check(matches(ViewMatchers.isDisplayed()))
+        onView(ViewMatchers.withId(R.id.chipMedium))
+            .check(matches(ViewMatchers.isDisplayed()))
+        onView(ViewMatchers.withId(R.id.chipHigh))
+            .check(matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
     fun dialog_categorySpinnerExists() {
-        onView(withId(R.id.fab_add_task)).perform(click())
-        onView(withId(R.id.spinnerCategory)).check(matches(isDisplayed()))
+        onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.spinnerCategory))
+            .check(matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
     fun dialog_reminderSwitchExists() {
-        onView(withId(R.id.fab_add_task)).perform(click())
-        onView(withId(R.id.switchReminder)).check(matches(isDisplayed()))
+        onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.switchReminder))
+            .check(matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
     fun dialog_recurringSwitchExists() {
-        onView(withId(R.id.fab_add_task)).perform(click())
-        onView(withId(R.id.switchRecurring)).check(matches(isDisplayed()))
+        onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.switchRecurring))
+            .check(matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
     fun dialog_defaultPriorityIsMedium() {
-        onView(withId(R.id.fab_add_task)).perform(click())
-        onView(withId(R.id.chipMedium)).check(matches(isDisplayed()))
+        onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.chipMedium))
+            .check(matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
-    fun dialog_categoryDefaultIsNoCategory() {
-        onView(withId(R.id.fab_add_task)).perform(click())
-        onView(withId(R.id.spinnerCategory)).check(matches(isDisplayed()))
-    }
-
-    @Test
-    fun bottomNav_pendingTabExists() {
-        onView(withId(R.id.bottom_navigation)).check(matches(isDisplayed()))
+    fun tabLayout_exists() {
+        onView(ViewMatchers.withId(R.id.tabLayout))
+            .check(matches(ViewMatchers.isDisplayed()))
     }
 }

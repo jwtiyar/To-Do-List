@@ -24,7 +24,7 @@ class SearchDelegate(
     private val uiDelegate: MainUiDelegate
 ) {
 
-    private val searchAdapter = uiDelegate.searchAdapter
+    private val searchAdapter by lazy { uiDelegate.searchAdapter }
 
     fun observeSearchResults() {
         activity.lifecycleScope.launch {
