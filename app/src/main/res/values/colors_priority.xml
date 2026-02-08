@@ -1,5 +1,11 @@
 <resources>
-    <color name="priority_low">#4CAF50</color>
-    <color name="priority_medium">#FFC107</color>
-    <color name="priority_high">#F44336</color>
+    <!-- Priority colors using Material Design 3 dynamic colors -->
+    <color name="priority_low">@android:color/system_accent1_400</color>
+    <color name="priority_medium">@android:color/system_accent2_400</color>
+    <color name="priority_high">@android:color/system_accent3_400</color>
+
+    <!-- Fallback colors for older Android versions -->
+    <color name="priority_low_fallback">#4CAF50</color>
+    <color name="priority_medium_fallback">#FF9800</color>
+    <color name="priority_high_fallback">#F44336</color>
 </resources>
