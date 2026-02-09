@@ -34,8 +34,10 @@ class TaskPagingAdapter(
                 return oldItem == newItem
             }
         }
-    private var currentDialog: androidx.appcompat.app.AlertDialog? = null
     }
+
+    // Instance variable to avoid memory leaks (was in companion object)
+    private var currentDialog: androidx.appcompat.app.AlertDialog? = null
 
     fun getTaskAtPosition(position: Int): Task? {
         return getItem(position)

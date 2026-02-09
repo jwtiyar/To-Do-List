@@ -19,9 +19,9 @@ import javax.inject.Inject
  * ViewModel managing task UI state & operations.
  *
  * Exposes immutable [StateFlow]s for:
- * - [uiState]: holistic screen state (tasks, loading, errors, filters, sorting, query)
- * - [currentTasks]: tasks list respecting current filter & sort
- * - [searchResults]: filtered tasks for active search queries
+ * - [uiState]: holistic screen state (loading, errors, filters, sorting, query)
+ * - [pagedTasks]: paginated tasks respecting current filter & sort
+ * - [pagedSearchResults]: paginated filtered tasks for active search queries
  *
  * All write operations are launched in [viewModelScope]. Repository handles dispatcher switching.
  */
@@ -33,8 +33,6 @@ class TaskViewModel @Inject constructor(
 
     // Single source of truth for UI state
     data class TaskUiState(
-        val tasks: List<Task> = emptyList(),
-        val searchResults: List<Task> = emptyList(),
         val isLoading: Boolean = false,
         val currentFilter: TaskFilter = TaskFilter.PENDING,
         val searchQuery: String = "",
@@ -116,12 +114,6 @@ class TaskViewModel @Inject constructor(
     // Events flow for UI notifications
     private val _events = MutableSharedFlow<UiEvent>()
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
-
-    // Legacy flows for backward compatibility (deprecated - use paging instead)
-    val currentTasks: StateFlow<List<Task>> = _uiState.map { it.tasks }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val searchResults: StateFlow<List<Task>> = _uiState.map { it.searchResults }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Public helpers to emit events from UI layer safely
     fun postToast(message: String) {

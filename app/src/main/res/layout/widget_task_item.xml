@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_task_item_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/widget_item_background"
+    android:padding="12dp"
+    android:gravity="center_vertical">
+
+    <!-- Priority Indicator -->
+    <View
+        android:id="@+id/widget_priority_indicator"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="12dp"
+        android:background="@color/priority_medium" />
+
+    <!-- Task Content -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Task Title -->
+        <TextView
+            android:id="@+id/widget_task_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Task Title"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="?android:attr/textColorPrimary"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <!-- Task Description -->
+        <TextView
+            android:id="@+id/widget_task_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Task Description"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_marginTop="4dp"
+            android:visibility="gone" />
+
+        <!-- Due Date -->
+        <TextView
+            android:id="@+id/widget_task_due_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Due: Jan 01, 12:00"
+            android:textSize="11sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:layout_marginTop="4dp"
+            android:visibility="gone"
+            android:drawablePadding="4dp"
+            android:drawableStart="@drawable/ic_notification_reminder"
+            android:drawableTint="?android:attr/textColorSecondary" />
+
+    </LinearLayout>
+
+</LinearLayout>

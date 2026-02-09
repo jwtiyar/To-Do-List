@@ -162,9 +162,6 @@ dependencies {
     // RecyclerView
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     
-    // CardView (deprecated in favor of MaterialCardView)
-    implementation 'androidx.cardview:cardview:1.0.0'
-    
     // Lifecycle components
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.9.2'

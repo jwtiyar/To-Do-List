@@ -1,13 +1,16 @@
 package io.github.jwtiyar.simplertask
 
+import android.Manifest
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -56,8 +59,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navigationDelegate: NavigationDelegate
     private lateinit var searchDelegate: SearchDelegate
 
-    companion object {
-        private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
+    // Modern permission launcher using ActivityResultContracts
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Snackbar.make(binding.root, getString(R.string.notification_permission_granted), Snackbar.LENGTH_SHORT).show()
+        } else {
+            Snackbar.make(binding.root, getString(R.string.notification_permission_denied), Snackbar.LENGTH_LONG).show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,7 +110,7 @@ class MainActivity : AppCompatActivity() {
         binding.fabAddTask.post { binding.root.requestApplyInsets() }
 
         observeViewModel()
-        permissionManager.checkAndRequestPostNotificationPermission(REQUEST_CODE_POST_NOTIFICATIONS)
+        requestNotificationPermission()
         permissionManager.checkAndRequestExactAlarmPermission(binding.root)
 
         // Setup UI through delegates
@@ -136,14 +146,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
-            if (grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                Snackbar.make(binding.root, getString(R.string.notification_permission_granted), Snackbar.LENGTH_SHORT).show()
-            } else {
-                Snackbar.make(binding.root, getString(R.string.notification_permission_denied), Snackbar.LENGTH_LONG).show()
-            }
+    /**
+     * Request notification permission using modern ActivityResultContracts API
+     */
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 
