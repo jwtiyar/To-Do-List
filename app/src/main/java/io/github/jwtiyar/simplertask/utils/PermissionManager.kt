@@ -10,12 +10,20 @@ import android.provider.Settings
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.scopes.ActivityScoped
 import io.github.jwtiyar.simplertask.R
+import javax.inject.Inject
 
 /**
  * Manages runtime permissions and system settings requests for the app.
  */
-class PermissionManager(private val activity: AppCompatActivity) {
+@ActivityScoped
+class PermissionManager @Inject constructor() {
+    private lateinit var activity: AppCompatActivity
+
+    fun attach(activity: AppCompatActivity) {
+        this.activity = activity
+    }
 
     fun checkAndRequestPostNotificationPermission(requestCode: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

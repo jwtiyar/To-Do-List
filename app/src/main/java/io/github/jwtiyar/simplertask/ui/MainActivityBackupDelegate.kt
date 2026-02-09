@@ -3,22 +3,31 @@ package io.github.jwtiyar.simplertask.ui
 import android.net.Uri
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.scopes.ActivityScoped
 import io.github.jwtiyar.simplertask.R
 import io.github.jwtiyar.simplertask.data.backup.BackupManager
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
 /**
  * Handles the UI logic for backup and restore operations in MainActivity.
  */
-class MainActivityBackupDelegate(
-    private val activity: AppCompatActivity,
-    private val taskViewModel: TaskViewModel,
+@ActivityScoped
+class MainActivityBackupDelegate @Inject constructor(
     private val backupManager: BackupManager
 ) {
+    private lateinit var activity: AppCompatActivity
+    private lateinit var taskViewModel: TaskViewModel
+
+    fun attach(activity: AppCompatActivity) {
+        this.activity = activity
+        this.taskViewModel = ViewModelProvider(activity)[TaskViewModel::class.java]
+    }
 
     fun generateBackupFilename(): String {
         return backupManager.generateBackupFilename()

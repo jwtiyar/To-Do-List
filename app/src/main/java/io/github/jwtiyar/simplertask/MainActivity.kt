@@ -1,7 +1,6 @@
 package io.github.jwtiyar.simplertask
 
 import android.Manifest
-import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -43,21 +42,20 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     
-    @Inject
-    lateinit var notificationHelper: NotificationHelper
-    
-    @Inject
-    lateinit var backupManager: BackupManager
-    
-    private lateinit var dialogManager: TaskDialogManager
-    private val taskViewModel: TaskViewModel by viewModels()
-    private lateinit var permissionManager: PermissionManager
-    private lateinit var backupDelegate: MainActivityBackupDelegate
+    @Inject lateinit var notificationHelper: NotificationHelper
+    @Inject lateinit var backupManager: BackupManager
+    @Inject lateinit var dialogManager: TaskDialogManager
+    @Inject lateinit var permissionManager: PermissionManager
+    @Inject lateinit var backupDelegate: MainActivityBackupDelegate
+    @Inject lateinit var uiDelegate: MainUiDelegate
+    @Inject lateinit var navigationDelegate: NavigationDelegate
+    @Inject lateinit var searchDelegate: SearchDelegate
 
-    // Delegates for different responsibilities
-    private lateinit var uiDelegate: MainUiDelegate
-    private lateinit var navigationDelegate: NavigationDelegate
-    private lateinit var searchDelegate: SearchDelegate
+    private val taskViewModel: TaskViewModel by viewModels()
+
+    companion object {
+        private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
+    }
 
     // Modern permission launcher using ActivityResultContracts
     private val notificationPermissionLauncher = registerForActivityResult(
@@ -79,14 +77,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.topAppBar)
 
-        dialogManager = TaskDialogManager(this)
-        permissionManager = PermissionManager(this)
-        backupDelegate = MainActivityBackupDelegate(this, taskViewModel, backupManager)
-
-        // Initialize delegates
-        uiDelegate = MainUiDelegate(this, binding, taskViewModel, notificationHelper, dialogManager)
-        navigationDelegate = NavigationDelegate(this, binding, taskViewModel, backupDelegate, notificationHelper, uiDelegate)
-        searchDelegate = SearchDelegate(this, binding, taskViewModel, uiDelegate)
+        // Attach Activity/Binding context to ActivityScoped delegates
+        dialogManager.attach(this)
+        permissionManager.attach(this)
+        backupDelegate.attach(this)
+        uiDelegate.attach(this, binding)
+        navigationDelegate.attach(this, binding)
+        searchDelegate.attach(this, binding)
 
         // Apply window insets
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->

@@ -1,32 +1,32 @@
 package io.github.jwtiyar.simplertask.ui
 
-import android.content.Intent
 import android.view.MenuItem
-import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
-import com.google.android.material.snackbar.Snackbar
+import androidx.lifecycle.ViewModelProvider
+import dagger.hilt.android.scopes.ActivityScoped
 import io.github.jwtiyar.simplertask.MainActivity
 import io.github.jwtiyar.simplertask.R
 import io.github.jwtiyar.simplertask.databinding.ActivityMainBinding
 import io.github.jwtiyar.simplertask.service.NotificationHelper
-import io.github.jwtiyar.simplertask.ui.MainActivityBackupDelegate
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
+import javax.inject.Inject
 
 /**
  * Delegate responsible for navigation drawer and menu functionality in MainActivity.
  * Handles drawer navigation, theme selection, and menu item actions.
  */
-class NavigationDelegate(
-    private val activity: MainActivity,
-    private val binding: ActivityMainBinding,
-    private val viewModel: TaskViewModel,
+@ActivityScoped
+class NavigationDelegate @Inject constructor(
     private val backupDelegate: MainActivityBackupDelegate,
     private val notificationHelper: NotificationHelper,
     private val uiDelegate: MainUiDelegate
 ) {
+    private lateinit var activity: MainActivity
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var viewModel: TaskViewModel
 
     // Activity result launchers for file operations
     private val exportBackupLauncher = activity.registerForActivityResult(
@@ -39,6 +39,12 @@ class NavigationDelegate(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let { backupDelegate.importBackupFromUri(it) }
+    }
+
+    fun attach(activity: MainActivity, binding: ActivityMainBinding) {
+        this.activity = activity
+        this.binding = binding
+        this.viewModel = ViewModelProvider(activity)[TaskViewModel::class.java]
     }
 
     fun setupNavigationDrawer() {

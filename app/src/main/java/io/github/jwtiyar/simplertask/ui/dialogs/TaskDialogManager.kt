@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.EditText
-import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.TextView
@@ -17,22 +16,29 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import dagger.hilt.android.scopes.ActivityScoped
 import io.github.jwtiyar.simplertask.R
 import io.github.jwtiyar.simplertask.data.local.entity.Priority
 import io.github.jwtiyar.simplertask.data.local.entity.RecurrenceType
 import io.github.jwtiyar.simplertask.data.local.entity.Task
-import io.github.jwtiyar.simplertask.data.local.entity.Category
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
-class TaskDialogManager(private val context: FragmentActivity) {
+@ActivityScoped
+class TaskDialogManager @Inject constructor() {
     
+    private lateinit var activity: FragmentActivity
     private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+
+    fun attach(activity: FragmentActivity) {
+        this.activity = activity
+    }
     
     fun showAddTaskDialog(onTaskAdded: (Task) -> Unit) {
-        val view = LayoutInflater.from(context).inflate(R.layout.dialog_add_task, null)
+        val view = LayoutInflater.from(activity).inflate(R.layout.dialog_add_task, null)
         val titleInput = view.findViewById<EditText>(R.id.editTextTitle)
         val descInput = view.findViewById<EditText>(R.id.editTextDescription)
         val chipGroup = view.findViewById<ChipGroup>(R.id.chipGroupPriority)
@@ -47,13 +53,11 @@ class TaskDialogManager(private val context: FragmentActivity) {
         val editRecurrenceInterval = view.findViewById<EditText>(R.id.editRecurrenceInterval)
         val spinnerRecurrenceType = view.findViewById<Spinner>(R.id.spinnerRecurrenceType)
         val radioGroupRecurrenceEnd = view.findViewById<RadioGroup>(R.id.radioGroupRecurrenceEnd)
-        val btnRecurrenceEndDate = view.findViewById<MaterialButton>(R.id.btnRecurrenceEndDate)
-
 
         // Category selection
         val spinnerCategory = view.findViewById<AutoCompleteTextView>(R.id.spinnerCategory)
         val categoryNames = arrayOf("No Category", "Work", "Personal", "Health", "Learning", "Shopping", "Home")
-        val categoryAdapter = ArrayAdapter(context, android.R.layout.simple_dropdown_item_1line, categoryNames)
+        val categoryAdapter = ArrayAdapter(activity, android.R.layout.simple_dropdown_item_1line, categoryNames)
         spinnerCategory.setAdapter(categoryAdapter)
         spinnerCategory.setText("No Category", false)
 
@@ -69,15 +73,15 @@ class TaskDialogManager(private val context: FragmentActivity) {
         var recurrenceType: RecurrenceType? = null
         var recurrenceInterval: Int = 1
         var recurrenceEndDate: Long? = null
-        var selectedEndDate: Long? = null
+        val selectedEndDate: Long? = null
 
         // Setup recurrence type spinner
         val recurrenceTypes = arrayOf(
-            context.getString(R.string.recurrence_daily),
-            context.getString(R.string.recurrence_weekly),
-            context.getString(R.string.recurrence_monthly)
+            activity.getString(R.string.recurrence_daily),
+            activity.getString(R.string.recurrence_weekly),
+            activity.getString(R.string.recurrence_monthly)
         )
-        val spinnerAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, recurrenceTypes)
+        val spinnerAdapter = ArrayAdapter(activity, android.R.layout.simple_spinner_item, recurrenceTypes)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerRecurrenceType.adapter = spinnerAdapter
         spinnerRecurrenceType.setSelection(0) // Default to daily
@@ -126,7 +130,7 @@ class TaskDialogManager(private val context: FragmentActivity) {
                 updateDueDateMillis()
                 updateButtonTexts()
             }
-            datePicker.show(context.supportFragmentManager, "DATE_PICKER")
+            datePicker.show(activity.supportFragmentManager, "DATE_PICKER")
         }
         
         btnTime.setOnClickListener {
@@ -143,7 +147,7 @@ class TaskDialogManager(private val context: FragmentActivity) {
                 updateDueDateMillis()
                 updateButtonTexts()
             }
-            timePicker.show(context.supportFragmentManager, "TIME_PICKER")
+            timePicker.show(activity.supportFragmentManager, "TIME_PICKER")
         }
 
         updateButtonTexts()
@@ -155,11 +159,10 @@ class TaskDialogManager(private val context: FragmentActivity) {
                 recurrenceType = null
                 recurrenceInterval = 1
                 recurrenceEndDate = null
-                selectedEndDate = null
             }
         }
 
-        AlertDialog.Builder(context)
+        AlertDialog.Builder(activity)
             .setView(view)
             .setPositiveButton(R.string.add) { _, _ ->
                 val title = titleInput.text?.toString()?.trim().orEmpty()
@@ -186,7 +189,6 @@ class TaskDialogManager(private val context: FragmentActivity) {
                         } else null
                     }
 
-                    // Create the task with recurrence settings
                     // Handle category selection
                     val selectedCategory = when (spinnerCategory.text.toString()) {
                         "Work" -> 1
@@ -223,7 +225,7 @@ class TaskDialogManager(private val context: FragmentActivity) {
     }
 
     fun showEditTaskDialog(task: Task, onTaskUpdated: (Task) -> Unit) {
-        val view = LayoutInflater.from(context).inflate(R.layout.dialog_add_task, null)
+        val view = LayoutInflater.from(activity).inflate(R.layout.dialog_add_task, null)
         val titleInput = view.findViewById<EditText>(R.id.editTextTitle)
         val descInput = view.findViewById<EditText>(R.id.editTextDescription)
         val chipGroup = view.findViewById<ChipGroup>(R.id.chipGroupPriority)
@@ -302,7 +304,7 @@ class TaskDialogManager(private val context: FragmentActivity) {
                 updateDueDateMillis()
                 updateButtonTexts()
             }
-            datePicker.show(context.supportFragmentManager, "DATE_PICKER")
+            datePicker.show(activity.supportFragmentManager, "DATE_PICKER")
         }
         
         btnTime.setOnClickListener {
@@ -319,12 +321,12 @@ class TaskDialogManager(private val context: FragmentActivity) {
                 updateDueDateMillis()
                 updateButtonTexts()
             }
-            timePicker.show(context.supportFragmentManager, "TIME_PICKER")
+            timePicker.show(activity.supportFragmentManager, "TIME_PICKER")
         }
         
         updateButtonTexts()
 
-        AlertDialog.Builder(context)
+        AlertDialog.Builder(activity)
             .setView(view)
             .setPositiveButton(R.string.button_save) { _, _ ->
                 val updated = task.copy(

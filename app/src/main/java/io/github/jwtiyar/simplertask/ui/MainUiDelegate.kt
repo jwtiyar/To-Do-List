@@ -1,15 +1,11 @@
 package io.github.jwtiyar.simplertask.ui
 
 import android.view.View
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.Lifecycle
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.search.SearchView
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
+import dagger.hilt.android.scopes.ActivityScoped
 import io.github.jwtiyar.simplertask.MainActivity
 import io.github.jwtiyar.simplertask.R
 import io.github.jwtiyar.simplertask.data.local.entity.Task
@@ -17,28 +13,34 @@ import io.github.jwtiyar.simplertask.data.local.entity.isRecurring
 import io.github.jwtiyar.simplertask.data.model.TaskAction
 import io.github.jwtiyar.simplertask.databinding.ActivityMainBinding
 import io.github.jwtiyar.simplertask.service.NotificationHelper
-import io.github.jwtiyar.simplertask.ui.adapters.TaskAdapter
 import io.github.jwtiyar.simplertask.ui.adapters.TaskPagingAdapter
 import io.github.jwtiyar.simplertask.ui.dialogs.TaskDialogManager
 import io.github.jwtiyar.simplertask.ui.fragments.TaskListFragment
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
-import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Delegate responsible for MainActivity UI setup and management.
  * Handles ViewPager, buttons, search UI, and basic UI interactions.
  */
-class MainUiDelegate(
-    private val activity: MainActivity,
-    private val binding: ActivityMainBinding,
-    private val viewModel: TaskViewModel,
+@ActivityScoped
+class MainUiDelegate @Inject constructor(
     private val notificationHelper: NotificationHelper,
     private val dialogManager: TaskDialogManager
 ) {
+    private lateinit var activity: MainActivity
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var viewModel: TaskViewModel
 
     lateinit var searchAdapter: TaskPagingAdapter
         private set
     private var currentTaskFilter: TaskViewModel.TaskFilter = TaskViewModel.TaskFilter.PENDING
+
+    fun attach(activity: MainActivity, binding: ActivityMainBinding) {
+        this.activity = activity
+        this.binding = binding
+        this.viewModel = ViewModelProvider(activity)[TaskViewModel::class.java]
+    }
 
     fun setupViewPager() {
         val pagerAdapter = TasksPagerAdapter(activity)
@@ -127,6 +129,18 @@ class MainUiDelegate(
                     TaskAction.UNARCHIVE -> R.string.task_unarchived
                 }
                 viewModel.postToast(activity.getString(msgRes))
+            },
+            onSwipeComplete = { task, _ ->
+                viewModel.toggleTaskCompletion(task)
+                viewModel.postSnackbar(
+                    message = activity.getString(R.string.task_completed, task.title),
+                    actionLabel = activity.getString(R.string.undo),
+                    action = { viewModel.toggleTaskCompletion(task) }
+                )
+            },
+            onSwipeDelete = { task, _ ->
+                viewModel.deleteTask(task)
+                viewModel.postToast(activity.getString(R.string.task_deleted, task.title))
             }
         )
         binding.searchRecyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(activity)
@@ -139,8 +153,6 @@ class MainUiDelegate(
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
-
-        // Search view transition handling is now in SearchDelegate
     }
 
     private fun showEditTaskDialog(task: Task) {

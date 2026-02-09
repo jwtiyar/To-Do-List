@@ -68,7 +68,7 @@ class TaskListFragment : Fragment() {
         arguments?.getString(ARG_FILTER_TYPE)?.let { filterName ->
             filterType = TaskViewModel.TaskFilter.valueOf(filterName)
         }
-        dialogManager = TaskDialogManager(requireActivity())
+        dialogManager.attach(requireActivity())
     }
 
     override fun onCreateView(
