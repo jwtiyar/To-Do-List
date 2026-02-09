@@ -129,13 +129,30 @@ class TaskListFragment : Fragment() {
                 taskViewModel.postToast(getString(msgRes))
             },
             onSwipeComplete = { task, position ->
-                // Handle swipe to complete
-                taskViewModel.toggleTaskCompletion(task)
-                taskViewModel.postSnackbar(
-                    message = getString(R.string.task_completed, task.title),
-                    actionLabel = getString(R.string.undo),
-                    action = { taskViewModel.toggleTaskCompletion(task) }
-                )
+                viewLifecycleOwner.lifecycleScope.launch {
+                    // Toggle completion
+                    val wasCompleted = task.isCompleted
+                    val nextTaskId = taskViewModel.toggleTaskCompletion(task)
+                    
+                    val message = if (!wasCompleted) 
+                        getString(R.string.task_completed, task.title) 
+                    else 
+                        getString(R.string.task_pending, task.title)
+
+                    taskViewModel.postSnackbar(
+                        message = message,
+                        actionLabel = getString(R.string.undo),
+                        action = { 
+                            // 1. Explicitly set the task back to its original completion state
+                            taskViewModel.setTaskCompletion(task, wasCompleted) 
+                            
+                            // 2. If a next occurrence was created, remove it
+                            nextTaskId?.let { id ->
+                                taskViewModel.deleteTaskById(id)
+                            }
+                        }
+                    )
+                }
             },
             onSwipeDelete = { task, position ->
                 // Delete immediately and provide Undo option
@@ -144,13 +161,8 @@ class TaskListFragment : Fragment() {
                     message = getString(R.string.task_deleted, task.title),
                     actionLabel = getString(R.string.undo),
                     action = { 
-                        taskViewModel.addTask(
-                            title = task.title,
-                            description = task.description,
-                            priority = task.priority,
-                            dueDateMillis = task.dueDateMillis,
-                            categoryId = task.categoryId
-                        )
+                        // Restore the exact task object (preserving ID and metadata)
+                        taskViewModel.insertTask(task)
                     }
                 )
             }
@@ -264,12 +276,24 @@ class TaskListFragment : Fragment() {
         val swipeCallback = TaskSwipeCallback(
             context = requireContext(),
             onSwipeComplete = { task, position ->
-                taskViewModel.toggleTaskCompletion(task)
-                taskViewModel.postSnackbar(
-                    message = getString(R.string.task_completed, task.title),
-                    actionLabel = getString(R.string.undo),
-                    action = { taskViewModel.toggleTaskCompletion(task) }
-                )
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val wasCompleted = task.isCompleted
+                    val nextTaskId = taskViewModel.toggleTaskCompletion(task)
+                    
+                    val message = if (!wasCompleted) 
+                        getString(R.string.task_completed, task.title) 
+                    else 
+                        getString(R.string.task_pending, task.title)
+
+                    taskViewModel.postSnackbar(
+                        message = message,
+                        actionLabel = getString(R.string.undo),
+                        action = { 
+                            taskViewModel.setTaskCompletion(task, wasCompleted) 
+                            nextTaskId?.let { id -> taskViewModel.deleteTaskById(id) }
+                        }
+                    )
+                }
             },
             onSwipeDelete = { task, position ->
                 taskViewModel.deleteTask(task)
@@ -277,13 +301,7 @@ class TaskListFragment : Fragment() {
                     message = getString(R.string.task_deleted, task.title),
                     actionLabel = getString(R.string.undo),
                     action = { 
-                        taskViewModel.addTask(
-                            title = task.title,
-                            description = task.description,
-                            priority = task.priority,
-                            dueDateMillis = task.dueDateMillis,
-                            categoryId = task.categoryId
-                        )
+                        taskViewModel.insertTask(task)
                     }
                 )
             }

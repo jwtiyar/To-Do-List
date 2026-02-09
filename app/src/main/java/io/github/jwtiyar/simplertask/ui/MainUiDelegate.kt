@@ -3,6 +3,7 @@ package io.github.jwtiyar.simplertask.ui
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.scopes.ActivityScoped
@@ -17,6 +18,7 @@ import io.github.jwtiyar.simplertask.ui.adapters.TaskPagingAdapter
 import io.github.jwtiyar.simplertask.ui.dialogs.TaskDialogManager
 import io.github.jwtiyar.simplertask.ui.fragments.TaskListFragment
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -116,15 +118,17 @@ class MainUiDelegate @Inject constructor(
     private fun createSearchAdapter(): TaskPagingAdapter {
         return TaskPagingAdapter(
             onTaskClick = { task ->
-                viewModel.updateTask(task)
-                val message = if (task.isCompleted) {
-                    notificationHelper.cancelNotification(task)
-                    activity.getString(R.string.task_completed, task.title)
-                } else {
-                    if (task.dueDateMillis != null) notificationHelper.scheduleNotification(task)
-                    activity.getString(R.string.task_pending, task.title)
+                activity.lifecycleScope.launch {
+                    viewModel.updateTask(task)
+                    val message = if (task.isCompleted) {
+                        notificationHelper.cancelNotification(task)
+                        activity.getString(R.string.task_completed, task.title)
+                    } else {
+                        if (task.dueDateMillis != null) notificationHelper.scheduleNotification(task)
+                        activity.getString(R.string.task_pending, task.title)
+                    }
+                    viewModel.postToast(message)
                 }
-                viewModel.postToast(message)
             },
             onEditClick = { task -> showEditTaskDialog(task) },
             onTaskAction = { task, action ->
@@ -144,16 +148,32 @@ class MainUiDelegate @Inject constructor(
                 viewModel.postToast(activity.getString(msgRes))
             },
             onSwipeComplete = { task, _ ->
-                viewModel.toggleTaskCompletion(task)
-                viewModel.postSnackbar(
-                    message = activity.getString(R.string.task_completed, task.title),
-                    actionLabel = activity.getString(R.string.undo),
-                    action = { viewModel.toggleTaskCompletion(task) }
-                )
+                activity.lifecycleScope.launch {
+                    val wasCompleted = task.isCompleted
+                    val nextTaskId = viewModel.toggleTaskCompletion(task)
+                    
+                    val message = if (!wasCompleted) 
+                        activity.getString(R.string.task_completed, task.title) 
+                    else 
+                        activity.getString(R.string.task_pending, task.title)
+
+                    viewModel.postSnackbar(
+                        message = message,
+                        actionLabel = activity.getString(R.string.undo),
+                        action = { 
+                            viewModel.setTaskCompletion(task, wasCompleted)
+                            nextTaskId?.let { id -> viewModel.deleteTaskById(id) }
+                        }
+                    )
+                }
             },
             onSwipeDelete = { task, _ ->
                 viewModel.deleteTask(task)
-                viewModel.postToast(activity.getString(R.string.task_deleted, task.title))
+                viewModel.postSnackbar(
+                    message = activity.getString(R.string.task_deleted, task.title),
+                    actionLabel = activity.getString(R.string.undo),
+                    action = { viewModel.insertTask(task) }
+                )
             }
         )
     }

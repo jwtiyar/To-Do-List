@@ -147,9 +147,9 @@ class TaskRepository @Inject constructor(
         taskDao.clearAllTasks()
     }
 
-    /** Create next occurrence of a recurring task */
-    suspend fun createNextRecurringTask(completedTask: Task): Unit = withContext(Dispatchers.IO) {
-        if (!completedTask.isRecurring()) return@withContext
+    /** Create next occurrence of a recurring task. Returns new task ID or null. */
+    suspend fun createNextRecurringTask(completedTask: Task): Long? = withContext(Dispatchers.IO) {
+        if (!completedTask.isRecurring()) return@withContext null
 
         val nextDueDate: Long? = completedTask.getNextDueDate()
         if (nextDueDate != null) {
@@ -160,7 +160,8 @@ class TaskRepository @Inject constructor(
                 notificationId = null, // Will be assigned when notification is scheduled
                 parentTaskId = completedTask.parentTaskId ?: completedTask.id // Link to original task
             )
-            insertTask(nextTask)
+            return@withContext insertTask(nextTask)
         }
+        null
     }
 }

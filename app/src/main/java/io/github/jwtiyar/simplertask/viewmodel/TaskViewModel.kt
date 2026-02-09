@@ -166,6 +166,18 @@ class TaskViewModel @Inject constructor(
     }
 
     /**
+     * Re-insert a task (used for Undo)
+     */
+    fun insertTask(task: Task) {
+        launchWithError(
+            onError = { postSnackbar("Failed to restore task: ${it.message}") }
+        ) {
+            repository.insertTask(task)
+            refreshWidgets()
+        }
+    }
+
+    /**
      * Add a new recurring task
      */
     fun addRecurringTask(
@@ -212,19 +224,41 @@ class TaskViewModel @Inject constructor(
     }
 
     /**
-     * Toggle task completion status
+     * Set task completion status explicitly
      */
-    fun toggleTaskCompletion(task: Task) {
-        launchWithError({ postSnackbar("Failed to toggle task: ${it.message}") }) {
-            val wasCompleted = task.isCompleted
-            repository.toggleTaskCompletion(task)
-
-            // If this was a recurring task that just got completed, create the next occurrence
-            if (!wasCompleted && task.isRecurring()) {
-                repository.createNextRecurringTask(task)
-                postToast("Task completed! Next occurrence created.")
-            }
+    fun setTaskCompletion(task: Task, isCompleted: Boolean) {
+        launchWithError({ postSnackbar("Failed to update task: ${it.message}") }) {
+            repository.updateTask(task.copy(isCompleted = isCompleted))
             refreshWidgets()
+        }
+    }
+
+    /**
+     * Toggle task completion status. Returns ID of next occurrence if created.
+     */
+    suspend fun toggleTaskCompletion(task: Task): Long? {
+        val wasCompleted = task.isCompleted
+        repository.toggleTaskCompletion(task)
+
+        var nextTaskId: Long? = null
+        // If this was a recurring task that just got completed, create the next occurrence
+        if (!wasCompleted && task.isRecurring()) {
+            nextTaskId = repository.createNextRecurringTask(task)
+            postToast("Task completed! Next occurrence created.")
+        }
+        refreshWidgets()
+        return nextTaskId
+    }
+
+    /**
+     * Delete a task by ID
+     */
+    fun deleteTaskById(id: Long) {
+        viewModelScope.launch {
+            repository.getTaskById(id)?.let {
+                repository.deleteTask(it)
+                refreshWidgets()
+            }
         }
     }
 
