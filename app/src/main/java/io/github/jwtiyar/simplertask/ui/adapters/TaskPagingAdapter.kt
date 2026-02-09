@@ -60,8 +60,6 @@ class TaskPagingAdapter(
             }
             binding.chipPriority.setBackgroundResource(R.drawable.chip_priority_bg)
             binding.chipPriority.background.setTint(binding.root.context.getColor(chipColor))
-            binding.taskCheckBox.setOnCheckedChangeListener(null)
-            binding.taskCheckBox.isChecked = task.isCompleted
             if (task.dueDateMillis != null) {
                 val ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.dueDateMillis!!), ZoneId.systemDefault())
                 binding.taskScheduledTime.text = binding.root.context.getString(R.string.due_prefix, ldt.format(timeFormatter))
@@ -69,13 +67,6 @@ class TaskPagingAdapter(
             } else binding.taskScheduledTime.visibility = android.view.View.GONE
 
             updateVisualState(task)
-            var previousChecked = binding.taskCheckBox.isChecked
-            binding.taskCheckBox.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked != previousChecked) {
-                    previousChecked = isChecked
-                    onTaskClick(task.copy(isCompleted = isChecked))
-                }
-            }
             binding.root.setOnLongClickListener { showActions(task); true }
             binding.btnEditTask.setOnClickListener { onEditClick(task) }
         }
