@@ -1,6 +1,7 @@
 package io.github.jwtiyar.simplertask.ui
 
 import android.view.MenuItem
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
@@ -24,33 +25,37 @@ class NavigationDelegate @Inject constructor(
     private val notificationHelper: NotificationHelper,
     private val uiDelegate: MainUiDelegate
 ) {
-    private lateinit var activity: MainActivity
-    private lateinit var binding: ActivityMainBinding
+    private var activity: MainActivity? = null
+    private var binding: ActivityMainBinding? = null
     private lateinit var viewModel: TaskViewModel
 
-    // Activity result launchers for file operations
-    private val exportBackupLauncher = activity.registerForActivityResult(
-        ActivityResultContracts.CreateDocument("application/json")
-    ) { uri ->
-        uri?.let { backupDelegate.exportBackupToUri(it) }
-    }
-
-    private val importBackupLauncher = activity.registerForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri?.let { backupDelegate.importBackupFromUri(it) }
-    }
+    private var exportBackupLauncher: ActivityResultLauncher<String>? = null
+    private var importBackupLauncher: ActivityResultLauncher<Array<String>>? = null
 
     fun attach(activity: MainActivity, binding: ActivityMainBinding) {
         this.activity = activity
         this.binding = binding
         this.viewModel = ViewModelProvider(activity)[TaskViewModel::class.java]
+
+        // Register launchers during attach (which is called during onCreate)
+        exportBackupLauncher = activity.registerForActivityResult(
+            ActivityResultContracts.CreateDocument("application/json")
+        ) { uri ->
+            uri?.let { backupDelegate.exportBackupToUri(it) }
+        }
+
+        importBackupLauncher = activity.registerForActivityResult(
+            ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            uri?.let { backupDelegate.importBackupFromUri(it) }
+        }
     }
 
     fun setupNavigationDrawer() {
-        val drawerLayout = binding.drawerLayout
-        val navigationView = binding.navigationView
-        binding.topAppBar.setNavigationOnClickListener { drawerLayout.openDrawer(GravityCompat.START) }
+        val currentBinding = binding ?: return
+        val drawerLayout = currentBinding.drawerLayout
+        val navigationView = currentBinding.navigationView
+        currentBinding.topAppBar.setNavigationOnClickListener { drawerLayout.openDrawer(GravityCompat.START) }
         navigationView.setCheckedItem(R.id.nav_all_tasks)
         navigationView.setNavigationItemSelectedListener { item ->
             handleNavigationItemSelected(item)
@@ -59,33 +64,35 @@ class NavigationDelegate @Inject constructor(
     }
 
     private fun handleNavigationItemSelected(item: MenuItem): Boolean {
-        val drawerLayout = binding.drawerLayout
-        val navigationView = binding.navigationView
+        val currentBinding = binding ?: return true
+        val drawerLayout = currentBinding.drawerLayout
+        val navigationView = currentBinding.navigationView
+        val currentActivity = activity ?: return true
 
         when (item.itemId) {
             R.id.nav_all_tasks -> {
                 viewModel.loadTasks(TaskViewModel.TaskFilter.PENDING)
-                binding.viewPager.currentItem = 0
+                currentBinding.viewPager.currentItem = 0
                 uiDelegate.updateTabVisibility(true)
-                uiDelegate.updateUI(activity.getString(R.string.nav_all_tasks))
+                uiDelegate.updateUI(currentActivity.getString(R.string.nav_all_tasks))
                 navigationView.setCheckedItem(R.id.nav_all_tasks)
             }
             R.id.nav_saved_tasks -> {
                 viewModel.loadTasks(TaskViewModel.TaskFilter.SAVED)
                 uiDelegate.updateTabVisibility(false)
-                uiDelegate.updateUI(activity.getString(R.string.nav_saved_tasks))
+                uiDelegate.updateUI(currentActivity.getString(R.string.nav_saved_tasks))
                 navigationView.setCheckedItem(R.id.nav_saved_tasks)
             }
             R.id.nav_archive -> {
                 viewModel.loadTasks(TaskViewModel.TaskFilter.ARCHIVED)
                 uiDelegate.updateTabVisibility(false)
-                uiDelegate.updateUI(activity.getString(R.string.nav_archive))
+                uiDelegate.updateUI(currentActivity.getString(R.string.nav_archive))
                 navigationView.setCheckedItem(R.id.nav_archive)
             }
             R.id.nav_recurring -> {
                 viewModel.loadTasks(TaskViewModel.TaskFilter.RECURRING)
                 uiDelegate.updateTabVisibility(false)
-                uiDelegate.updateUI(activity.getString(R.string.nav_recurring_tasks))
+                uiDelegate.updateUI(currentActivity.getString(R.string.nav_recurring_tasks))
                 navigationView.setCheckedItem(R.id.nav_recurring)
             }
         }
@@ -94,7 +101,8 @@ class NavigationDelegate @Inject constructor(
     }
 
     fun showThemeSelectionDialog() {
-        val dialogView = activity.layoutInflater.inflate(R.layout.dialog_theme_selection, null)
+        val currentActivity = activity ?: return
+        val dialogView = currentActivity.layoutInflater.inflate(R.layout.dialog_theme_selection, null)
         val radioGroup = dialogView.findViewById<android.widget.RadioGroup>(R.id.radioGroupTheme)
         val radioLight = dialogView.findViewById<android.widget.RadioButton>(R.id.radioLight)
         val radioDark = dialogView.findViewById<android.widget.RadioButton>(R.id.radioDark)
@@ -106,41 +114,42 @@ class NavigationDelegate @Inject constructor(
             else -> radioSystem.isChecked = true
         }
 
-        AlertDialog.Builder(activity)
+        AlertDialog.Builder(currentActivity)
             .setView(dialogView)
-            .setTitle(activity.getString(R.string.dialog_theme_title))
-            .setPositiveButton(activity.getString(R.string.button_ok)) { _, _ ->
+            .setTitle(currentActivity.getString(R.string.dialog_theme_title))
+            .setPositiveButton(currentActivity.getString(R.string.button_ok)) { _, _ ->
                 when (radioGroup.checkedRadioButtonId) {
                     R.id.radioLight -> {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                        viewModel.postToast(activity.getString(R.string.theme_light))
+                        viewModel.postToast(currentActivity.getString(R.string.theme_light))
                     }
                     R.id.radioDark -> {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                        viewModel.postToast(activity.getString(R.string.theme_dark))
+                        viewModel.postToast(currentActivity.getString(R.string.theme_dark))
                     }
                     R.id.radioSystem -> {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                        viewModel.postToast(activity.getString(R.string.theme_system_default))
+                        viewModel.postToast(currentActivity.getString(R.string.theme_system_default))
                     }
                 }
             }
-            .setNegativeButton(activity.getString(R.string.cancel), null)
+            .setNegativeButton(currentActivity.getString(R.string.cancel), null)
             .show()
     }
 
     fun showAboutDialog() {
-        val v = activity.layoutInflater.inflate(R.layout.dialog_about, null)
-        AlertDialog.Builder(activity).setView(v).setTitle(activity.getString(R.string.dialog_about_title)).setPositiveButton(activity.getString(R.string.button_ok), null).show()
+        val currentActivity = activity ?: return
+        val v = currentActivity.layoutInflater.inflate(R.layout.dialog_about, null)
+        AlertDialog.Builder(currentActivity).setView(v).setTitle(currentActivity.getString(R.string.dialog_about_title)).setPositiveButton(currentActivity.getString(R.string.button_ok), null).show()
     }
 
     fun startExportBackup() {
         val filename = backupDelegate.generateBackupFilename()
-        exportBackupLauncher.launch(filename)
+        exportBackupLauncher?.launch(filename)
     }
 
     fun startImportBackup() {
-        importBackupLauncher.launch(arrayOf("application/json", "text/plain"))
+        importBackupLauncher?.launch(arrayOf("application/json", "text/plain"))
     }
 
     fun handleNotificationSettings() {

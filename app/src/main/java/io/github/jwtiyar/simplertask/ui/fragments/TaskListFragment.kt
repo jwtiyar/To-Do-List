@@ -47,7 +47,8 @@ class TaskListFragment : Fragment() {
     @Inject
     lateinit var notificationHelper: NotificationHelper
     
-    private lateinit var dialogManager: TaskDialogManager
+    @Inject
+    lateinit var dialogManager: TaskDialogManager
 
     private var filterType: TaskViewModel.TaskFilter = TaskViewModel.TaskFilter.PENDING
 

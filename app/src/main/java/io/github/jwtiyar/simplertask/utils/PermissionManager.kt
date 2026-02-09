@@ -19,51 +19,53 @@ import javax.inject.Inject
  */
 @ActivityScoped
 class PermissionManager @Inject constructor() {
-    private lateinit var activity: AppCompatActivity
+    private var activity: AppCompatActivity? = null
 
     fun attach(activity: AppCompatActivity) {
         this.activity = activity
     }
 
     fun checkAndRequestPostNotificationPermission(requestCode: Int) {
+        val currentActivity = activity ?: return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activity.requestPermissionCompat(
+            currentActivity.requestPermissionCompat(
                 Manifest.permission.POST_NOTIFICATIONS,
-                activity.getString(R.string.notification_permission_needed),
+                currentActivity.getString(R.string.notification_permission_needed),
                 requestCode
             )
         }
     }
 
     fun checkAndRequestExactAlarmPermission(rootView: android.view.View) {
+        val currentActivity = activity ?: return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = activity.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val alarmManager = currentActivity.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
-                AlertDialog.Builder(activity)
-                    .setTitle(activity.getString(R.string.exact_alarm_permission_title))
-                    .setMessage(activity.getString(R.string.exact_alarm_permission_message))
-                    .setPositiveButton(activity.getString(R.string.button_open_settings)) { _, _ ->
+                AlertDialog.Builder(currentActivity)
+                    .setTitle(currentActivity.getString(R.string.exact_alarm_permission_title))
+                    .setMessage(currentActivity.getString(R.string.exact_alarm_permission_message))
+                    .setPositiveButton(currentActivity.getString(R.string.button_open_settings)) { _, _ ->
                         Intent().apply {
                             action = Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
-                            data = Uri.fromParts("package", activity.packageName, null)
+                            data = Uri.fromParts("package", currentActivity.packageName, null)
                         }.also {
                             try {
-                                activity.startActivity(it)
+                                currentActivity.startActivity(it)
                             } catch (_: Exception) {
-                                activity.startActivity(
+                                currentActivity.startActivity(
                                     Intent(
                                         Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                        Uri.fromParts("package", activity.packageName, null)
+                                        Uri.fromParts("package", currentActivity.packageName, null)
                                     )
                                 )
                             }
                         }
                     }
-                    .setNegativeButton(activity.getString(R.string.cancel)) { dialog, _ ->
+                    .setNegativeButton(currentActivity.getString(R.string.cancel)) { dialog, _ ->
                         dialog.dismiss()
                         Snackbar.make(
                             rootView,
-                            activity.getString(R.string.exact_alarm_not_granted),
+                            currentActivity.getString(R.string.exact_alarm_not_granted),
                             Snackbar.LENGTH_LONG
                         ).show()
                     }

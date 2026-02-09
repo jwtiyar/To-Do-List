@@ -40,6 +40,9 @@ class MainUiDelegate @Inject constructor(
         this.activity = activity
         this.binding = binding
         this.viewModel = ViewModelProvider(activity)[TaskViewModel::class.java]
+        
+        // Initialize searchAdapter here as it depends on viewModel and notificationHelper
+        searchAdapter = createSearchAdapter()
     }
 
     fun setupViewPager() {
@@ -97,11 +100,21 @@ class MainUiDelegate @Inject constructor(
 
     fun setupSearchBar() {
         binding.searchBar.setOnClickListener { binding.searchView.show() }
-        setupSearchView()
+        
+        binding.searchRecyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(activity)
+        binding.searchRecyclerView.adapter = searchAdapter
+
+        binding.searchView.editText.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                viewModel.searchTasks(s?.toString() ?: "")
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
     }
 
-    private fun setupSearchView() {
-        searchAdapter = TaskPagingAdapter(
+    private fun createSearchAdapter(): TaskPagingAdapter {
+        return TaskPagingAdapter(
             onTaskClick = { task ->
                 viewModel.updateTask(task)
                 val message = if (task.isCompleted) {
@@ -143,16 +156,6 @@ class MainUiDelegate @Inject constructor(
                 viewModel.postToast(activity.getString(R.string.task_deleted, task.title))
             }
         )
-        binding.searchRecyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(activity)
-        binding.searchRecyclerView.adapter = searchAdapter
-
-        binding.searchView.editText.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                viewModel.searchTasks(s?.toString() ?: "")
-            }
-            override fun afterTextChanged(s: android.text.Editable?) {}
-        })
     }
 
     private fun showEditTaskDialog(task: Task) {

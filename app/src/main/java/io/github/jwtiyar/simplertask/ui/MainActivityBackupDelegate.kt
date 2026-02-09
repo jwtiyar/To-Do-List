@@ -11,6 +11,8 @@ import io.github.jwtiyar.simplertask.data.backup.BackupManager
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.inject.Inject
 
@@ -21,7 +23,7 @@ import javax.inject.Inject
 class MainActivityBackupDelegate @Inject constructor(
     private val backupManager: BackupManager
 ) {
-    private lateinit var activity: AppCompatActivity
+    private var activity: AppCompatActivity? = null
     private lateinit var taskViewModel: TaskViewModel
 
     fun attach(activity: AppCompatActivity) {
@@ -30,51 +32,55 @@ class MainActivityBackupDelegate @Inject constructor(
     }
 
     fun generateBackupFilename(): String {
-        return backupManager.generateBackupFilename()
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"))
+        return "simplertask_backup_$timestamp.json"
     }
 
     fun exportBackupToUri(uri: Uri) {
-        activity.lifecycleScope.launch {
+        val currentActivity = activity ?: return
+        currentActivity.lifecycleScope.launch {
             try {
                 val tasks = taskViewModel.getAllTasksForBackup()
                 val backupJson = backupManager.exportTasks(tasks)
                 backupManager.writeToUri(uri, backupJson)
                 
-                taskViewModel.postToast(activity.getString(R.string.backup_exported, tasks.size))
+                taskViewModel.postToast(currentActivity.getString(R.string.backup_exported, tasks.size))
             } catch (e: Exception) {
-                taskViewModel.postSnackbar(activity.getString(R.string.error_export_backup, e.message))
+                taskViewModel.postSnackbar(currentActivity.getString(R.string.error_export_backup, e.message))
             }
         }
     }
 
     fun importBackupFromUri(uri: Uri) {
-        activity.lifecycleScope.launch {
+        val currentActivity = activity ?: return
+        currentActivity.lifecycleScope.launch {
             try {
                 val backupContent = backupManager.readFromUri(uri)
                 val metadata = backupManager.getBackupMetadata(backupContent)
                 
                 if (metadata == null) {
-                    taskViewModel.postSnackbar(activity.getString(R.string.error_invalid_backup))
+                    taskViewModel.postSnackbar(currentActivity.getString(R.string.error_invalid_backup))
                     return@launch
                 }
                 
                 showImportConfirmationDialog(backupContent, metadata)
                 
             } catch (e: Exception) {
-                taskViewModel.postSnackbar(activity.getString(R.string.error_read_backup, e.message))
+                taskViewModel.postSnackbar(currentActivity.getString(R.string.error_read_backup, e.message))
             }
         }
     }
 
     private fun showImportConfirmationDialog(backupContent: String, metadata: BackupManager.BackupMetadata) {
+        val currentActivity = activity ?: return
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         val createdAtString = if (metadata.createdAt > 0) {
             dateFormat.format(Date(metadata.createdAt))
         } else {
-            activity.getString(R.string.unknown)
+            currentActivity.getString(R.string.unknown)
         }
         
-        val message = activity.getString(
+        val message = currentActivity.getString(
             R.string.backup_info_format,
             createdAtString,
             metadata.taskCount,
@@ -82,31 +88,34 @@ class MainActivityBackupDelegate @Inject constructor(
         )
         
         val items = arrayOf(
-            activity.getString(R.string.import_mode_add),
-            activity.getString(R.string.import_mode_replace)
+            currentActivity.getString(R.string.import_mode_add),
+            currentActivity.getString(R.string.import_mode_replace)
         )
         var selectedOption = 0
         
-        AlertDialog.Builder(activity)
-            .setTitle(activity.getString(R.string.dialog_import_title))
+        AlertDialog.Builder(currentActivity)
+            .setTitle(currentActivity.getString(R.string.dialog_import_title))
             .setMessage(message)
             .setSingleChoiceItems(items, 0) { _, which ->
                 selectedOption = which
             }
-            .setPositiveButton(activity.getString(R.string.button_import)) { _, _ ->
+            .setPositiveButton(currentActivity.getString(R.string.button_import)) { _, _ ->
                 performImport(backupContent, replaceExisting = selectedOption == 1)
             }
-            .setNegativeButton(activity.getString(R.string.cancel), null)
+            .setNegativeButton(currentActivity.getString(R.string.cancel), null)
             .show()
     }
 
     private fun performImport(backupContent: String, replaceExisting: Boolean) {
-        activity.lifecycleScope.launch {
+        activity?.lifecycleScope?.launch {
             try {
                 val tasks = backupManager.importTasks(backupContent)
                 taskViewModel.importTasksFromBackup(tasks, replaceExisting)
             } catch (e: Exception) {
-                taskViewModel.postSnackbar(activity.getString(R.string.error_import_tasks, e.message))
+                val currentActivity = activity
+                if (currentActivity != null) {
+                    taskViewModel.postSnackbar(currentActivity.getString(R.string.error_import_tasks, e.message))
+                }
             }
         }
     }
