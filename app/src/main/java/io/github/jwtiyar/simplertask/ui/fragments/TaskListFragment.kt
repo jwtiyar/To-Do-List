@@ -130,7 +130,11 @@ class TaskListFragment : Fragment() {
             onSwipeComplete = { task, position ->
                 // Handle swipe to complete
                 taskViewModel.toggleTaskCompletion(task)
-                taskViewModel.postToast(getString(R.string.task_completed, task.title))
+                taskViewModel.postSnackbar(
+                    message = getString(R.string.task_completed, task.title),
+                    actionLabel = getString(R.string.undo),
+                    action = { taskViewModel.toggleTaskCompletion(task) }
+                )
             },
             onSwipeDelete = { task, position ->
                 // Handle swipe to delete with confirmation
@@ -247,7 +251,11 @@ class TaskListFragment : Fragment() {
             context = requireContext(),
             onSwipeComplete = { task, position ->
                 taskViewModel.toggleTaskCompletion(task)
-                taskViewModel.postToast(getString(R.string.task_completed, task.title))
+                taskViewModel.postSnackbar(
+                    message = getString(R.string.task_completed, task.title),
+                    actionLabel = getString(R.string.undo),
+                    action = { taskViewModel.toggleTaskCompletion(task) }
+                )
             },
             onSwipeDelete = { task, position ->
                 showDeleteConfirmationDialog(task, position)

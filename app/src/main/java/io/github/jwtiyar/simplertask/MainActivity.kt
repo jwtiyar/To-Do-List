@@ -123,8 +123,8 @@ class MainActivity : AppCompatActivity() {
                             }
                             is UiEvent.ShowSnackbar -> {
                                 val sb = Snackbar.make(binding.root, event.message, Snackbar.LENGTH_LONG)
-                                event.actionLabel?.let { label ->
-                                    sb.setAction(label) { /* action placeholder */ }
+                                if (event.actionLabel != null && event.action != null) {
+                                    sb.setAction(event.actionLabel) { event.action.invoke() }
                                 }
                                 sb.show()
                             }

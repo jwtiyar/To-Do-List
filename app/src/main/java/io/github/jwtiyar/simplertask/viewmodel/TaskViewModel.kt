@@ -128,8 +128,8 @@ class TaskViewModel @Inject constructor(
         viewModelScope.launch { _events.emit(UiEvent.ShowToast(message)) }
     }
 
-    fun postSnackbar(message: String, action: String? = null) {
-        viewModelScope.launch { _events.emit(UiEvent.ShowSnackbar(message, action)) }
+    fun postSnackbar(message: String, actionLabel: String? = null, action: (() -> Unit)? = null) {
+        viewModelScope.launch { _events.emit(UiEvent.ShowSnackbar(message, actionLabel, action)) }
     }
 
     /**

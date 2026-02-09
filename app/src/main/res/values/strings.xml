@@ -125,6 +125,7 @@
     <string name="task_unarchived">Task unarchived</string>
     <string name="error_generic">An error occurred</string>
     <string name="retry">Retry</string>
+    <string name="undo">Undo</string>
     
     <!-- Backup and Import strings -->
     <!-- Backup and Import strings -->
