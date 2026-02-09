@@ -138,8 +138,21 @@ class TaskListFragment : Fragment() {
                 )
             },
             onSwipeDelete = { task, position ->
-                // Handle swipe to delete with confirmation
-                showDeleteConfirmationDialog(task, position)
+                // Delete immediately and provide Undo option
+                taskViewModel.deleteTask(task)
+                taskViewModel.postSnackbar(
+                    message = getString(R.string.task_deleted, task.title),
+                    actionLabel = getString(R.string.undo),
+                    action = { 
+                        taskViewModel.addTask(
+                            title = task.title,
+                            description = task.description,
+                            priority = task.priority,
+                            dueDateMillis = task.dueDateMillis,
+                            categoryId = task.categoryId
+                        )
+                    }
+                )
             }
         )
 
@@ -259,29 +272,25 @@ class TaskListFragment : Fragment() {
                 )
             },
             onSwipeDelete = { task, position ->
-                showDeleteConfirmationDialog(task, position)
+                taskViewModel.deleteTask(task)
+                taskViewModel.postSnackbar(
+                    message = getString(R.string.task_deleted, task.title),
+                    actionLabel = getString(R.string.undo),
+                    action = { 
+                        taskViewModel.addTask(
+                            title = task.title,
+                            description = task.description,
+                            priority = task.priority,
+                            dueDateMillis = task.dueDateMillis,
+                            categoryId = task.categoryId
+                        )
+                    }
+                )
             }
         )
 
         val itemTouchHelper = ItemTouchHelper(swipeCallback)
         itemTouchHelper.attachToRecyclerView(binding.recyclerView)
-    }
-
-    private fun showDeleteConfirmationDialog(task: Task, position: Int) {
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle(getString(R.string.delete_task_title, task.title))
-            .setMessage(R.string.delete_task_confirmation)
-            .setPositiveButton(R.string.delete) { _, _ ->
-                taskViewModel.deleteTask(task)
-                taskViewModel.postToast(getString(R.string.task_deleted, task.title))
-            }
-            .setNegativeButton(R.string.cancel) { _, _ ->
-                taskAdapter.notifyItemChanged(position)
-            }
-            .setOnCancelListener {
-                taskAdapter.notifyItemChanged(position)
-            }
-            .show()
     }
 
     override fun onDestroyView() {
