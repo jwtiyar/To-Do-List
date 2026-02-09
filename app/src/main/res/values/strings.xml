@@ -101,6 +101,8 @@
     <string name="no_completed_tasks">No completed tasks to remove on this tab</string>
     
     <!-- Permission strings -->
+    <string name="notification_channel_name">Task Reminders</string>
+    <string name="notification_channel_description">Notifications for task reminders</string>
     <string name="notification_permission_needed">This app needs permission to post notifications for task reminders.</string>
     <string name="exact_alarm_permission_title">Exact Alarm Permission Needed</string>
     <string name="exact_alarm_permission_message">To ensure timely task reminders, this app needs permission to schedule exact alarms. Please grant this permission in the app settings.</string>

@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Fragment displaying a list of tasks based on the filter type passed as argument.
@@ -42,7 +43,10 @@ class TaskListFragment : Fragment() {
 
     private val taskViewModel: TaskViewModel by activityViewModels()
     private lateinit var taskAdapter: TaskPagingAdapter
-    private lateinit var notificationHelper: NotificationHelper
+    
+    @Inject
+    lateinit var notificationHelper: NotificationHelper
+    
     private lateinit var dialogManager: TaskDialogManager
 
     private var filterType: TaskViewModel.TaskFilter = TaskViewModel.TaskFilter.PENDING
@@ -64,7 +68,6 @@ class TaskListFragment : Fragment() {
         arguments?.getString(ARG_FILTER_TYPE)?.let { filterName ->
             filterType = TaskViewModel.TaskFilter.valueOf(filterName)
         }
-        notificationHelper = NotificationHelper(requireContext())
         dialogManager = TaskDialogManager(requireActivity())
     }
 

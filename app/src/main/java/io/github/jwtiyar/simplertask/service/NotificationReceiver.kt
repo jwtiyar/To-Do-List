@@ -3,8 +3,14 @@ package io.github.jwtiyar.simplertask.service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class NotificationReceiver : BroadcastReceiver() {
+    
+    @Inject
+    lateinit var notificationHelper: NotificationHelper
     
     override fun onReceive(context: Context, intent: Intent) {
         android.util.Log.d("NotificationReceiver", "Reminder triggered! Broadcast received.")
@@ -14,8 +20,7 @@ class NotificationReceiver : BroadcastReceiver() {
         val taskPriority = intent.getStringExtra("task_priority") ?: "MEDIUM"
         
         if (taskId != -1) {
-            val notificationHelper = NotificationHelper(context)
             notificationHelper.showNotification(taskId, taskTitle, taskDescription, taskPriority)
         }
     }
-} 
+}

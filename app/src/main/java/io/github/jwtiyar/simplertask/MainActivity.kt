@@ -35,12 +35,16 @@ import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var notificationHelper: NotificationHelper
+    
+    @Inject
+    lateinit var notificationHelper: NotificationHelper
+    
     private lateinit var dialogManager: TaskDialogManager
     private lateinit var localeManager: LocaleManager
     private val taskViewModel: TaskViewModel by viewModels()
@@ -74,7 +78,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.topAppBar)
 
-        notificationHelper = NotificationHelper(this)
         dialogManager = TaskDialogManager(this)
         backupManager = BackupManager(this)
         permissionManager = PermissionManager(this)

@@ -24,6 +24,9 @@ class BootReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var repository: TaskRepository
+    
+    @Inject
+    lateinit var notificationHelper: NotificationHelper
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) {
@@ -38,8 +41,6 @@ class BootReceiver : BroadcastReceiver() {
 
         scope.launch {
             try {
-                val notificationHelper = NotificationHelper(context.applicationContext)
-
                 // Get all pending (non-completed) tasks with future due dates
                 val tasksWithReminders = repository.getPendingTasksForBootReschedule()
 

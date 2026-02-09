@@ -20,6 +20,9 @@ class NotificationActionReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var repository: TaskRepository
+    
+    @Inject
+    lateinit var notificationHelper: NotificationHelper
 
     companion object {
         const val ACTION_COMPLETE = "io.github.jwtiyar.simplertask.ACTION_COMPLETE"
@@ -36,7 +39,6 @@ class NotificationActionReceiver : BroadcastReceiver() {
         }
 
         // Use the new smart dismissal logic from NotificationHelper
-        val notificationHelper = NotificationHelper(context.applicationContext)
         notificationHelper.dismissNotification(taskId)
 
         val pendingResult = goAsync()
@@ -74,8 +76,6 @@ class NotificationActionReceiver : BroadcastReceiver() {
         // Get the task
         val task = repository.getTaskById(taskId.toLong())
         task?.let {
-            val notificationHelper = NotificationHelper(context.applicationContext)
-            
             // Update task with new due date (10 minutes from now)
             val newDueDate = System.currentTimeMillis() + SNOOZE_DURATION_MILLIS
             val snoozedTask = it.copy(dueDateMillis = newDueDate)
