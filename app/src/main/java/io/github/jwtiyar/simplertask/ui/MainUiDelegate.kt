@@ -234,6 +234,7 @@ class MainUiDelegate @Inject constructor(
 
     fun updateTabVisibility(visible: Boolean) {
         binding.tabLayout.visibility = if (visible) View.VISIBLE else View.GONE
+        binding.viewPager.isUserInputEnabled = visible
     }
 
     /**

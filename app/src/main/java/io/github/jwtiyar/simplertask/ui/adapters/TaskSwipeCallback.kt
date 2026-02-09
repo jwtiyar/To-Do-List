@@ -19,9 +19,12 @@ import kotlin.math.abs
 
 class TaskSwipeCallback(
     private val context: Context,
+    private val filterProvider: () -> io.github.jwtiyar.simplertask.viewmodel.TaskViewModel.TaskFilter,
     private val onSwipeComplete: (Task, Int) -> Unit,
     private val onSwipeDelete: (Task, Int) -> Unit
 ) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+
+    private val callbackId = java.util.UUID.randomUUID().toString().take(4)
 
     private val completeIcon: Drawable? = ContextCompat.getDrawable(context, R.drawable.ic_check_circle_24dp)
     private val deleteIcon: Drawable? = ContextCompat.getDrawable(context, R.drawable.ic_delete_24dp)
@@ -76,6 +79,7 @@ class TaskSwipeCallback(
         val adapter = viewHolder.bindingAdapter as? TaskPagingAdapter ?: return
         val task = adapter.getTaskAtPosition(position) ?: return
 
+        android.util.Log.d("TaskSwipeCallback", "[$callbackId] onSwiped: task=${task.title}, direction=$direction")
         // Provide haptic feedback
         performHapticFeedback()
 
@@ -94,6 +98,17 @@ class TaskSwipeCallback(
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
+        val currentFilter = filterProvider()
+        val isStableFilter = currentFilter == io.github.jwtiyar.simplertask.viewmodel.TaskViewModel.TaskFilter.SAVED ||
+                            currentFilter == io.github.jwtiyar.simplertask.viewmodel.TaskViewModel.TaskFilter.ARCHIVED ||
+                            currentFilter == io.github.jwtiyar.simplertask.viewmodel.TaskViewModel.TaskFilter.RECURRING
+
+        if (isStableFilter) {
+            // Force dX to 0 to prevent visual movement in stable views
+            super.onChildDraw(c, recyclerView, viewHolder, 0f, dY, actionState, false)
+            return
+        }
+
         val itemView = viewHolder.itemView
         val itemHeight = itemView.bottom - itemView.top
         val isCanceled = dX == 0f && !isCurrentlyActive
@@ -159,15 +174,36 @@ class TaskSwipeCallback(
         c?.drawRect(left, top, right, bottom, Paint().apply { color = Color.TRANSPARENT })
     }
 
-    override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-        val adapter = viewHolder.bindingAdapter as? TaskPagingAdapter ?: return 0
-        val task = adapter.getTaskAtPosition(viewHolder.adapterPosition) ?: return 0
+    override fun isItemViewSwipeEnabled(): Boolean {
+        val currentFilter = filterProvider()
+        val isStableFilter = currentFilter == io.github.jwtiyar.simplertask.viewmodel.TaskViewModel.TaskFilter.SAVED ||
+                            currentFilter == io.github.jwtiyar.simplertask.viewmodel.TaskViewModel.TaskFilter.ARCHIVED ||
+                            currentFilter == io.github.jwtiyar.simplertask.viewmodel.TaskViewModel.TaskFilter.RECURRING
+        
+        android.util.Log.d("TaskSwipeCallback", "[$callbackId] isItemViewSwipeEnabled: filter=$currentFilter, result=${!isStableFilter}")
+        return !isStableFilter
+    }
 
-        // Don't allow swipe actions on completed tasks
-        return if (task.isCompleted) {
-            0 // No swipe directions allowed
+    override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+        val adapter = viewHolder.bindingAdapter as? TaskPagingAdapter ?: return makeMovementFlags(0, 0)
+        val task = adapter.getTaskAtPosition(viewHolder.adapterPosition) ?: return makeMovementFlags(0, 0)
+
+        val currentFilter = filterProvider()
+        // Disable swipe for stable views (Saved, Archive, Recurring)
+        val isStableFilter = currentFilter == io.github.jwtiyar.simplertask.viewmodel.TaskViewModel.TaskFilter.SAVED ||
+                            currentFilter == io.github.jwtiyar.simplertask.viewmodel.TaskViewModel.TaskFilter.ARCHIVED ||
+                            currentFilter == io.github.jwtiyar.simplertask.viewmodel.TaskViewModel.TaskFilter.RECURRING
+
+        android.util.Log.d("TaskSwipeCallback", "[$callbackId] getMovementFlags: filter=$currentFilter, isStable=$isStableFilter, task=${task.title}")
+
+        return if (isStableFilter || task.isCompleted) {
+            makeMovementFlags(0, 0)
         } else {
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            makeMovementFlags(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT)
         }
+    }
+
+    override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+        return super.getSwipeDirs(recyclerView, viewHolder)
     }
 }

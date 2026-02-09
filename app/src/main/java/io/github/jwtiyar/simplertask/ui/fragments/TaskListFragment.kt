@@ -43,6 +43,8 @@ class TaskListFragment : Fragment() {
 
     private val taskViewModel: TaskViewModel by activityViewModels()
     private lateinit var taskAdapter: TaskPagingAdapter
+    private var swipeCallback: TaskSwipeCallback? = null
+    private var itemTouchHelper: ItemTouchHelper? = null
     
     @Inject
     lateinit var notificationHelper: NotificationHelper
@@ -236,6 +238,10 @@ class TaskListFragment : Fragment() {
                             else -> filterType
                         }
 
+                        // Force ItemTouchHelper to refresh movement flags by re-attaching
+                        itemTouchHelper?.attachToRecyclerView(null)
+                        itemTouchHelper?.attachToRecyclerView(binding.recyclerView)
+
                         taskViewModel.getPagedTasks(effectiveFilter).collectLatest { pagingData ->
                             taskAdapter.submitData(pagingData)
                         }
@@ -273,8 +279,19 @@ class TaskListFragment : Fragment() {
     }
 
     private fun setupSwipeActions() {
-        val swipeCallback = TaskSwipeCallback(
+        val callback = TaskSwipeCallback(
             context = requireContext(),
+            filterProvider = {
+                val globalFilter = taskViewModel.uiState.value.currentFilter
+                when (globalFilter) {
+                    TaskViewModel.TaskFilter.SAVED,
+                    TaskViewModel.TaskFilter.ARCHIVED,
+                    TaskViewModel.TaskFilter.RECURRING,
+                    TaskViewModel.TaskFilter.CATEGORY,
+                    TaskViewModel.TaskFilter.ALL -> globalFilter
+                    else -> filterType
+                }
+            },
             onSwipeComplete = { task, position ->
                 viewLifecycleOwner.lifecycleScope.launch {
                     val wasCompleted = task.isCompleted
@@ -306,9 +323,10 @@ class TaskListFragment : Fragment() {
                 )
             }
         )
-
-        val itemTouchHelper = ItemTouchHelper(swipeCallback)
-        itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+        this.swipeCallback = callback
+        val helper = ItemTouchHelper(callback)
+        this.itemTouchHelper = helper
+        helper.attachToRecyclerView(binding.recyclerView)
     }
 
     override fun onDestroyView() {
