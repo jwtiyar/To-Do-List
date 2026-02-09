@@ -2,6 +2,7 @@ package io.github.jwtiyar.simplertask.data.backup
 
 import android.content.Context
 import android.net.Uri
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import io.github.jwtiyar.simplertask.data.local.entity.Priority
 import kotlinx.coroutines.Dispatchers
@@ -10,13 +11,18 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Manages backup and restore operations for tasks
  */
-class BackupManager(private val context: Context) {
+@Singleton
+class BackupManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
     
     companion object {
         private const val BACKUP_VERSION = 1
@@ -139,8 +145,7 @@ class BackupManager(private val context: Context) {
      * Generate backup filename with timestamp
      */
     fun generateBackupFilename(): String {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault())
-        val timestamp = dateFormat.format(Date())
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"))
         return "simplertask_backup_$timestamp.json"
     }
     

@@ -1,6 +1,5 @@
 package io.github.jwtiyar.simplertask
 
-import android.app.AlarmManager
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
@@ -29,7 +28,6 @@ import io.github.jwtiyar.simplertask.ui.NavigationDelegate
 import io.github.jwtiyar.simplertask.ui.SearchDelegate
 import io.github.jwtiyar.simplertask.ui.UiEvent
 import io.github.jwtiyar.simplertask.ui.dialogs.TaskDialogManager
-import io.github.jwtiyar.simplertask.utils.LocaleManager
 import io.github.jwtiyar.simplertask.utils.PermissionManager
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -45,10 +43,11 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var notificationHelper: NotificationHelper
     
+    @Inject
+    lateinit var backupManager: BackupManager
+    
     private lateinit var dialogManager: TaskDialogManager
-    private lateinit var localeManager: LocaleManager
     private val taskViewModel: TaskViewModel by viewModels()
-    private lateinit var backupManager: BackupManager
     private lateinit var permissionManager: PermissionManager
     private lateinit var backupDelegate: MainActivityBackupDelegate
 
@@ -61,15 +60,7 @@ class MainActivity : AppCompatActivity() {
         private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
     }
 
-    override fun attachBaseContext(newBase: Context) {
-        val localeManager = LocaleManager(newBase)
-        val context = localeManager.setAppLocale()
-        super.attachBaseContext(context)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        localeManager = LocaleManager(applicationContext)
-        localeManager.setAppLocale()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -79,7 +70,6 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.topAppBar)
 
         dialogManager = TaskDialogManager(this)
-        backupManager = BackupManager(this)
         permissionManager = PermissionManager(this)
         backupDelegate = MainActivityBackupDelegate(this, taskViewModel, backupManager)
 
@@ -122,12 +112,9 @@ class MainActivity : AppCompatActivity() {
         setupBackPressHandler()
     }
 
-
-
     private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // one-off events (toasts / snackbars)
                 launch {
                     taskViewModel.events.collect { event ->
                         when (event) {
@@ -141,15 +128,13 @@ class MainActivity : AppCompatActivity() {
                                 }
                                 sb.show()
                             }
-                            is UiEvent.RefreshList -> {} // Handled by Fragment
+                            is UiEvent.RefreshList -> {}
                         }
                     }
                 }
             }
         }
     }
-
-
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
