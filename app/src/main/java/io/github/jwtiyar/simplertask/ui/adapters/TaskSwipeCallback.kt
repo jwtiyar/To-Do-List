@@ -19,8 +19,8 @@ import kotlin.math.abs
 
 class TaskSwipeCallback(
     private val context: Context,
-    private val onSwipeComplete: (Task) -> Unit,
-    private val onSwipeDelete: (Task) -> Unit
+    private val onSwipeComplete: (Task, Int) -> Unit,
+    private val onSwipeDelete: (Task, Int) -> Unit
 ) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
 
     private val completeIcon: Drawable? = ContextCompat.getDrawable(context, R.drawable.ic_check_circle_24dp)
@@ -80,8 +80,8 @@ class TaskSwipeCallback(
         performHapticFeedback()
 
         when (direction) {
-            ItemTouchHelper.RIGHT -> onSwipeComplete(task)
-            ItemTouchHelper.LEFT -> onSwipeDelete(task)
+            ItemTouchHelper.RIGHT -> onSwipeComplete(task, position)
+            ItemTouchHelper.LEFT -> onSwipeDelete(task, position)
         }
     }
 

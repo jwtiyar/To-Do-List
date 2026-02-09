@@ -26,6 +26,8 @@ import io.github.jwtiyar.simplertask.utils.setupVertical
 import io.github.jwtiyar.simplertask.viewmodel.TaskViewModel
 import io.github.jwtiyar.simplertask.ui.UiEvent
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -79,8 +81,6 @@ class TaskListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         observeViewModel()
-        // Set the initial filter for this fragment (paging will handle the rest)
-        taskViewModel.loadTasks(filterType)
     }
 
     private fun setupRecyclerView() {
@@ -124,14 +124,14 @@ class TaskListFragment : Fragment() {
                 }
                 taskViewModel.postToast(getString(msgRes))
             },
-            onSwipeComplete = { task ->
+            onSwipeComplete = { task, position ->
                 // Handle swipe to complete
                 taskViewModel.toggleTaskCompletion(task)
                 taskViewModel.postToast(getString(R.string.task_completed, task.title))
             },
-            onSwipeDelete = { task ->
+            onSwipeDelete = { task, position ->
                 // Handle swipe to delete with confirmation
-                showDeleteConfirmationDialog(task)
+                showDeleteConfirmationDialog(task, position)
             }
         )
 
@@ -191,8 +191,21 @@ class TaskListFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    taskViewModel.pagedTasks.collectLatest { pagingData ->
-                        taskAdapter.submitData(pagingData)
+                    taskViewModel.uiState.map { it.currentFilter }.distinctUntilChanged().collectLatest { globalFilter ->
+                        // If global filter is a drawer-only item, everyone shows it.
+                        // If global filter is PENDING/COMPLETED, we stay in tabbed mode.
+                        val effectiveFilter = when (globalFilter) {
+                            TaskViewModel.TaskFilter.SAVED,
+                            TaskViewModel.TaskFilter.ARCHIVED,
+                            TaskViewModel.TaskFilter.RECURRING,
+                            TaskViewModel.TaskFilter.CATEGORY,
+                            TaskViewModel.TaskFilter.ALL -> globalFilter
+                            else -> filterType
+                        }
+
+                        taskViewModel.getPagedTasks(effectiveFilter).collectLatest { pagingData ->
+                            taskAdapter.submitData(pagingData)
+                        }
                     }
                 }
 
@@ -229,12 +242,12 @@ class TaskListFragment : Fragment() {
     private fun setupSwipeActions() {
         val swipeCallback = TaskSwipeCallback(
             context = requireContext(),
-            onSwipeComplete = { task ->
+            onSwipeComplete = { task, position ->
                 taskViewModel.toggleTaskCompletion(task)
                 taskViewModel.postToast(getString(R.string.task_completed, task.title))
             },
-            onSwipeDelete = { task ->
-                showDeleteConfirmationDialog(task)
+            onSwipeDelete = { task, position ->
+                showDeleteConfirmationDialog(task, position)
             }
         )
 
@@ -242,7 +255,7 @@ class TaskListFragment : Fragment() {
         itemTouchHelper.attachToRecyclerView(binding.recyclerView)
     }
 
-    private fun showDeleteConfirmationDialog(task: Task) {
+    private fun showDeleteConfirmationDialog(task: Task, position: Int) {
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.delete_task_title, task.title))
             .setMessage(R.string.delete_task_confirmation)
@@ -250,7 +263,12 @@ class TaskListFragment : Fragment() {
                 taskViewModel.deleteTask(task)
                 taskViewModel.postToast(getString(R.string.task_deleted, task.title))
             }
-            .setNegativeButton(R.string.cancel, null)
+            .setNegativeButton(R.string.cancel) { _, _ ->
+                taskAdapter.notifyItemChanged(position)
+            }
+            .setOnCancelListener {
+                taskAdapter.notifyItemChanged(position)
+            }
             .show()
     }
 

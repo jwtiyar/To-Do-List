@@ -21,8 +21,8 @@ class TaskPagingAdapter(
     private val onTaskClick: (Task) -> Unit,
     private val onEditClick: (Task) -> Unit,
     private val onTaskAction: (Task, TaskAction) -> Unit,
-    private val onSwipeComplete: (Task) -> Unit = {},
-    private val onSwipeDelete: (Task) -> Unit = {}
+    private val onSwipeComplete: (Task, Int) -> Unit = { _, _ -> },
+    private val onSwipeDelete: (Task, Int) -> Unit = { _, _ -> }
 ) : PagingDataAdapter<Task, TaskPagingAdapter.TaskVH>(DIFF) {
 
     companion object {
@@ -39,14 +39,6 @@ class TaskPagingAdapter(
 
     fun getTaskAtPosition(position: Int): Task? {
         return getItem(position)
-    }
-
-    fun handleSwipeComplete(task: Task) {
-        onSwipeComplete(task)
-    }
-
-    fun handleSwipeDelete(task: Task) {
-        onSwipeDelete(task)
     }
 
     private val timeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' HH:mm", Locale.getDefault())

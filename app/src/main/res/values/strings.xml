@@ -31,6 +31,9 @@
     <string name="search_tasks">Search Tasks or To-Do…</string>
     <string name="tab_pending">PENDING</string>
     <string name="tab_completed">COMPLETED</string>
+    <string name="tab_saved">SAVED</string>
+    <string name="tab_archive">ARCHIVE</string>
+    <string name="tab_recurring">RECURRING</string>
     <string name="empty_state_description">No tasks</string>
     <string name="no_tasks">No tasks yet</string>
     <string name="add_your_first_task">Tap + to add your first task</string>

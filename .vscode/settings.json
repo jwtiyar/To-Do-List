@@ -7,9 +7,17 @@
             "default": true
         }
     ],
-    "terminal.integrated.env.linux": {
-        "JAVA_HOME": "/usr/lib/jvm/java-17-openjdk"
-    },
     "java.configuration.updateBuildConfiguration": "interactive",
-    "avdmanager.sdkManager": "/home/jwty/Android/sdk/cmdline-tools/latest/bin/apkanalyzer"
+    "avdmanager.sdkRoot": "/home/jwty/kotlin/sdk",
+    "avdmanager.sdkManagerPath": "/home/jwty/kotlin/sdk/cmdline-tools/latest/bin/sdkmanager",
+    "avdmanager.sdkmanagerPath": "/home/jwty/kotlin/sdk/cmdline-tools/latest/bin/sdkmanager",
+    "avdmanager.sdkManager": "/home/jwty/kotlin/sdk/cmdline-tools/latest/bin/sdkmanager",
+    "avdmanager.avdmanagerPath": "/home/jwty/kotlin/sdk/cmdline-tools/latest/bin/avdmanager",
+    "avdmanager.emulatorPath": "/home/jwty/kotlin/sdk/emulator/emulator",
+    "avdmanager.emulator": "/home/jwty/kotlin/sdk/emulator/emulator",
+    "terminal.integrated.env.linux": {
+        "JAVA_HOME": "/usr/lib/jvm/java-17-openjdk",
+        "ANDROID_HOME": "/home/jwty/kotlin/sdk",
+        "PATH": "/home/jwty/kotlin/sdk/cmdline-tools/latest/bin:/home/jwty/kotlin/sdk/platform-tools:/home/jwty/kotlin/sdk/emulator:${env:PATH}"
+    }
 }

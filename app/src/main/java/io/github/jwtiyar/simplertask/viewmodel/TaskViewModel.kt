@@ -73,23 +73,33 @@ class TaskViewModel @Inject constructor(
     val categories: StateFlow<List<io.github.jwtiyar.simplertask.data.local.entity.Category>> = repository.getAllCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Paginated data flow - the primary data source for efficient rendering
+    // Paginated data flow - observes the global filter from uiState
     val pagedTasks: Flow<androidx.paging.PagingData<Task>> = combine(
         _uiState.map { it.currentFilter }.distinctUntilChanged(),
         _selectedCategoryId
     ) { filter, categoryId ->
         filter to categoryId
     }.flatMapLatest { (filter, categoryId) ->
-        when (filter) {
-            TaskFilter.PENDING -> repository.pagePendingTasks()
-            TaskFilter.COMPLETED -> repository.pageCompletedTasks()
-            TaskFilter.SAVED -> repository.pageSavedTasks()
-            TaskFilter.ARCHIVED -> repository.pageArchivedTasks()
-            TaskFilter.RECURRING -> repository.pageRecurringTasks()
-            TaskFilter.CATEGORY -> {
-                categoryId?.let { repository.pageTasksByCategory(it) } ?: repository.pageAllTasks()
+        getPagedTasks(filter)
+    }
+
+    /**
+     * Get paginated data flow for a specific filter.
+     * This allows multiple UI components to observe different filtered lists at once.
+     */
+    fun getPagedTasks(filter: TaskFilter): Flow<androidx.paging.PagingData<Task>> {
+        return _selectedCategoryId.flatMapLatest { categoryId ->
+            when (filter) {
+                TaskFilter.PENDING -> repository.pagePendingTasks()
+                TaskFilter.COMPLETED -> repository.pageCompletedTasks()
+                TaskFilter.SAVED -> repository.pageSavedTasks()
+                TaskFilter.ARCHIVED -> repository.pageArchivedTasks()
+                TaskFilter.RECURRING -> repository.pageRecurringTasks()
+                TaskFilter.CATEGORY -> {
+                    categoryId?.let { repository.pageTasksByCategory(it) } ?: repository.pageAllTasks()
+                }
+                TaskFilter.ALL -> repository.pageAllTasks()
             }
-            TaskFilter.ALL -> repository.pageAllTasks()
         }
     }
 
@@ -121,7 +131,7 @@ class TaskViewModel @Inject constructor(
     fun postSnackbar(message: String, action: String? = null) {
         viewModelScope.launch { _events.emit(UiEvent.ShowSnackbar(message, action)) }
     }
-    
+
     /**
      * Load tasks based on current filter
      */
@@ -148,9 +158,6 @@ class TaskViewModel @Inject constructor(
             val insertedTask = task.copy(id = insertedId.toInt())
 
             onTaskInserted?.invoke(insertedTask)
-
-            // Refresh the current filter's data
-            loadTasks(_uiState.value.currentFilter)
             postToast("Task added successfully!")
         }
     }
@@ -186,9 +193,6 @@ class TaskViewModel @Inject constructor(
             val insertedTask = task.copy(id = insertedId.toInt())
 
             onTaskInserted?.invoke(insertedTask)
-
-            // Refresh the current filter's data
-            loadTasks(_uiState.value.currentFilter)
             postToast("Recurring task added successfully!")
         }
     }
@@ -287,11 +291,6 @@ class TaskViewModel @Inject constructor(
     // Category management methods
     fun selectCategory(categoryId: Int?) {
         _selectedCategoryId.value = categoryId
-        if (categoryId != null) {
-            loadTasks(TaskFilter.CATEGORY)
-        } else {
-            loadTasks(TaskFilter.ALL)
-        }
     }
 
     suspend fun createCategory(name: String, color: Int): Long {
@@ -354,8 +353,6 @@ class TaskViewModel @Inject constructor(
             // Remove IDs to let the database assign new ones (avoiding conflicts)
             val tasksWithoutIds = tasks.map { it.copy(id = 0) }
             repository.insertTasks(tasksWithoutIds)
-
-            loadTasks(_uiState.value.currentFilter)
 
             val message = if (replaceExisting) {
                 "Successfully imported ${tasks.size} tasks (replaced existing)"
