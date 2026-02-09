@@ -1,5 +1,6 @@
 package io.github.jwtiyar.simplertask.viewmodel
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -9,6 +10,7 @@ import io.github.jwtiyar.simplertask.data.local.entity.RecurrenceType
 import io.github.jwtiyar.simplertask.data.local.entity.isRecurring
 import io.github.jwtiyar.simplertask.data.repository.TaskRepository
 import io.github.jwtiyar.simplertask.ui.UiEvent
+import io.github.jwtiyar.simplertask.widget.TaskWidgetProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
@@ -28,7 +30,8 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class TaskViewModel @Inject constructor(
-    private val repository: TaskRepository
+    private val repository: TaskRepository,
+    private val application: Application
 ) : ViewModel() {
 
     // Single source of truth for UI state
@@ -115,6 +118,13 @@ class TaskViewModel @Inject constructor(
     private val _events = MutableSharedFlow<UiEvent>()
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
 
+    /**
+     * Notify home screen widgets to refresh their data after task mutations
+     */
+    private fun refreshWidgets() {
+        TaskWidgetProvider.updateAllWidgets(application)
+    }
+
     // Public helpers to emit events from UI layer safely
     fun postToast(message: String) {
         viewModelScope.launch { _events.emit(UiEvent.ShowToast(message)) }
@@ -150,6 +160,7 @@ class TaskViewModel @Inject constructor(
             val insertedTask = task.copy(id = insertedId.toInt())
 
             onTaskInserted?.invoke(insertedTask)
+            refreshWidgets()
             postToast("Task added successfully!")
         }
     }
@@ -185,6 +196,7 @@ class TaskViewModel @Inject constructor(
             val insertedTask = task.copy(id = insertedId.toInt())
 
             onTaskInserted?.invoke(insertedTask)
+            refreshWidgets()
             postToast("Recurring task added successfully!")
         }
     }
@@ -195,7 +207,7 @@ class TaskViewModel @Inject constructor(
     fun updateTask(task: Task) {
         launchWithError({ postSnackbar("Failed to update task: ${it.message}") }) {
             repository.updateTask(task)
-            // No need to reload - paging will automatically refresh via invalidation
+            refreshWidgets()
         }
     }
 
@@ -212,7 +224,7 @@ class TaskViewModel @Inject constructor(
                 repository.createNextRecurringTask(task)
                 postToast("Task completed! Next occurrence created.")
             }
-            // No need to reload - paging will automatically refresh via invalidation
+            refreshWidgets()
         }
     }
 
@@ -222,7 +234,7 @@ class TaskViewModel @Inject constructor(
     fun toggleTaskSaved(task: Task) {
         launchWithError({ postSnackbar("Failed to save/unsave task: ${it.message}") }) {
             repository.toggleTaskSaved(task)
-            // No need to reload - paging will automatically refresh via invalidation
+            refreshWidgets()
         }
     }
 
@@ -232,7 +244,7 @@ class TaskViewModel @Inject constructor(
     fun toggleTaskArchived(task: Task) {
         launchWithError({ postSnackbar("Failed to archive/unarchive task: ${it.message}") }) {
             if (task.isArchived) repository.unarchiveTask(task) else repository.archiveTask(task)
-            // No need to reload - paging will automatically refresh via invalidation
+            refreshWidgets()
         }
     }
 
@@ -242,7 +254,7 @@ class TaskViewModel @Inject constructor(
     fun deleteTask(task: Task) {
         launchWithError({ postSnackbar("Failed to delete task: ${it.message}") }) {
             repository.deleteTask(task)
-            // No need to reload - paging will automatically refresh via invalidation
+            refreshWidgets()
         }
     }
 
@@ -252,7 +264,7 @@ class TaskViewModel @Inject constructor(
     fun clearCompletedTasks() {
         launchWithError({ postSnackbar("Failed to clear completed tasks: ${it.message}") }) {
             repository.deleteCompletedTasks()
-            // No need to reload - paging will automatically refresh via invalidation
+            refreshWidgets()
         }
     }
 
@@ -262,7 +274,7 @@ class TaskViewModel @Inject constructor(
     fun resetAllTasks() {
         launchWithError({ postSnackbar("Failed to reset tasks: ${it.message}") }) {
             repository.resetAllTasksToPending()
-            // No need to reload - paging will automatically refresh via invalidation
+            refreshWidgets()
         }
     }
     
@@ -345,6 +357,7 @@ class TaskViewModel @Inject constructor(
             // Remove IDs to let the database assign new ones (avoiding conflicts)
             val tasksWithoutIds = tasks.map { it.copy(id = 0) }
             repository.insertTasks(tasksWithoutIds)
+            refreshWidgets()
 
             val message = if (replaceExisting) {
                 "Successfully imported ${tasks.size} tasks (replaced existing)"

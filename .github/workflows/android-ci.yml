@@ -1,0 +1,204 @@
+name: Android CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, f-droid ]
+  pull_request:
+    branches: [ main, develop, f-droid ]
+  workflow_dispatch:
+    inputs:
+      build_variant:
+        description: 'Build variant (fdroid, googleplay)'
+        required: false
+        default: 'fdroid'
+
+jobs:
+  lint:
+    name: Code Quality & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Run lint
+        run: ./gradlew lintFdroidDebug --no-daemon
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-*.html
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Run unit tests
+        run: ./gradlew testFdroidDebugUnitTest --no-daemon
+
+      - name: Generate test report
+        if: always()
+        run: ./gradlew testFdroidDebugUnitTest --no-daemon --info | grep -E "tests|passed|failed" || true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: app/build/reports/tests/testFdroidDebugUnitTest/
+
+      - name: Upload test coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: app/build/reports/jacoco/
+
+  build-fdroid:
+    name: Build F-Droid Variant
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests]
+    if: needs.lint.result == 'success' && needs.unit-tests.result == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build F-Droid Debug
+        run: ./gradlew assembleFdroidDebug --no-daemon
+
+      - name: Build F-Droid Release
+        run: ./gradlew assembleFdroidRelease --no-daemon
+
+      - name: Upload F-Droid Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: simplertask-fdroid-debug.apk
+          path: app/build/outputs/apk/fdroid/debug/
+
+      - name: Upload F-Droid Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: simplertask-fdroid-release.apk
+          path: app/build/outputs/apk/fdroid/release/
+
+  build-googleplay:
+    name: Build Google Play Variant
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests]
+    if: needs.lint.result == 'success' && needs.unit-tests.result == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build Google Play Debug
+        run: ./gradlew assembleGooglePlayDebug --no-daemon
+
+      - name: Build Google Play Release
+        run: ./gradlew assembleGooglePlayRelease --no-daemon
+
+      - name: Upload Google Play Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: simplertask-googleplay-debug.apk
+          path: app/build/outputs/apk/googleplay/debug/
+
+      - name: Upload Google Play Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: simplertask-googleplay-release.apk
+          path: app/build/outputs/apk/googleplay/release/
+
+  notify:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [build-fdroid, build-googleplay]
+    if: failure()
+    steps:
+      - name: Send failure notification
+        run: |
+          echo "Build failed! Check GitHub Actions for details."
+          # You can integrate with Slack, Discord, email, etc.
