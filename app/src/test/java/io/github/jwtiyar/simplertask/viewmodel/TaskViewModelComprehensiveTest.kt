@@ -1,5 +1,6 @@
 package io.github.jwtiyar.simplertask.viewmodel
 
+import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.paging.PagingData
 import io.github.jwtiyar.simplertask.data.local.entity.Priority
@@ -8,10 +9,14 @@ import io.github.jwtiyar.simplertask.data.local.entity.Task
 import io.github.jwtiyar.simplertask.data.repository.TaskRepository
 import io.github.jwtiyar.simplertask.ui.UiEvent
 import io.mockk.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.*
+import kotlin.coroutines.CoroutineContext
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -37,6 +42,7 @@ class TaskViewModelComprehensiveTest {
 
     private lateinit var viewModel: TaskViewModel
     private lateinit var repository: TaskRepository
+    private lateinit var application: Application
     private val testDispatcher = StandardTestDispatcher()
 
     private val testTask = Task(
@@ -54,7 +60,8 @@ class TaskViewModelComprehensiveTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         repository = mockk(relaxed = true)
-        
+        application = mockk(relaxed = true)
+
         // Setup default mock behaviors
         every { repository.getPendingTasksCount() } returns flowOf(0)
         every { repository.getCompletedTasksCount() } returns flowOf(0)
@@ -69,13 +76,24 @@ class TaskViewModelComprehensiveTest {
         every { repository.pageRecurringTasks() } returns flowOf(PagingData.empty())
         every { repository.pageAllTasks() } returns flowOf(PagingData.empty())
         every { repository.searchTasksPaged(any()) } returns flowOf(PagingData.empty())
-        
-        viewModel = TaskViewModel(repository)
+
+        viewModel = TaskViewModel(repository, application)
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    /** Helper to collect events from a SharedFlow in the background. */
+    private fun collectEvents(
+        events: MutableList<UiEvent>,
+        context: CoroutineContext
+    ): Job {
+        val scope = CoroutineScope(context)
+        return scope.launch {
+            viewModel.events.collect { events.add(it) }
+        }
     }
 
     // ========== Task Addition Tests ==========
@@ -85,11 +103,9 @@ class TaskViewModelComprehensiveTest {
         // Given
         val insertedId = 42L
         coEvery { repository.insertTask(any()) } returns insertedId
-        
+
         val events = mutableListOf<UiEvent>()
-        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.events.toList(events)
-        }
+        val job = collectEvents(events, UnconfinedTestDispatcher(testScheduler))
 
         // When
         viewModel.addTask(
@@ -102,7 +118,7 @@ class TaskViewModelComprehensiveTest {
         // Then
         coVerify { repository.insertTask(match { it.title == "New Task" && it.priority == Priority.HIGH }) }
         assertTrue(events.any { it is UiEvent.ShowToast && it.message.contains("added successfully") })
-        
+
         job.cancel()
     }
 
@@ -137,21 +153,19 @@ class TaskViewModelComprehensiveTest {
         // Given
         val errorMessage = "Database error"
         coEvery { repository.insertTask(any()) } throws Exception(errorMessage)
-        
+
         val events = mutableListOf<UiEvent>()
-        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.events.toList(events)
-        }
+        val job = collectEvents(events, UnconfinedTestDispatcher(testScheduler))
 
         // When
         viewModel.addTask(title = "Task", description = "Desc")
         advanceUntilIdle()
 
         // Then
-        assertTrue(events.any { 
+        assertTrue(events.any {
             it is UiEvent.ShowSnackbar && it.message.contains("Failed to add task")
         })
-        
+
         job.cancel()
     }
 
@@ -174,12 +188,12 @@ class TaskViewModelComprehensiveTest {
         advanceUntilIdle()
 
         // Then
-        coVerify { 
-            repository.insertTask(match { 
-                it.title == "Recurring Task" && 
+        coVerify {
+            repository.insertTask(match {
+                it.title == "Recurring Task" &&
                 it.recurrenceType == RecurrenceType.DAILY &&
                 it.recurrenceInterval == 2
-            }) 
+            })
         }
     }
 
@@ -189,7 +203,7 @@ class TaskViewModelComprehensiveTest {
     fun `updateTask calls repository updateTask`() = runTest {
         // Given
         val updatedTask = testTask.copy(title = "Updated Title")
-        coEvery { repository.updateTask(any()) } just Runs
+        coEvery { repository.updateTask(any()) } just Awaits
 
         // When
         viewModel.updateTask(updatedTask)
@@ -203,21 +217,19 @@ class TaskViewModelComprehensiveTest {
     fun `updateTask with error emits error snackbar`() = runTest {
         // Given
         coEvery { repository.updateTask(any()) } throws Exception("Update failed")
-        
+
         val events = mutableListOf<UiEvent>()
-        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.events.toList(events)
-        }
+        val job = collectEvents(events, UnconfinedTestDispatcher(testScheduler))
 
         // When
         viewModel.updateTask(testTask)
         advanceUntilIdle()
 
         // Then
-        assertTrue(events.any { 
+        assertTrue(events.any {
             it is UiEvent.ShowSnackbar && it.message.contains("Failed to update task")
         })
-        
+
         job.cancel()
     }
 
@@ -227,7 +239,7 @@ class TaskViewModelComprehensiveTest {
     fun `toggleTaskCompletion toggles completion status`() = runTest {
         // Given
         val incompleteTask = testTask.copy(isCompleted = false)
-        coEvery { repository.toggleTaskCompletion(any()) } just Runs
+        coEvery { repository.toggleTaskCompletion(any()) } just Awaits
 
         // When
         viewModel.toggleTaskCompletion(incompleteTask)
@@ -245,13 +257,11 @@ class TaskViewModelComprehensiveTest {
             recurrenceType = RecurrenceType.DAILY,
             dueDateMillis = System.currentTimeMillis()
         )
-        coEvery { repository.toggleTaskCompletion(any()) } just Runs
-        coEvery { repository.createNextRecurringTask(any()) } just Runs
-        
+        coEvery { repository.toggleTaskCompletion(any()) } just Awaits
+        coEvery { repository.createNextRecurringTask(any()) } just Awaits
+
         val events = mutableListOf<UiEvent>()
-        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.events.toList(events)
-        }
+        val job = collectEvents(events, UnconfinedTestDispatcher(testScheduler))
 
         // When
         viewModel.toggleTaskCompletion(recurringTask)
@@ -259,17 +269,17 @@ class TaskViewModelComprehensiveTest {
 
         // Then
         coVerify { repository.createNextRecurringTask(recurringTask) }
-        assertTrue(events.any { 
+        assertTrue(events.any {
             it is UiEvent.ShowToast && it.message.contains("Next occurrence created")
         })
-        
+
         job.cancel()
     }
 
     @Test
     fun `toggleTaskSaved toggles saved status`() = runTest {
         // Given
-        coEvery { repository.toggleTaskSaved(any()) } just Runs
+        coEvery { repository.toggleTaskSaved(any()) } just Awaits
 
         // When
         viewModel.toggleTaskSaved(testTask)
@@ -283,7 +293,7 @@ class TaskViewModelComprehensiveTest {
     fun `toggleTaskArchived archives unarchived task`() = runTest {
         // Given
         val unarchivedTask = testTask.copy(isArchived = false)
-        coEvery { repository.archiveTask(any()) } just Runs
+        coEvery { repository.archiveTask(any()) } just Awaits
 
         // When
         viewModel.toggleTaskArchived(unarchivedTask)
@@ -298,7 +308,7 @@ class TaskViewModelComprehensiveTest {
     fun `toggleTaskArchived unarchives archived task`() = runTest {
         // Given
         val archivedTask = testTask.copy(isArchived = true)
-        coEvery { repository.unarchiveTask(any()) } just Runs
+        coEvery { repository.unarchiveTask(any()) } just Awaits
 
         // When
         viewModel.toggleTaskArchived(archivedTask)
@@ -314,7 +324,7 @@ class TaskViewModelComprehensiveTest {
     @Test
     fun `deleteTask calls repository deleteTask`() = runTest {
         // Given
-        coEvery { repository.deleteTask(any()) } just Runs
+        coEvery { repository.deleteTask(any()) } just Awaits
 
         // When
         viewModel.deleteTask(testTask)
@@ -327,7 +337,7 @@ class TaskViewModelComprehensiveTest {
     @Test
     fun `clearCompletedTasks calls repository deleteCompletedTasks`() = runTest {
         // Given
-        coEvery { repository.deleteCompletedTasks() } just Runs
+        coEvery { repository.deleteCompletedTasks() } just Awaits
 
         // When
         viewModel.clearCompletedTasks()
@@ -340,7 +350,7 @@ class TaskViewModelComprehensiveTest {
     @Test
     fun `resetAllTasks calls repository resetAllTasksToPending`() = runTest {
         // Given
-        coEvery { repository.resetAllTasksToPending() } just Runs
+        coEvery { repository.resetAllTasksToPending() } just Awaits
 
         // When
         viewModel.resetAllTasks()
@@ -404,7 +414,7 @@ class TaskViewModelComprehensiveTest {
     fun `pendingCount reflects repository count`() = runTest {
         // Given
         every { repository.getPendingTasksCount() } returns flowOf(5)
-        val newViewModel = TaskViewModel(repository)
+        val newViewModel = TaskViewModel(repository, application)
 
         // When
         val count = newViewModel.pendingCount.first()
@@ -417,7 +427,7 @@ class TaskViewModelComprehensiveTest {
     fun `completedCount reflects repository count`() = runTest {
         // Given
         every { repository.getCompletedTasksCount() } returns flowOf(10)
-        val newViewModel = TaskViewModel(repository)
+        val newViewModel = TaskViewModel(repository, application)
 
         // When
         val count = newViewModel.completedCount.first()
@@ -446,8 +456,8 @@ class TaskViewModelComprehensiveTest {
     fun `importTasksFromBackup with replaceExisting clears and imports`() = runTest {
         // Given
         val tasksToImport = listOf(testTask, testTask.copy(id = 2))
-        coEvery { repository.clearAllTasks() } just Runs
-        coEvery { repository.insertTasks(any()) } just Runs
+        coEvery { repository.clearAllTasks() } just Awaits
+        coEvery { repository.insertTasks(any()) } just Awaits
 
         // When
         viewModel.importTasksFromBackup(tasksToImport, replaceExisting = true)
@@ -462,7 +472,7 @@ class TaskViewModelComprehensiveTest {
     fun `importTasksFromBackup without replaceExisting only imports`() = runTest {
         // Given
         val tasksToImport = listOf(testTask)
-        coEvery { repository.insertTasks(any()) } just Runs
+        coEvery { repository.insertTasks(any()) } just Awaits
 
         // When
         viewModel.importTasksFromBackup(tasksToImport, replaceExisting = false)
@@ -479,9 +489,7 @@ class TaskViewModelComprehensiveTest {
     fun `postToast emits toast event`() = runTest {
         // Given
         val events = mutableListOf<UiEvent>()
-        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.events.toList(events)
-        }
+        val job = collectEvents(events, UnconfinedTestDispatcher(testScheduler))
 
         // When
         viewModel.postToast("Test message")
@@ -489,7 +497,7 @@ class TaskViewModelComprehensiveTest {
 
         // Then
         assertTrue(events.any { it is UiEvent.ShowToast && it.message == "Test message" })
-        
+
         job.cancel()
     }
 
@@ -497,9 +505,7 @@ class TaskViewModelComprehensiveTest {
     fun `postSnackbar emits snackbar event with action`() = runTest {
         // Given
         val events = mutableListOf<UiEvent>()
-        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.events.toList(events)
-        }
+        val job = collectEvents(events, UnconfinedTestDispatcher(testScheduler))
         var actionInvoked = false
 
         // When
@@ -513,7 +519,7 @@ class TaskViewModelComprehensiveTest {
         assertEquals("Action", snackbarEvent?.actionLabel)
         snackbarEvent?.action?.invoke()
         assertTrue(actionInvoked)
-        
+
         job.cancel()
     }
 

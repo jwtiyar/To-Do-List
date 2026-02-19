@@ -84,7 +84,7 @@ class TaskRepositoryTest {
     fun `insertTasks inserts multiple tasks`() = runTest {
         // Given
         val tasks = listOf(testTask, testTask.copy(id = 2))
-        coEvery { taskDao.insertTasks(any()) } just Runs
+        coEvery { taskDao.insertTasks(any()) } just Awaits
 
         // When
         repository.insertTasks(tasks)
@@ -99,7 +99,7 @@ class TaskRepositoryTest {
     fun `updateTask updates task in database`() = runTest {
         // Given
         val updatedTask = testTask.copy(title = "Updated Title")
-        coEvery { taskDao.updateTask(any()) } just Runs
+        coEvery { taskDao.updateTask(any()) } just Awaits
 
         // When
         repository.updateTask(updatedTask)
@@ -113,7 +113,7 @@ class TaskRepositoryTest {
     @Test
     fun `deleteTask deletes task from database`() = runTest {
         // Given
-        coEvery { taskDao.deleteTask(any()) } just Runs
+        coEvery { taskDao.deleteTask(any()) } just Awaits
 
         // When
         repository.deleteTask(testTask)
@@ -125,7 +125,7 @@ class TaskRepositoryTest {
     @Test
     fun `deleteCompletedTasks calls dao deleteCompletedTasks`() = runTest {
         // Given
-        coEvery { taskDao.deleteCompletedTasks() } just Runs
+        coEvery { taskDao.deleteCompletedTasks() } just Awaits
 
         // When
         repository.deleteCompletedTasks()
@@ -137,7 +137,7 @@ class TaskRepositoryTest {
     @Test
     fun `clearAllTasks clears all tasks from database`() = runTest {
         // Given
-        coEvery { taskDao.clearAllTasks() } just Runs
+        coEvery { taskDao.clearAllTasks() } just Awaits
 
         // When
         repository.clearAllTasks()
@@ -152,7 +152,7 @@ class TaskRepositoryTest {
     fun `toggleTaskCompletion toggles isCompleted flag`() = runTest {
         // Given
         val incompleteTask = testTask.copy(isCompleted = false)
-        coEvery { taskDao.updateTask(any()) } just Runs
+        coEvery { taskDao.updateTask(any()) } just Awaits
 
         // When
         repository.toggleTaskCompletion(incompleteTask)
@@ -165,7 +165,7 @@ class TaskRepositoryTest {
     fun `toggleTaskSaved toggles isSaved flag`() = runTest {
         // Given
         val unsavedTask = testTask.copy(isSaved = false)
-        coEvery { taskDao.updateTask(any()) } just Runs
+        coEvery { taskDao.updateTask(any()) } just Awaits
 
         // When
         repository.toggleTaskSaved(unsavedTask)
@@ -178,7 +178,7 @@ class TaskRepositoryTest {
     fun `archiveTask sets isArchived to true and isSaved to false`() = runTest {
         // Given
         val activeTask = testTask.copy(isArchived = false, isSaved = true)
-        coEvery { taskDao.updateTask(any()) } just Runs
+        coEvery { taskDao.updateTask(any()) } just Awaits
 
         // When
         repository.archiveTask(activeTask)
@@ -195,7 +195,7 @@ class TaskRepositoryTest {
     fun `unarchiveTask sets isArchived to false`() = runTest {
         // Given
         val archivedTask = testTask.copy(isArchived = true)
-        coEvery { taskDao.updateTask(any()) } just Runs
+        coEvery { taskDao.updateTask(any()) } just Awaits
 
         // When
         repository.unarchiveTask(archivedTask)
@@ -209,7 +209,7 @@ class TaskRepositoryTest {
     @Test
     fun `resetAllTasksToPending calls dao resetAllTasksToPending`() = runTest {
         // Given
-        coEvery { taskDao.resetAllTasksToPending() } just Runs
+        coEvery { taskDao.resetAllTasksToPending() } just Awaits
 
         // When
         repository.resetAllTasksToPending()
@@ -603,7 +603,7 @@ class TaskRepositoryTest {
     fun `updateCategory updates category in dao`() = runTest {
         // Given
         val updatedCategory = testCategory.copy(name = "Updated Work")
-        coEvery { categoryDao.updateCategory(any()) } just Runs
+        coEvery { categoryDao.updateCategory(any()) } just Awaits
 
         // When
         repository.updateCategory(updatedCategory)
@@ -615,7 +615,7 @@ class TaskRepositoryTest {
     @Test
     fun `deleteCategory deletes category from dao`() = runTest {
         // Given
-        coEvery { categoryDao.deleteCategory(any()) } just Runs
+        coEvery { categoryDao.deleteCategory(any()) } just Awaits
 
         // When
         repository.deleteCategory(testCategory)
@@ -655,7 +655,7 @@ class TaskRepositoryTest {
     fun `initializeDefaultCategories inserts defaults when count is zero`() = runTest {
         // Given
         coEvery { categoryDao.getCategoryCount() } returns 0
-        coEvery { categoryDao.insertCategories(any()) } just Runs
+        coEvery { categoryDao.insertCategories(any()) } just Awaits
 
         // When
         repository.initializeDefaultCategories()
