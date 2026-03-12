@@ -380,13 +380,23 @@
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="14sp" />
 
-                        <Spinner
-                            android:id="@+id/spinnerRecurrenceType"
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:background="@drawable/bg_search_rounded"
-                            android:padding="8dp" />
+                            app:boxBackgroundColor="?attr/colorSurface"
+                            app:boxStrokeColor="?attr/colorOutline">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/spinnerRecurrenceType"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:padding="8dp"
+                                android:textColor="?attr/colorOnSurface" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
 
                     </LinearLayout>
 
@@ -404,7 +414,7 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical">
 
-                        <RadioButton
+                        <com.google.android.material.radiobutton.MaterialRadioButton
                             android:id="@+id/radioNever"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -417,17 +427,20 @@
                             android:orientation="horizontal"
                             android:gravity="center_vertical">
 
-                            <RadioButton
+                            <com.google.android.material.radiobutton.MaterialRadioButton
                                 android:id="@+id/radioEndDate"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content" />
 
                             <TextView
+                                android:id="@+id/tvOnDateLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
                                 android:text="On date:"
-                                android:textAppearance="?attr/textAppearanceBodyMedium" />
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:clickable="true"
+                                android:focusable="true" />
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnRecurrenceEndDate"

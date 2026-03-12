@@ -8,7 +8,8 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.radiobutton.MaterialRadioButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.FragmentActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.ChipGroup
@@ -51,7 +52,7 @@ class TaskDialogManager @Inject constructor() {
         val switchRecurring = view.findViewById<MaterialSwitch>(R.id.switchRecurring)
         val recurrenceDetailsLayout = view.findViewById<View>(R.id.recurrenceDetailsLayout)
         val editRecurrenceInterval = view.findViewById<EditText>(R.id.editRecurrenceInterval)
-        val spinnerRecurrenceType = view.findViewById<Spinner>(R.id.spinnerRecurrenceType)
+        val spinnerRecurrenceType = view.findViewById<AutoCompleteTextView>(R.id.spinnerRecurrenceType)
         val radioGroupRecurrenceEnd = view.findViewById<RadioGroup>(R.id.radioGroupRecurrenceEnd)
 
         // Category selection
@@ -73,7 +74,7 @@ class TaskDialogManager @Inject constructor() {
         var recurrenceType: RecurrenceType? = null
         var recurrenceInterval: Int = 1
         var recurrenceEndDate: Long? = null
-        val selectedEndDate: Long? = null
+        var selectedRecurrenceEndDate: Long? = null
 
         // Setup recurrence type spinner
         val recurrenceTypes = arrayOf(
@@ -81,10 +82,9 @@ class TaskDialogManager @Inject constructor() {
             activity.getString(R.string.recurrence_weekly),
             activity.getString(R.string.recurrence_monthly)
         )
-        val spinnerAdapter = ArrayAdapter(activity, android.R.layout.simple_spinner_item, recurrenceTypes)
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerRecurrenceType.adapter = spinnerAdapter
-        spinnerRecurrenceType.setSelection(0) // Default to daily
+        val spinnerAdapter = ArrayAdapter(activity, android.R.layout.simple_dropdown_item_1line, recurrenceTypes)
+        spinnerRecurrenceType.setAdapter(spinnerAdapter)
+        spinnerRecurrenceType.setText(recurrenceTypes[0], false) // Default to daily
         
         fun updateDueDateMillis() {
             selectedDate?.let { dateMillis ->
@@ -159,10 +159,42 @@ class TaskDialogManager @Inject constructor() {
                 recurrenceType = null
                 recurrenceInterval = 1
                 recurrenceEndDate = null
+                selectedRecurrenceEndDate = null
             }
         }
 
-        AlertDialog.Builder(activity)
+        val btnRecurrenceEndDate = view.findViewById<MaterialButton>(R.id.btnRecurrenceEndDate)
+        btnRecurrenceEndDate.setOnClickListener {
+            val datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Select recurrence end date")
+                .setSelection(selectedRecurrenceEndDate ?: MaterialDatePicker.todayInUtcMilliseconds())
+                .build()
+
+            datePicker.addOnPositiveButtonClickListener { selection ->
+                selectedRecurrenceEndDate = selection
+                btnRecurrenceEndDate.text = dateFormat.format(Date(selection))
+            }
+            datePicker.show(activity.supportFragmentManager, "RECURRENCE_DATE_PICKER")
+        }
+
+        val radioNever = view.findViewById<MaterialRadioButton>(R.id.radioNever)
+        val radioEndDate = view.findViewById<MaterialRadioButton>(R.id.radioEndDate)
+        val tvOnDateLabel = view.findViewById<TextView>(R.id.tvOnDateLabel)
+
+        fun updateRecurrenceEndStates(isNever: Boolean) {
+            radioNever.isChecked = isNever
+            radioEndDate.isChecked = !isNever
+            btnRecurrenceEndDate.isEnabled = !isNever
+        }
+
+        radioNever.setOnClickListener { updateRecurrenceEndStates(true) }
+        radioEndDate.setOnClickListener { updateRecurrenceEndStates(false) }
+        tvOnDateLabel.setOnClickListener { updateRecurrenceEndStates(false) }
+
+        // Initial state
+        updateRecurrenceEndStates(true)
+
+        MaterialAlertDialogBuilder(activity)
             .setView(view)
             .setPositiveButton(R.string.add) { _, _ ->
                 val title = titleInput.text?.toString()?.trim().orEmpty()
@@ -177,15 +209,15 @@ class TaskDialogManager @Inject constructor() {
 
                     // Handle recurrence settings
                     if (switchRecurring.isChecked) {
-                        recurrenceType = when (spinnerRecurrenceType.selectedItemPosition) {
-                            0 -> RecurrenceType.DAILY
-                            1 -> RecurrenceType.WEEKLY
-                            2 -> RecurrenceType.MONTHLY
+                        recurrenceType = when (spinnerRecurrenceType.text.toString()) {
+                            activity.getString(R.string.recurrence_daily) -> RecurrenceType.DAILY
+                            activity.getString(R.string.recurrence_weekly) -> RecurrenceType.WEEKLY
+                            activity.getString(R.string.recurrence_monthly) -> RecurrenceType.MONTHLY
                             else -> RecurrenceType.DAILY
                         }
                         recurrenceInterval = editRecurrenceInterval.text?.toString()?.toIntOrNull() ?: 1
-                        recurrenceEndDate = if (radioGroupRecurrenceEnd.checkedRadioButtonId == R.id.radioEndDate) {
-                            selectedEndDate
+                        recurrenceEndDate = if (radioEndDate.isChecked) {
+                            selectedRecurrenceEndDate
                         } else null
                     }
 
@@ -235,6 +267,23 @@ class TaskDialogManager @Inject constructor() {
         val btnTime = view.findViewById<MaterialButton>(R.id.btnTimePicker)
         val dialogTitle = view.findViewById<TextView>(R.id.dialogTitle)
 
+        // Recurrence UI elements
+        val switchRecurring = view.findViewById<MaterialSwitch>(R.id.switchRecurring)
+        val recurrenceDetailsLayout = view.findViewById<View>(R.id.recurrenceDetailsLayout)
+        val editRecurrenceInterval = view.findViewById<EditText>(R.id.editRecurrenceInterval)
+        val spinnerRecurrenceType = view.findViewById<AutoCompleteTextView>(R.id.spinnerRecurrenceType)
+        val btnRecurrenceEndDate = view.findViewById<MaterialButton>(R.id.btnRecurrenceEndDate)
+        val radioNever = view.findViewById<MaterialRadioButton>(R.id.radioNever)
+        val radioEndDate = view.findViewById<MaterialRadioButton>(R.id.radioEndDate)
+        val tvOnDateLabel = view.findViewById<TextView>(R.id.tvOnDateLabel)
+
+        // Category selection
+        val spinnerCategory = view.findViewById<AutoCompleteTextView>(R.id.spinnerCategory)
+        val categoryNames = arrayOf("No Category", "Work", "Personal", "Health", "Learning", "Shopping", "Home")
+        val categoryAdapter = ArrayAdapter(activity, android.R.layout.simple_dropdown_item_1line, categoryNames)
+        spinnerCategory.setAdapter(categoryAdapter)
+        
+        // Setup initial values
         dialogTitle.setText(R.string.dialog_edit_task_title)
         titleInput.setText(task.title)
         descInput.setText(task.description)
@@ -244,6 +293,18 @@ class TaskDialogManager @Inject constructor() {
             Priority.MEDIUM -> chipGroup.check(R.id.chipMedium)
             Priority.LOW -> chipGroup.check(R.id.chipLow)
         }
+
+        // Set category
+        val categoryName = when (task.categoryId) {
+            1 -> "Work"
+            2 -> "Personal"
+            3 -> "Health"
+            4 -> "Learning"
+            5 -> "Shopping"
+            6 -> "Home"
+            else -> "No Category"
+        }
+        spinnerCategory.setText(categoryName, false)
         
         var dueDateMillis: Long? = task.dueDateMillis
         var selectedDate: Long? = null
@@ -258,6 +319,54 @@ class TaskDialogManager @Inject constructor() {
             selectedDate = calendar.timeInMillis
             selectedHour = calendar.get(Calendar.HOUR_OF_DAY)
             selectedMinute = calendar.get(Calendar.MINUTE)
+        }
+
+        // Recurrence initial setup
+        var recurrenceType: RecurrenceType? = task.recurrenceType
+        var recurrenceInterval: Int = task.recurrenceInterval
+        var selectedRecurrenceEndDate: Long? = task.recurrenceEndDate
+        
+        if (recurrenceType != null) {
+            switchRecurring.isChecked = true
+            recurrenceDetailsLayout.visibility = View.VISIBLE
+            editRecurrenceInterval.setText(recurrenceInterval.toString())
+            
+            val recurrenceTypes = arrayOf(
+                activity.getString(R.string.recurrence_daily),
+                activity.getString(R.string.recurrence_weekly),
+                activity.getString(R.string.recurrence_monthly)
+            )
+            val spinnerAdapter = ArrayAdapter(activity, android.R.layout.simple_dropdown_item_1line, recurrenceTypes)
+            spinnerRecurrenceType.setAdapter(spinnerAdapter)
+            
+            val typeText = when (recurrenceType) {
+                RecurrenceType.DAILY -> recurrenceTypes[0]
+                RecurrenceType.WEEKLY -> recurrenceTypes[1]
+                RecurrenceType.MONTHLY -> recurrenceTypes[2]
+                else -> recurrenceTypes[0]
+            }
+            spinnerRecurrenceType.setText(typeText, false)
+
+            if (selectedRecurrenceEndDate != null) {
+                radioEndDate.isChecked = true
+                radioNever.isChecked = false
+                btnRecurrenceEndDate.isEnabled = true
+                btnRecurrenceEndDate.text = dateFormat.format(Date(selectedRecurrenceEndDate))
+            } else {
+                radioEndDate.isChecked = false
+                radioNever.isChecked = true
+                btnRecurrenceEndDate.isEnabled = false
+            }
+        } else {
+            // Setup adapter even if not recurring so it's ready if toggled
+            val recurrenceTypes = arrayOf(
+                activity.getString(R.string.recurrence_daily),
+                activity.getString(R.string.recurrence_weekly),
+                activity.getString(R.string.recurrence_monthly)
+            )
+            val spinnerAdapter = ArrayAdapter(activity, android.R.layout.simple_dropdown_item_1line, recurrenceTypes)
+            spinnerRecurrenceType.setAdapter(spinnerAdapter)
+            spinnerRecurrenceType.setText(recurrenceTypes[0], false)
         }
         
         fun updateDueDateMillis() {
@@ -323,23 +432,90 @@ class TaskDialogManager @Inject constructor() {
             }
             timePicker.show(activity.supportFragmentManager, "TIME_PICKER")
         }
+
+        // Recurrence interaction logic
+        switchRecurring.setOnCheckedChangeListener { _, checked ->
+            recurrenceDetailsLayout.visibility = if (checked) View.VISIBLE else View.GONE
+        }
+
+        btnRecurrenceEndDate.setOnClickListener {
+            val datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Select recurrence end date")
+                .setSelection(selectedRecurrenceEndDate ?: MaterialDatePicker.todayInUtcMilliseconds())
+                .build()
+
+            datePicker.addOnPositiveButtonClickListener { selection ->
+                selectedRecurrenceEndDate = selection
+                btnRecurrenceEndDate.text = dateFormat.format(Date(selection))
+            }
+            datePicker.show(activity.supportFragmentManager, "RECURRENCE_DATE_PICKER")
+        }
+
+        fun updateRecurrenceEndStates(isNever: Boolean) {
+            radioNever.isChecked = isNever
+            radioEndDate.isChecked = !isNever
+            btnRecurrenceEndDate.isEnabled = !isNever
+        }
+
+        radioNever.setOnClickListener { updateRecurrenceEndStates(true) }
+        radioEndDate.setOnClickListener { updateRecurrenceEndStates(false) }
+        tvOnDateLabel.setOnClickListener { updateRecurrenceEndStates(false) }
         
         updateButtonTexts()
 
-        AlertDialog.Builder(activity)
+        MaterialAlertDialogBuilder(activity)
             .setView(view)
             .setPositiveButton(R.string.button_save) { _, _ ->
-                val updated = task.copy(
-                    title = titleInput.text?.toString()?.trim().orEmpty(),
-                    description = descInput.text?.toString()?.trim().orEmpty(),
-                    priority = when (chipGroup.checkedChipId) {
+                val title = titleInput.text?.toString()?.trim().orEmpty()
+                if (title.isNotBlank()) {
+                    val desc = descInput.text?.toString()?.trim().orEmpty()
+                    val priority = when (chipGroup.checkedChipId) {
                         R.id.chipHigh -> Priority.HIGH
                         R.id.chipMedium -> Priority.MEDIUM
                         else -> Priority.LOW
-                    },
-                    dueDateMillis = dueDateMillis
-                )
-                onTaskUpdated(updated)
+                    }
+
+                    // Handle recurring
+                    var finalRecurrenceType: RecurrenceType? = null
+                    var finalRecurrenceInterval = 1
+                    var finalRecurrenceEndDate: Long? = null
+                    
+                    if (switchRecurring.isChecked) {
+                        finalRecurrenceType = when (spinnerRecurrenceType.text.toString()) {
+                            activity.getString(R.string.recurrence_daily) -> RecurrenceType.DAILY
+                            activity.getString(R.string.recurrence_weekly) -> RecurrenceType.WEEKLY
+                            activity.getString(R.string.recurrence_monthly) -> RecurrenceType.MONTHLY
+                            else -> RecurrenceType.DAILY
+                        }
+                        finalRecurrenceInterval = editRecurrenceInterval.text?.toString()?.toIntOrNull() ?: 1
+                        finalRecurrenceEndDate = if (radioEndDate.isChecked) {
+                            selectedRecurrenceEndDate
+                        } else null
+                    }
+
+                    // Handle category
+                    val selectedCategory = when (spinnerCategory.text.toString()) {
+                        "Work" -> 1
+                        "Personal" -> 2
+                        "Health" -> 3
+                        "Learning" -> 4
+                        "Shopping" -> 5
+                        "Home" -> 6
+                        else -> null
+                    }
+
+                    val updated = task.copy(
+                        title = title,
+                        description = desc,
+                        priority = priority,
+                        dueDateMillis = dueDateMillis,
+                        recurrenceType = finalRecurrenceType,
+                        recurrenceInterval = finalRecurrenceInterval,
+                        recurrenceEndDate = finalRecurrenceEndDate,
+                        categoryId = selectedCategory
+                    )
+                    onTaskUpdated(updated)
+                }
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
