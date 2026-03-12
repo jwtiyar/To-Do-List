@@ -136,12 +136,21 @@
     <string name="error_invalid_backup">Invalid backup file format</string>
     <string name="error_read_backup">Failed to read backup file: %s</string>
     <string name="unknown">Unknown</string>
-    <string name="backup_info_format">Backup Information:\n• Created: %1$s\n• Tasks: %2$d\n• Version: %3$s</string>
+    <string name="backup_info_format">Backup Information:\n• Created: %1$s\n• Tasks: %2$s\n• Version: %3$s</string>
     <string name="import_mode_add">Add to existing tasks (keep current tasks)</string>
     <string name="import_mode_replace">Replace all tasks (delete current tasks)</string>
     <string name="dialog_import_title">Import Backup</string>
     <string name="button_import">Import</string>
     <string name="error_import_tasks">Failed to import tasks: %s</string>
+    <string name="dialog_backup_password_title">Set Backup Password</string>
+    <string name="dialog_import_password_title">Enter Backup Password</string>
+    <string name="backup_password_hint">Password</string>
+    <string name="backup_confirm_password_hint">Confirm password</string>
+    <string name="error_backup_password_empty">Password cannot be empty</string>
+    <string name="error_backup_password_mismatch">Passwords do not match</string>
+    <string name="error_backup_password_incorrect">Incorrect backup password or corrupted backup file</string>
+    <string name="backup_encrypted_notice">This backup is encrypted and requires a password to import.</string>
+    <string name="backup_tasks_encrypted">Encrypted</string>
 
     <!-- Recurrence strings -->
     <string name="recurring_task">Make this task recurring</string>
