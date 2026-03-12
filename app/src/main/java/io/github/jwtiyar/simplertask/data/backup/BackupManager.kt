@@ -2,7 +2,7 @@ package io.github.jwtiyar.simplertask.data.backup
 
 import android.content.Context
 import android.net.Uri
-import android.util.Base64
+import java.util.Base64
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.jwtiyar.simplertask.data.local.entity.Priority
 import io.github.jwtiyar.simplertask.data.local.entity.Task
@@ -91,9 +91,9 @@ class BackupManager @Inject constructor(
             put(KEY_VERSION, BACKUP_VERSION)
             put(KEY_KDF, KDF_ALGORITHM)
             put(KEY_ITERATIONS, KDF_ITERATIONS)
-            put(KEY_SALT, Base64.encodeToString(salt, Base64.NO_WRAP))
-            put(KEY_IV, Base64.encodeToString(iv, Base64.NO_WRAP))
-            put(KEY_CIPHERTEXT, Base64.encodeToString(ciphertext, Base64.NO_WRAP))
+            put(KEY_SALT, Base64.getEncoder().encodeToString(salt))
+            put(KEY_IV, Base64.getEncoder().encodeToString(iv))
+            put(KEY_CIPHERTEXT, Base64.getEncoder().encodeToString(ciphertext))
             put(KEY_CREATED_AT, System.currentTimeMillis())
         }
 
@@ -131,9 +131,9 @@ class BackupManager @Inject constructor(
 
         try {
             val iterations = envelope.optInt(KEY_ITERATIONS, KDF_ITERATIONS)
-            val salt = Base64.decode(envelope.getString(KEY_SALT), Base64.DEFAULT)
-            val iv = Base64.decode(envelope.getString(KEY_IV), Base64.DEFAULT)
-            val ciphertext = Base64.decode(envelope.getString(KEY_CIPHERTEXT), Base64.DEFAULT)
+            val salt = Base64.getDecoder().decode(envelope.getString(KEY_SALT))
+            val iv = Base64.getDecoder().decode(envelope.getString(KEY_IV))
+            val ciphertext = Base64.getDecoder().decode(envelope.getString(KEY_CIPHERTEXT))
 
             val key = deriveKey(providedPassword, salt, iterations)
             val plaintext = decrypt(ciphertext, key, iv)

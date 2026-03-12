@@ -138,7 +138,8 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.2.0'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
-    testImplementation "io.mockk:mockk:1.13.8"
+    testImplementation 'org.json:json:20230227'
+    testImplementation 'io.mockk:mockk:1.13.8'
 
     // Android instrumented tests
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
