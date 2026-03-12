@@ -28,15 +28,10 @@ A professional-grade, privacy-focused task management application for Android.
 
 ### Backup & Restore
 
-- **Export Backup** - Save your tasks to a backup file
-- **Import Backup** - Restore tasks from a backup file
-- **Import Modes** - Add to existing tasks or replace all tasks
-
-## Screenshots
-
-| Pending Tasks | Completed Tasks | Task Dialog |
-|---------------|-----------------|-------------|
-| ![Pending](screenshots/pending.png) | ![Completed](screenshots/completed.png) | ![Dialog](screenshots/dialog.png) |
+- **AES-256 Encryption** - Securely encrypt your task backups with a password.
+- **Export Backup** - Save your tasks to an encrypted backup file.
+- **Import Backup** - Restore tasks from an encrypted backup file (v2) or legacy plaintext (v1).
+- **Import Modes** - Add to existing tasks or replace all tasks.
 
 ## Requirements
 
@@ -49,16 +44,15 @@ The app uses standard Gradle. You can build it using:
 
 ```bash
 # Debug build
-./gradlew assembleDebug
+./gradlew assembleFdroidDebug
 
 # Release build
-./gradlew assembleRelease
+./gradlew assembleFdroidRelease
 ```
 
 ### Build Variants
 
-- `googlePlayDebug` / `googlePlayRelease` - For Google Play Store
-- `fdroidDebug` / `fdroidRelease` - For F-Droid (no proprietary dependencies)
+- `fdroidDebug` / `fdroidRelease` - Primary FOSS variant (no proprietary dependencies)
 
 ## Tech Stack
 
