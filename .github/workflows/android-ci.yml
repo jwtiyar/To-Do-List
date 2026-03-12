@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       build_variant:
-        description: 'Build variant (fdroid, googleplay)'
+        description: 'Build variant (fdroid)'
         required: false
         default: 'fdroid'
 
@@ -145,57 +145,10 @@ jobs:
           name: simplertask-fdroid-release.apk
           path: app/build/outputs/apk/fdroid/release/
 
-  build-googleplay:
-    name: Build Google Play Variant
-    runs-on: ubuntu-latest
-    needs: [lint, unit-tests]
-    if: needs.lint.result == 'success' && needs.unit-tests.result == 'success'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
-
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            ~/.konan
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Build Google Play Debug
-        run: ./gradlew assembleGooglePlayDebug --no-daemon
-
-      - name: Build Google Play Release
-        run: ./gradlew assembleGooglePlayRelease --no-daemon
-
-      - name: Upload Google Play Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: simplertask-googleplay-debug.apk
-          path: app/build/outputs/apk/googleplay/debug/
-
-      - name: Upload Google Play Release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: simplertask-googleplay-release.apk
-          path: app/build/outputs/apk/googleplay/release/
-
   notify:
     name: Notify on Failure
     runs-on: ubuntu-latest
-    needs: [build-fdroid, build-googleplay]
+    needs: [build-fdroid]
     if: failure()
     steps:
       - name: Send failure notification
