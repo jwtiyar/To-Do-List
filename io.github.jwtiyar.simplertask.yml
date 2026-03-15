@@ -29,9 +29,36 @@ Builds:
     binary: 
       https://github.com/jwtiyar/To-Do-List/releases/download/v1.3.2/TodoTaskReminder-v1.3.2-fdroid-release.apk
 
+  - versionName: 1.4
+    versionCode: 10
+    commit: 091c4b75551283780f696c3cb7540162b102d332
+    subdir: app
+    gradle:
+      - fdroid
+    binary: 
+      https://github.com/jwtiyar/To-Do-List/releases/download/v1.4/TodoTaskReminder-v1.4-fdroid-release.apk
+
+  - versionName: 1.5
+    versionCode: 11
+    commit: 35a505fc1882061adb40518951ee03e50691c046
+    subdir: app
+    gradle:
+      - fdroid
+    binary: 
+      https://github.com/jwtiyar/To-Do-List/releases/download/v1.5/TodoTaskReminder-v1.5-fdroid-release.apk
+
+  - versionName: 1.6
+    versionCode: 12
+    commit: 5e858c0a13c6c46df521ff7fdc8822a7541a8221
+    subdir: app
+    gradle:
+      - fdroid
+    binary: 
+      https://github.com/jwtiyar/To-Do-List/releases/download/v1.6/TodoTaskReminder-v1.6-fdroid-release.apk
+
 AllowedAPKSigningKeys: 486dad3257453c1103a83dfbeb19e0674fb74c5d542880ca93188515f0cb4aa9
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 1.3.2
-CurrentVersionCode: 9
+CurrentVersion: 1.6
+CurrentVersionCode: 12
