@@ -3,6 +3,7 @@ image: eclipse-temurin:17-jdk
 variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GRADLE_USER_HOME: $CI_PROJECT_DIR/.gradle
+  ANDROID_HOME: $CI_PROJECT_DIR/android-sdk
 
 cache:
   key:
@@ -12,6 +13,7 @@ cache:
   paths:
     - .gradle/caches/
     - .gradle/wrapper/
+    - android-sdk/
 
 stages:
   - lint
@@ -20,7 +22,19 @@ stages:
   - release
 
 before_script:
-  # Grant execute permissions to gradlew
+  # Install Android SDK if not already cached
+  - apt-get update -qq && apt-get install -y -qq wget unzip
+  - export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+  - |
+    if [ ! -d "$ANDROID_HOME/cmdline-tools" ]; then
+      echo "Downloading Android Command Line Tools..."
+      mkdir -p $ANDROID_HOME/cmdline-tools
+      wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
+      unzip -q cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools/
+      mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+      rm cmdline-tools.zip
+    fi
+  - yes | sdkmanager --licenses > /dev/null
   - chmod +x ./gradlew
 
 # -----------------
