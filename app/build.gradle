@@ -80,7 +80,7 @@ android {
     buildTypes {
         debug {
             // Allow installing alongside Play (release) build
-            applicationIdSuffix ".dev"
+            // applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
             debuggable = true
             buildConfigField "boolean", "DEBUG_MODE", "true"
