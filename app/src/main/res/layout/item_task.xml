@@ -20,10 +20,10 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="20dp"
-        android:paddingTop="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="16dp">
+        android:paddingStart="4dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="4dp"
+        android:paddingBottom="8dp">
 
         <!-- Main content container -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -42,7 +42,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                android:layout_marginBottom="8dp">
+                android:layout_marginBottom="4dp">
 
                 <!-- Priority chip -->
                 <com.google.android.material.chip.Chip
@@ -76,7 +76,7 @@
                     app:layout_constraintEnd_toStartOf="@id/iconContainer"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="4dp"
                     android:layout_marginTop="2dp"
                     android:layout_marginBottom="2dp"
                     android:text="Task Title"
