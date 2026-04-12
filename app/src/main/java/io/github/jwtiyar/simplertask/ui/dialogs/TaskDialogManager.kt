@@ -135,6 +135,7 @@ class TaskDialogManager @Inject constructor() {
         
         btnTime.setOnClickListener {
             val timePicker = MaterialTimePicker.Builder()
+                .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK)
                 .setTimeFormat(TimeFormat.CLOCK_24H)
                 .setHour(selectedHour)
                 .setMinute(selectedMinute)
@@ -418,6 +419,7 @@ class TaskDialogManager @Inject constructor() {
         
         btnTime.setOnClickListener {
             val timePicker = MaterialTimePicker.Builder()
+                .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK)
                 .setTimeFormat(TimeFormat.CLOCK_24H)
                 .setHour(selectedHour)
                 .setMinute(selectedMinute)
