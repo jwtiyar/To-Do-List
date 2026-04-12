@@ -34,7 +34,10 @@ before_script:
       mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
       rm cmdline-tools.zip
     fi
-  - yes | sdkmanager --licenses > /dev/null
+  - echo "Accepting all Android SDK Licenses..."
+  - yes | sdkmanager --licenses > /dev/null || true
+  - echo "Bootstrapping core Android SDK components..."
+  - sdkmanager "platform-tools" "platforms;android-35" "build-tools;34.0.0" > /dev/null || true
   - chmod +x ./gradlew
 
 # -----------------
