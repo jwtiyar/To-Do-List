@@ -137,8 +137,9 @@ class TaskSwipeCallback(
                 }
 
                 // Draw "Complete" text
-                val textX = iconLeft + iconSize + 16f
-                val textY = itemView.top + itemHeight / 2f + 5f
+                iconPaint.textAlign = Paint.Align.LEFT
+                val textX = iconLeft + iconSize + 24f
+                val textY = itemView.top + itemHeight / 2f - (iconPaint.descent() + iconPaint.ascent()) / 2
                 c.drawText("Complete", textX, textY, iconPaint)
             }
             dX < 0 -> { // Swiping left - Delete
@@ -157,8 +158,9 @@ class TaskSwipeCallback(
                 }
 
                 // Draw "Delete" text
-                val textX = iconRight - iconSize - 16f
-                val textY = itemView.top + itemHeight / 2f + 5f
+                iconPaint.textAlign = Paint.Align.RIGHT
+                val textX = iconRight - iconSize - 24f
+                val textY = itemView.top + itemHeight / 2f - (iconPaint.descent() + iconPaint.ascent()) / 2
                 c.drawText("Delete", textX, textY, iconPaint)
             }
         }
