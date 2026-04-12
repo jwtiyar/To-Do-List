@@ -56,15 +56,15 @@ class TaskViewModel @Inject constructor(
 
     // Efficient count flows for UI indicators (tab badges, stats)
     val pendingCount: StateFlow<Int> = repository.getPendingTasksCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
     val completedCount: StateFlow<Int> = repository.getCompletedTasksCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
     val savedCount: StateFlow<Int> = repository.getSavedTasksCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
     val archivedCount: StateFlow<Int> = repository.getArchivedTasksCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
     val recurringCount: StateFlow<Int> = repository.getRecurringTasksCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     // Category state
     private val _selectedCategoryId = MutableStateFlow<Int?>(null)
