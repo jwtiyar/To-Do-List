@@ -16,9 +16,11 @@ A professional-grade, privacy-focused task management application for Android.
 
 ### Organization
 
+- **Home Screen Widget** - A beautiful, scrollable widget for tracking Pending tasks directly from your home screen (fully supports Day/Night Dynamic Theming)
+- **Expandable Tasks** - Tap-to-expand any task to reveal long descriptions inline
 - **Tabs** - View tasks by status: Pending, Completed, Saved, Archive, Recurring
 - **Sorting** - Sort tasks by date, priority, or name
-- **Swipe Actions** - Delete tasks with a simple swipe gesture
+- **Swipe Actions** - Delete or complete tasks instantly with a simple intuitive swipe gesture
 
 ### Reminders & Recurring Tasks
 
