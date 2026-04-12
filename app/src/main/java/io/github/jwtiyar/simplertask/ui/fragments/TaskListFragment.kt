@@ -192,22 +192,23 @@ class TaskListFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             taskAdapter.loadStateFlow.collect { loadStates: CombinedLoadStates ->
+                val currentBinding = _binding ?: return@collect
                 val isLoading = loadStates.refresh is LoadState.Loading
                 if (isLoading) {
-                    if (!binding.swipeRefresh.isRefreshing) {
+                    if (!currentBinding.swipeRefresh.isRefreshing) {
                         refreshStartTime = System.currentTimeMillis()
-                        binding.swipeRefresh.isRefreshing = true
+                        currentBinding.swipeRefresh.isRefreshing = true
                     }
                 } else {
-                    if (binding.swipeRefresh.isRefreshing) {
+                    if (currentBinding.swipeRefresh.isRefreshing) {
                         val elapsed = System.currentTimeMillis() - refreshStartTime
                         val remaining = minShowTimeMs - elapsed
                         if (remaining > 0) {
-                            binding.swipeRefresh.postDelayed({
-                                binding.swipeRefresh.isRefreshing = false
+                            currentBinding.swipeRefresh.postDelayed({
+                                _binding?.swipeRefresh?.isRefreshing = false
                             }, remaining)
                         } else {
-                            binding.swipeRefresh.isRefreshing = false
+                            currentBinding.swipeRefresh.isRefreshing = false
                         }
                     }
                 }
@@ -251,10 +252,11 @@ class TaskListFragment : Fragment() {
                 // Observe adapter load state to show/hide empty state
                 launch {
                     taskAdapter.loadStateFlow.collectLatest { loadState ->
+                        val currentBinding = _binding ?: return@collectLatest
                         val isEmpty = loadState.refresh is androidx.paging.LoadState.NotLoading &&
                                     taskAdapter.itemCount == 0
-                        binding.emptyStateView.visibility = if (isEmpty) View.VISIBLE else View.GONE
-                        binding.swipeRefresh.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                        currentBinding.emptyStateView.visibility = if (isEmpty) View.VISIBLE else View.GONE
+                        currentBinding.swipeRefresh.visibility = if (isEmpty) View.GONE else View.VISIBLE
                     }
                 }
 
