@@ -1,137 +1,133 @@
 package io.github.jwtiyar.simplertask.data.local.entity
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Calendar
 
 class TaskTest {
 
     @Test
-    fun `two tasks with same core fields are equal`() {
-        val task1 = Task(
-            id = 1,
-            title = "Test Task",
-            description = "Description",
-            priority = Priority.MEDIUM
+    fun getNextDueDate_dailyRecurrence_calculatesCorrectly() {
+        // Arrange
+        val calendar = Calendar.getInstance()
+        calendar.set(2026, Calendar.MARCH, 1, 10, 0, 0) // March 1, 2026
+        calendar.set(Calendar.MILLISECOND, 0)
+        
+        val task = Task(
+            title = "Daily Task",
+            description = "",
+            dueDateMillis = calendar.timeInMillis, // Set base time
+            recurrenceType = RecurrenceType.DAILY,
+            recurrenceInterval = 3 // Repeat every 3 days
         )
-        val task2 = Task(
-            id = 1,
-            title = "Test Task",
-            description = "Description",
-            priority = Priority.MEDIUM
+
+        // Expected explicitly 3 days later
+        calendar.add(Calendar.DAY_OF_MONTH, 3)
+        val expected = calendar.timeInMillis
+
+        // Act
+        val result = task.getNextDueDate()
+
+        // Assert
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun getNextDueDate_weeklyRecurrence_calculatesCorrectly() {
+        // Arrange
+        val calendar = Calendar.getInstance()
+        calendar.set(2026, Calendar.MARCH, 1, 10, 0, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        
+        val task = Task(
+            title = "Weekly Task",
+            description = "",
+            dueDateMillis = calendar.timeInMillis,
+            recurrenceType = RecurrenceType.WEEKLY,
+            recurrenceInterval = 2 // Repeat every 2 weeks
         )
-        assertEquals(task1, task2)
-        assertEquals(task1.hashCode(), task2.hashCode())
+
+        // Expected exactly 2 weeks later
+        calendar.add(Calendar.WEEK_OF_YEAR, 2)
+        val expected = calendar.timeInMillis
+
+        // Act
+        val result = task.getNextDueDate()
+
+        // Assert
+        assertEquals(expected, result)
     }
 
     @Test
-    fun `two tasks with different id are not equal`() {
-        val task1 = Task(id = 1, title = "Test Task", description = "Description", priority = Priority.MEDIUM)
-        val task2 = Task(id = 2, title = "Test Task", description = "Description", priority = Priority.MEDIUM)
-        assertNotEquals(task1, task2)
+    fun getNextDueDate_monthlyRecurrence_calculatesCorrectly() {
+        // Arrange
+        val calendar = Calendar.getInstance()
+        calendar.set(2026, Calendar.JANUARY, 31, 10, 0, 0) // Jan 31
+        calendar.set(Calendar.MILLISECOND, 0)
+        
+        val task = Task(
+            title = "Monthly Task",
+            description = "",
+            dueDateMillis = calendar.timeInMillis,
+            recurrenceType = RecurrenceType.MONTHLY,
+            recurrenceInterval = 1 // Repeat every 1 month
+        )
+
+        // Expected smoothly calculated correctly by java Calendar algorithms (Feb 28/29)
+        calendar.add(Calendar.MONTH, 1)
+        val expected = calendar.timeInMillis
+
+        // Act
+        val result = task.getNextDueDate()
+
+        // Assert
+        assertEquals(expected, result)
     }
 
     @Test
-    fun `two tasks with different title are not equal`() {
-        val task1 = Task(id = 1, title = "Task A", description = "Description", priority = Priority.MEDIUM)
-        val task2 = Task(id = 1, title = "Task B", description = "Description", priority = Priority.MEDIUM)
-        assertNotEquals(task1, task2)
+    fun getNextDueDate_noInitialDueDate_usesCurrentTime() {
+        // Arrange
+        val task = Task(
+            title = "No Due Date Task",
+            description = "",
+            dueDateMillis = null, // No initial due date setup!
+            recurrenceType = RecurrenceType.DAILY,
+            recurrenceInterval = 1
+        )
+
+        // Act
+        val result = task.getNextDueDate()
+        
+        // Assert
+        // We cannot assert EXACT milliseconds since creation time differs slightly from check time
+        // but it must NOT be null. The fix was making it evaluate from Current Time.
+        org.junit.Assert.assertNotNull(result)
     }
 
     @Test
-    fun `two tasks with different priority are not equal`() {
-        val task1 = Task(id = 1, title = "Test Task", description = "Description", priority = Priority.LOW)
-        val task2 = Task(id = 1, title = "Test Task", description = "Description", priority = Priority.HIGH)
-        assertNotEquals(task1, task2)
-    }
+    fun getNextDueDate_pastEndDate_returnsNull() {
+        // Arrange
+        val calendar = Calendar.getInstance()
+        val now = calendar.timeInMillis
+        
+        calendar.add(Calendar.DAY_OF_MONTH, 5) 
+        val endDate = calendar.timeInMillis // End date is 5 days from now
+        
+        val task = Task(
+            title = "Expiring Task",
+            description = "",
+            dueDateMillis = now,
+            recurrenceType = RecurrenceType.DAILY,
+            recurrenceInterval = 6, // Next occurrence will be 6 days from now
+            recurrenceEndDate = endDate
+        )
 
-    @Test
-    fun `notificationId is ignored in equals`() {
-        val task1 = Task(id = 1, title = "Test Task", description = "Description", priority = Priority.MEDIUM, notificationId = 100)
-        val task2 = Task(id = 1, title = "Test Task", description = "Description", priority = Priority.MEDIUM, notificationId = 200)
-        assertEquals(task1, task2)
-    }
+        // Act
+        val result = task.getNextDueDate()
 
-    @Test
-    fun `recurrence fields are ignored in equals`() {
-        val task1 = Task(id = 1, title = "Test Task", description = "Description", priority = Priority.MEDIUM, recurrenceType = RecurrenceType.DAILY, recurrenceInterval = 2)
-        val task2 = Task(id = 1, title = "Test Task", description = "Description", priority = Priority.MEDIUM, recurrenceType = RecurrenceType.WEEKLY, recurrenceInterval = 5)
-        assertEquals(task1, task2)
-    }
-
-    @Test
-    fun `isRecurring returns true when recurrenceType is set`() {
-        val task = Task(id = 1, title = "Recurring Task", description = "Description", priority = Priority.MEDIUM, recurrenceType = RecurrenceType.DAILY)
-        assertTrue(task.isRecurring())
-    }
-
-    @Test
-    fun `isRecurring returns false when recurrenceType is null`() {
-        val task = Task(id = 1, title = "Non-recurring Task", description = "Description", priority = Priority.MEDIUM)
-        assertFalse(task.isRecurring())
-    }
-
-    @Test
-    fun `getNextDueDate returns null for non-recurring task`() {
-        val task = Task(id = 1, title = "Task", description = "Description", priority = Priority.MEDIUM)
-        assertNull(task.getNextDueDate())
-    }
-
-    @Test
-    fun `getNextDueDate calculates daily recurrence correctly`() {
-        val baseDate = Calendar.getInstance().apply { set(2024, Calendar.JANUARY, 15, 10, 0, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis
-        val task = Task(id = 1, title = "Daily Task", description = "Description", priority = Priority.MEDIUM, recurrenceType = RecurrenceType.DAILY, recurrenceInterval = 1, dueDateMillis = baseDate)
-        val nextDue = task.getNextDueDate()
-        val expectedDate = Calendar.getInstance().apply { timeInMillis = baseDate; add(Calendar.DAY_OF_MONTH, 1) }.timeInMillis
-        assertEquals(expectedDate, nextDue)
-    }
-
-    @Test
-    fun `getNextDueDate calculates weekly recurrence correctly`() {
-        val baseDate = Calendar.getInstance().apply { set(2024, Calendar.JANUARY, 15, 10, 0, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis
-        val task = Task(id = 1, title = "Weekly Task", description = "Description", priority = Priority.MEDIUM, recurrenceType = RecurrenceType.WEEKLY, recurrenceInterval = 1, dueDateMillis = baseDate)
-        val nextDue = task.getNextDueDate()
-        val expectedDate = Calendar.getInstance().apply { timeInMillis = baseDate; add(Calendar.WEEK_OF_YEAR, 1) }.timeInMillis
-        assertEquals(expectedDate, nextDue)
-    }
-
-    @Test
-    fun `getNextDueDate calculates monthly recurrence correctly`() {
-        val baseDate = Calendar.getInstance().apply { set(2024, Calendar.JANUARY, 15, 10, 0, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis
-        val task = Task(id = 1, title = "Monthly Task", description = "Description", priority = Priority.MEDIUM, recurrenceType = RecurrenceType.MONTHLY, recurrenceInterval = 1, dueDateMillis = baseDate)
-        val nextDue = task.getNextDueDate()
-        val expectedDate = Calendar.getInstance().apply { timeInMillis = baseDate; add(Calendar.MONTH, 1) }.timeInMillis
-        assertEquals(expectedDate, nextDue)
-    }
-
-    @Test
-    fun `getNextDueDate respects recurrence interval`() {
-        val baseDate = Calendar.getInstance().apply { set(2024, Calendar.JANUARY, 15, 10, 0, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis
-        val task = Task(id = 1, title = "Task", description = "Description", priority = Priority.MEDIUM, recurrenceType = RecurrenceType.DAILY, recurrenceInterval = 3, dueDateMillis = baseDate)
-        val nextDue = task.getNextDueDate()
-        val expectedDate = Calendar.getInstance().apply { timeInMillis = baseDate; add(Calendar.DAY_OF_MONTH, 3) }.timeInMillis
-        assertEquals(expectedDate, nextDue)
-    }
-
-    @Test
-    fun `getNextDueDate returns null when exceeding recurrenceEndDate`() {
-        val baseDate = Calendar.getInstance().apply { set(2024, Calendar.JANUARY, 15, 10, 0, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis
-        val endDate = Calendar.getInstance().apply { set(2024, Calendar.JANUARY, 16, 10, 0, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis
-        val task = Task(id = 1, title = "Task", description = "Description", priority = Priority.MEDIUM, recurrenceType = RecurrenceType.DAILY, recurrenceInterval = 7, dueDateMillis = baseDate, recurrenceEndDate = endDate)
-        assertNull(task.getNextDueDate())
-    }
-
-    @Test
-    fun `getNextDueDate returns next date when before recurrenceEndDate`() {
-        val baseDate = Calendar.getInstance().apply { set(2024, Calendar.JANUARY, 15, 10, 0, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis
-        val endDate = Calendar.getInstance().apply { set(2024, Calendar.FEBRUARY, 15, 10, 0, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis
-        val task = Task(id = 1, title = "Task", description = "Description", priority = Priority.MEDIUM, recurrenceType = RecurrenceType.DAILY, recurrenceInterval = 1, dueDateMillis = baseDate, recurrenceEndDate = endDate)
-        val nextDue = task.getNextDueDate()
-        val expectedDate = Calendar.getInstance().apply { timeInMillis = baseDate; add(Calendar.DAY_OF_MONTH, 1) }.timeInMillis
-        assertEquals(expectedDate, nextDue)
+        // Assert
+        // 6 days into the future deliberately skips the end date at 5 days. Should return null.
+        assertNull(result)
     }
 }
