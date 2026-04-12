@@ -134,8 +134,9 @@ class NotificationHelper @Inject constructor(
         notificationManager.cancel(taskId)
         
         val activeNotifications = notificationManager.activeNotifications
+        // Exclude the current taskId from the count because cancel() is asynchronous
         val taskNotificationsCount = activeNotifications.count { 
-            it.id != SUMMARY_ID && it.notification.group == GROUP_KEY_TASKS 
+            it.id != SUMMARY_ID && it.id != taskId && it.notification.group == GROUP_KEY_TASKS 
         }
 
         if (taskNotificationsCount == 0) {

@@ -154,7 +154,8 @@
         <item name="chipStrokeColor">?attr/colorPrimary</item>
         <item name="chipStrokeWidth">1dp</item>
         <item name="android:textColor">?attr/colorOnPrimaryContainer</item>
-        <item name="chipMinHeight">28dp</item>
+        <item name="android:textSize">11sp</item>
+        <item name="chipMinHeight">24dp</item>
         <item name="ensureMinTouchTargetSize">false</item>
     </style>
 

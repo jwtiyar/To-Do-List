@@ -84,9 +84,10 @@ enum class RecurrenceType {
 fun Task.isRecurring(): Boolean = recurrenceType != null
 
 fun Task.getNextDueDate(): Long? {
-    if (!isRecurring() || dueDateMillis == null) return null
+    if (!isRecurring()) return null
 
-    val currentDueDate = dueDateMillis!!
+    // If the task had no due date, calculate the next one based on right now
+    val currentDueDate = dueDateMillis ?: System.currentTimeMillis()
     val calendar = java.util.Calendar.getInstance().apply {
         timeInMillis = currentDueDate
     }

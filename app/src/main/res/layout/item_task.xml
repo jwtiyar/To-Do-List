@@ -77,10 +77,12 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     android:layout_marginStart="8dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="2dp"
                     android:text="Task Title"
                     android:textAppearance="?attr/textAppearanceBodyLarge"
                     android:textColor="?attr/colorOnSurface"
-                    android:maxLines="1"
+                    android:maxLines="2"
                     android:ellipsize="end" />
 
                 <!-- Icon container -->
@@ -147,9 +149,10 @@
                 app:layout_constraintTop_toBottomOf="@id/taskDescription"
                 android:text=""
                 android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textSize="11sp"
                 android:textColor="?attr/colorPrimary"
                 android:drawableStart="@drawable/ic_notification_reminder"
-                android:drawablePadding="6dp"
+                android:drawablePadding="4dp"
                 android:drawableTint="?attr/colorPrimary"
                 android:visibility="gone"
                 tools:visibility="visible" />
