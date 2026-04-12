@@ -46,10 +46,24 @@ class TaskPagingAdapter(
     private val timeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' HH:mm", Locale.getDefault())
 
     inner class TaskVH(private val binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root) {
+        private var isExpanded = false
+
         fun bind(task: Task?) {
             if (task == null) return
+            
+            // Reset state on recycle
+            isExpanded = false
+            binding.taskTitle.maxLines = 2
+            binding.taskDescription.maxLines = 2
+            
             binding.taskTitle.text = task.title
-            binding.taskDescription.text = task.description
+            
+            if (task.description.isNotBlank()) {
+                binding.taskDescription.text = task.description
+                binding.taskDescription.visibility = android.view.View.VISIBLE
+            } else {
+                binding.taskDescription.visibility = android.view.View.GONE
+            }
             binding.chipPriority.text = when (task.priority) {
                 Priority.LOW -> binding.root.context.getString(R.string.priority_low)
                 Priority.MEDIUM -> binding.root.context.getString(R.string.priority_medium)
@@ -71,6 +85,15 @@ class TaskPagingAdapter(
             updateVisualState(task)
             binding.root.setOnLongClickListener { showActions(task); true }
             binding.btnEditTask.setOnClickListener { onEditClick(task) }
+            
+            binding.root.setOnClickListener {
+                isExpanded = !isExpanded
+                val newMaxLines = if (isExpanded) Integer.MAX_VALUE else 2
+                binding.taskTitle.maxLines = newMaxLines
+                binding.taskDescription.maxLines = newMaxLines
+                
+                // Add a small layout transition automatically if the parent has default animations
+            }
         }
 
         private fun showActions(task: Task) {
