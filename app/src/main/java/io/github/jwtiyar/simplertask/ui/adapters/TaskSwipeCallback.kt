@@ -39,7 +39,7 @@ class TaskSwipeCallback(
 
     private val iconPaint = Paint().apply {
         color = Color.WHITE
-        textSize = context.resources.displayMetrics.scaledDensity * 18f
+        textSize = context.resources.displayMetrics.scaledDensity * 14f
         textAlign = Paint.Align.CENTER
         isAntiAlias = true
     }
