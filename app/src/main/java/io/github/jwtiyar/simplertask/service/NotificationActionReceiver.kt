@@ -6,6 +6,8 @@ import android.content.Intent
 import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.jwtiyar.simplertask.data.repository.TaskRepository
+import io.github.jwtiyar.simplertask.data.local.entity.isRecurring
+import io.github.jwtiyar.simplertask.data.local.entity.getNextDueDate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -60,13 +62,27 @@ class NotificationActionReceiver : BroadcastReceiver() {
 
     private suspend fun handleComplete(context: Context, taskId: Int) {
         Log.d("NotificationAction", "Completing task $taskId")
-        
+
         // Get the task and mark it as completed in database
         val task = repository.getTaskById(taskId.toLong())
         task?.let {
+            val wasCompleted = it.isCompleted
             val completedTask = it.copy(isCompleted = true)
             repository.updateTask(completedTask)
-            Log.d("NotificationAction", "Task $taskId marked as completed")
+            Log.d("NotificationAction", "Task $taskId marked as completed (wasCompleted=$wasCompleted, isRecurring=${it.isRecurring()})")
+            
+            // If this was a recurring task that just got completed, create the next occurrence
+            if (!wasCompleted && it.isRecurring()) {
+                val nextTaskId = repository.createNextRecurringTask(it)
+                if (nextTaskId != null) {
+                    // Schedule notification for the new occurrence
+                    val nextTask = repository.getTaskById(nextTaskId)
+                    nextTask?.let { newTask ->
+                        notificationHelper.scheduleNotification(newTask)
+                        Log.d("NotificationAction", "Next recurring occurrence created with id $nextTaskId")
+                    }
+                }
+            }
         } ?: Log.e("NotificationAction", "Task $taskId not found")
     }
 
