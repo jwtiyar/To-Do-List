@@ -86,13 +86,7 @@ build_release:
   script:
     # Setup keystore securely
     - mkdir -p keystore
-    - echo "$KEYSTORE_BASE64" | base64 -d > keystore/simplertask-release.jks
-    # Convert to JKS for compatibility (handle special chars in passwords)
-    - printf '%s' "$KEYSTORE_PASSWORD" > /tmp/storepass.txt
-    - printf '%s' "$KEY_PASSWORD" > /tmp/keypass.txt
-    - keytool -importkeystore -srckeystore keystore/simplertask-release.jks -srcstorepass:file /tmp/storepass.txt -destkeystore keystore/simplertask-release-compat.jks -deststorepass:file /tmp/storepass.txt -deststoretype JKS -destkeypass:file /tmp/keypass.txt -noprompt
-    - mv keystore/simplertask-release-compat.jks keystore/simplertask-release.jks
-    - rm -f /tmp/storepass.txt /tmp/keypass.txt
+    - printf '%s' "$KEYSTORE_BASE64" | base64 -d > keystore/simplertask-release.jks
     - printf 'storeFile=%s/keystore/simplertask-release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$CI_PROJECT_DIR" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > keystore.properties
     # Build APK
     - ./gradlew assembleFdroidRelease
