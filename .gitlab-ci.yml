@@ -89,10 +89,13 @@ build_release:
     # Setup keystore securely
     - mkdir -p keystore
     - echo "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > keystore/simplertask-release.jks
-    - echo "storeFile=$CI_PROJECT_DIR/keystore/simplertask-release.jks" > keystore.properties
-    - echo "storePassword=$KEYSTORE_PASSWORD" >> keystore.properties
-    - echo "keyAlias=$KEY_ALIAS" >> keystore.properties
-    - echo "keyPassword=$KEY_PASSWORD" >> keystore.properties
+    - printf "storeFile=%s/keystore/simplertask-release.jks\n" "$CI_PROJECT_DIR" > keystore.properties
+    - printf "storePassword=" >> keystore.properties
+    - printenv KEYSTORE_PASSWORD >> keystore.properties
+    - printf "keyAlias=" >> keystore.properties
+    - printenv KEY_ALIAS >> keystore.properties
+    - printf "keyPassword=" >> keystore.properties
+    - printenv KEY_PASSWORD >> keystore.properties
     # Build APK
     - ./gradlew assembleFdroidRelease
   artifacts:
