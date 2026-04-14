@@ -87,7 +87,7 @@ build_release:
     # Setup keystore securely
     - mkdir -p keystore
     - echo "$KEYSTORE_BASE64" | base64 -d > keystore/simplertask-release.jks
-    # Convert keystore to JKS format for compatibility with older JDK/Gradle
+    # Convert to JKS for compatibility (passwords must be 6+ chars)
     - keytool -importkeystore -srckeystore keystore/simplertask-release.jks -srcstorepass "$KEYSTORE_PASSWORD" -destkeystore keystore/simplertask-release-compat.jks -deststorepass "$KEYSTORE_PASSWORD" -deststoretype JKS -destkeypass "$KEY_PASSWORD" -noprompt
     - mv keystore/simplertask-release-compat.jks keystore/simplertask-release.jks
     - echo "storeFile=$CI_PROJECT_DIR/keystore/simplertask-release.jks" > keystore.properties
