@@ -76,7 +76,7 @@ Builds:
 
   - versionName: 1.7.2
     versionCode: 15
-    commit: HEAD
+    commit: de546e569df6361a8c2daa598cbcca3f16d89c96
     subdir: app
     gradle:
       - fdroid
