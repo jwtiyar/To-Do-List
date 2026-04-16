@@ -186,7 +186,7 @@ class MainUiDelegate @Inject constructor(
             // Auto-complete: if recurrence was removed and due date already passed,
             // there is nothing left to do — mark it complete immediately.
             val recurrenceRemoved = task.recurrenceType != null && updatedTask.recurrenceType == null
-            val dueDatePassed = updatedTask.dueDateMillis?.let { it < System.currentTimeMillis() } ?: false
+            val dueDatePassed = updatedTask.dueDateMillis?.let { it < System.currentTimeMillis() } ?: true
             val finalTask = if (recurrenceRemoved && dueDatePassed) {
                 updatedTask.copy(isCompleted = true)
             } else {
