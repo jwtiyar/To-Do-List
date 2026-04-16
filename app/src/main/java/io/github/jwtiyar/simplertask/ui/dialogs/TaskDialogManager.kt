@@ -438,6 +438,14 @@ class TaskDialogManager @Inject constructor() {
         // Recurrence interaction logic
         switchRecurring.setOnCheckedChangeListener { _, checked ->
             recurrenceDetailsLayout.visibility = if (checked) View.VISIBLE else View.GONE
+            if (!checked) {
+                // Reset all recurrence state when switch is turned off
+                selectedRecurrenceEndDate = null
+                radioNever.isChecked = true
+                radioEndDate.isChecked = false
+                btnRecurrenceEndDate.isEnabled = false
+                btnRecurrenceEndDate.setText(R.string.select_date)
+            }
         }
 
         btnRecurrenceEndDate.setOnClickListener {
@@ -459,7 +467,10 @@ class TaskDialogManager @Inject constructor() {
             btnRecurrenceEndDate.isEnabled = !isNever
         }
 
-        radioNever.setOnClickListener { updateRecurrenceEndStates(true) }
+        radioNever.setOnClickListener {
+            updateRecurrenceEndStates(true)
+            selectedRecurrenceEndDate = null
+        }
         radioEndDate.setOnClickListener { updateRecurrenceEndStates(false) }
         tvOnDateLabel.setOnClickListener { updateRecurrenceEndStates(false) }
         

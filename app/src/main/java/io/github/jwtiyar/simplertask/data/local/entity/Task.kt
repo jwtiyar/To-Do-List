@@ -53,6 +53,11 @@ data class Task(
         if (isArchived != other.isArchived) return false
         if (dueDateMillis != other.dueDateMillis) return false
         if (priority != other.priority) return false
+        if (recurrenceType != other.recurrenceType) return false
+        if (recurrenceInterval != other.recurrenceInterval) return false
+        if (recurrenceEndDate != other.recurrenceEndDate) return false
+        if (parentTaskId != other.parentTaskId) return false
+        if (categoryId != other.categoryId) return false
 
         return true
     }
@@ -69,6 +74,11 @@ data class Task(
         result = 31 * result + isArchived.hashCode()
         result = 31 * result + (dueDateMillis?.hashCode() ?: 0)
         result = 31 * result + priority.hashCode()
+        result = 31 * result + (recurrenceType?.hashCode() ?: 0)
+        result = 31 * result + recurrenceInterval
+        result = 31 * result + (recurrenceEndDate?.hashCode() ?: 0)
+        result = 31 * result + (parentTaskId ?: 0)
+        result = 31 * result + (categoryId ?: 0)
         return result
     }
 }

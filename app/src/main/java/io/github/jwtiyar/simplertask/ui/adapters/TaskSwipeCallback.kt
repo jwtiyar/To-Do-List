@@ -39,7 +39,7 @@ class TaskSwipeCallback(
 
     private val iconPaint = Paint().apply {
         color = Color.WHITE
-        textSize = context.resources.displayMetrics.scaledDensity * 14f
+        textSize = context.resources.displayMetrics.density * 14f
         textAlign = Paint.Align.CENTER
         isAntiAlias = true
     }
@@ -75,7 +75,7 @@ class TaskSwipeCallback(
     ): Boolean = false // We don't support drag & drop
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        val position = viewHolder.adapterPosition
+        val position = viewHolder.bindingAdapterPosition
         val adapter = viewHolder.bindingAdapter as? TaskPagingAdapter ?: return
         val task = adapter.getTaskAtPosition(position) ?: return
 
@@ -188,7 +188,7 @@ class TaskSwipeCallback(
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
         val adapter = viewHolder.bindingAdapter as? TaskPagingAdapter ?: return makeMovementFlags(0, 0)
-        val task = adapter.getTaskAtPosition(viewHolder.adapterPosition) ?: return makeMovementFlags(0, 0)
+        val task = adapter.getTaskAtPosition(viewHolder.bindingAdapterPosition) ?: return makeMovementFlags(0, 0)
 
         val currentFilter = filterProvider()
         // Disable swipe for stable views (Saved, Archive, Recurring)
