@@ -183,11 +183,27 @@ class MainUiDelegate @Inject constructor(
             // Cancel old notification before updating
             notificationHelper.cancelNotification(task)
 
-            // Update the task in database
-            viewModel.updateTask(updatedTask)
+            // Auto-complete: if recurrence was removed and due date already passed,
+            // there is nothing left to do — mark it complete immediately.
+            val recurrenceRemoved = task.recurrenceType != null && updatedTask.recurrenceType == null
+            val dueDatePassed = updatedTask.dueDateMillis?.let { it < System.currentTimeMillis() } ?: false
+            val finalTask = if (recurrenceRemoved && dueDatePassed) {
+                updatedTask.copy(isCompleted = true)
+            } else {
+                updatedTask
+            }
 
-            // Reschedule notification if the task has a due date and is not completed
-            NotificationHelper.scheduleOrToggle(notificationHelper, updatedTask)
+            // Update the task in database
+            viewModel.updateTask(finalTask)
+
+            // Reschedule notification only if task is still pending and has a future due date
+            if (!finalTask.isCompleted) {
+                NotificationHelper.scheduleOrToggle(notificationHelper, finalTask)
+            }
+
+            if (recurrenceRemoved && dueDatePassed) {
+                viewModel.postToast("Recurrence removed — task marked as completed.")
+            }
         }
     }
 
