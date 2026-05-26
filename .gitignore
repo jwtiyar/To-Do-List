@@ -32,3 +32,6 @@ GEMINI.md
 
 .gemini/
 gha-creds-*.json
+
+# Firebase configuration
+google-services.json
