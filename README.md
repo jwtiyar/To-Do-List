@@ -45,16 +45,18 @@ A professional-grade, privacy-focused task management application for Android.
 The app uses standard Gradle. You can build it using:
 
 ```bash
-# Debug build
-./gradlew assembleFdroidDebug
+# Debug build (APK)
+./gradlew assembleDebug
 
-# Release build
-./gradlew assembleFdroidRelease
+# Release build (App Bundle for Google Play)
+./gradlew bundleRelease
 ```
 
 ### Build Variants
 
-- `fdroidDebug` / `fdroidRelease` - Primary FOSS variant (no proprietary dependencies)
+This branch (`google-play`) is configured specifically for the Google Play Store release. It contains a single default build configuration with Firebase Analytics integrated for crash reporting and app diagnostics.
+
+For the completely Free and Open Source (FOSS) version without proprietary dependencies, switch to the `f-droid` branch.
 
 ## Tech Stack
 
@@ -68,7 +70,11 @@ The app uses standard Gradle. You can build it using:
 
 ## Download
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/io.github.jwtiyar.simplertask/)
+You can download the app from Google Play:
+
+[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=io.github.jwtiyar.simplertask)
+
+*Note: The FOSS build is also available on [F-Droid](https://f-droid.org/packages/io.github.jwtiyar.simplertask/).*
 
 ## Contributing
 
