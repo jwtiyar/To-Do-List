@@ -47,7 +47,7 @@ before_script:
 lint:
   stage: lint
   script:
-    - ./gradlew lintFdroidDebug
+    - ./gradlew lintDebug
   artifacts:
     when: always
     paths:
@@ -58,21 +58,21 @@ lint:
 unit_tests:
   stage: test
   script:
-    - ./gradlew testFdroidDebugUnitTest
+    - ./gradlew testDebugUnitTest
   artifacts:
     when: always
     reports:
-      junit: app/build/reports/tests/testFdroidDebugUnitTest/*.xml
+      junit: app/build/reports/tests/testDebugUnitTest/*.xml
   rules:
     - if: $CI_COMMIT_BRANCH
 
 build_debug:
   stage: build
   script:
-    - ./gradlew assembleFdroidDebug
+    - ./gradlew assembleDebug
   artifacts:
     paths:
-      - app/build/outputs/apk/fdroid/debug/*.apk
+      - app/build/outputs/apk/debug/*.apk
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -97,10 +97,10 @@ build_release:
     - printf "keyPassword=" >> keystore.properties
     - printenv KEY_PASSWORD >> keystore.properties
     # Build APK
-    - ./gradlew assembleFdroidRelease
+    - ./gradlew assembleRelease
   artifacts:
     paths:
-      - app/build/outputs/apk/fdroid/release/*.apk
+      - app/build/outputs/apk/release/*.apk
     expire_in: never
   rules:
     - if: $CI_COMMIT_TAG =~ /^v.*/
@@ -115,7 +115,7 @@ create_release:
     - |
       apk add --no-cache curl
       # Find the signed APK
-      export APK_FILE=$(find app/build/outputs/apk/fdroid/release -name "*release.apk" | head -1)
+      export APK_FILE=$(find app/build/outputs/apk/release -name "*release.apk" | head -1)
       if [ -z "$APK_FILE" ]; then
         echo "ERROR: APK file not found!"
         exit 1
