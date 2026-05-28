@@ -67,8 +67,9 @@ class TaskDialogManager @Inject constructor() {
 
         var dueDateMillis: Long? = null
         var selectedDate: Long? = null
-        var selectedHour: Int = 9
-        var selectedMinute: Int = 0
+        val nowCalendar = Calendar.getInstance()
+        var selectedHour: Int = nowCalendar.get(Calendar.HOUR_OF_DAY)
+        var selectedMinute: Int = nowCalendar.get(Calendar.MINUTE)
 
         // Recurrence variables
         var recurrenceType: RecurrenceType? = null
@@ -309,8 +310,9 @@ class TaskDialogManager @Inject constructor() {
         
         var dueDateMillis: Long? = task.dueDateMillis
         var selectedDate: Long? = null
-        var selectedHour: Int = 9
-        var selectedMinute: Int = 0
+        val nowCalendar = Calendar.getInstance()
+        var selectedHour: Int = nowCalendar.get(Calendar.HOUR_OF_DAY)
+        var selectedMinute: Int = nowCalendar.get(Calendar.MINUTE)
         
         if (dueDateMillis != null) {
             switchReminder.isChecked = true
