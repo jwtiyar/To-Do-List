@@ -16,6 +16,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0.35"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginStart="32dp"
@@ -35,12 +36,13 @@
 
             <!-- Title -->
             <TextView
+                android:id="@+id/emptyTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/emptyIllustration"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:text="No tasks yet"
                 android:textAlignment="center"
                 android:textAppearance="?attr/textAppearanceHeadlineSmall"
@@ -48,12 +50,13 @@
 
             <!-- Subtitle -->
             <TextView
+                android:id="@+id/emptySubtitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/emptyIllustration"
+                app:layout_constraintTop_toBottomOf="@id/emptyTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="72dp"
+                android:layout_marginTop="8dp"
                 android:text="Tap the + button to create your first task and start being productive!"
                 android:textAlignment="center"
                 android:textAppearance="?attr/textAppearanceBodyLarge"
@@ -62,12 +65,15 @@
 
             <!-- Action hint -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/emptyTipCard"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/emptyIllustration"
+                app:layout_constraintTop_toBottomOf="@id/emptySubtitle"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="120dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="16dp"
                 app:cardBackgroundColor="?attr/colorPrimaryContainer"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">

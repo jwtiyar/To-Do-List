@@ -89,13 +89,21 @@ class TaskDialogManager @Inject constructor() {
         
         fun updateDueDateMillis() {
             selectedDate?.let { dateMillis ->
-                val calendar = Calendar.getInstance()
-                calendar.timeInMillis = dateMillis
-                calendar.set(Calendar.HOUR_OF_DAY, selectedHour)
-                calendar.set(Calendar.MINUTE, selectedMinute)
-                calendar.set(Calendar.SECOND, 0)
-                calendar.set(Calendar.MILLISECOND, 0)
-                dueDateMillis = calendar.timeInMillis
+                // MaterialDatePicker returns UTC midnight. We must extract the YMD in UTC
+                // and then apply it to a local Calendar to avoid timezone shifts to yesterday.
+                val utcCalendar = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+                utcCalendar.timeInMillis = dateMillis
+                
+                val localCalendar = Calendar.getInstance()
+                localCalendar.set(Calendar.YEAR, utcCalendar.get(Calendar.YEAR))
+                localCalendar.set(Calendar.MONTH, utcCalendar.get(Calendar.MONTH))
+                localCalendar.set(Calendar.DAY_OF_MONTH, utcCalendar.get(Calendar.DAY_OF_MONTH))
+                localCalendar.set(Calendar.HOUR_OF_DAY, selectedHour)
+                localCalendar.set(Calendar.MINUTE, selectedMinute)
+                localCalendar.set(Calendar.SECOND, 0)
+                localCalendar.set(Calendar.MILLISECOND, 0)
+                
+                dueDateMillis = localCalendar.timeInMillis
             }
         }
         
@@ -317,11 +325,23 @@ class TaskDialogManager @Inject constructor() {
         if (dueDateMillis != null) {
             switchReminder.isChecked = true
             reminderDetailsLayout.visibility = View.VISIBLE
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = dueDateMillis!!
-            selectedDate = calendar.timeInMillis
-            selectedHour = calendar.get(Calendar.HOUR_OF_DAY)
-            selectedMinute = calendar.get(Calendar.MINUTE)
+            
+            // Extract local time components
+            val localCal = Calendar.getInstance()
+            localCal.timeInMillis = dueDateMillis!!
+            selectedHour = localCal.get(Calendar.HOUR_OF_DAY)
+            selectedMinute = localCal.get(Calendar.MINUTE)
+            
+            // Construct UTC midnight timestamp for selectedDate
+            val utcCal = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+            utcCal.set(Calendar.YEAR, localCal.get(Calendar.YEAR))
+            utcCal.set(Calendar.MONTH, localCal.get(Calendar.MONTH))
+            utcCal.set(Calendar.DAY_OF_MONTH, localCal.get(Calendar.DAY_OF_MONTH))
+            utcCal.set(Calendar.HOUR_OF_DAY, 0)
+            utcCal.set(Calendar.MINUTE, 0)
+            utcCal.set(Calendar.SECOND, 0)
+            utcCal.set(Calendar.MILLISECOND, 0)
+            selectedDate = utcCal.timeInMillis
         }
 
         // Recurrence initial setup
@@ -374,13 +394,21 @@ class TaskDialogManager @Inject constructor() {
         
         fun updateDueDateMillis() {
             selectedDate?.let { dateMillis ->
-                val calendar = Calendar.getInstance()
-                calendar.timeInMillis = dateMillis
-                calendar.set(Calendar.HOUR_OF_DAY, selectedHour)
-                calendar.set(Calendar.MINUTE, selectedMinute)
-                calendar.set(Calendar.SECOND, 0)
-                calendar.set(Calendar.MILLISECOND, 0)
-                dueDateMillis = calendar.timeInMillis
+                // MaterialDatePicker returns UTC midnight. We must extract the YMD in UTC
+                // and then apply it to a local Calendar to avoid timezone shifts to yesterday.
+                val utcCalendar = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+                utcCalendar.timeInMillis = dateMillis
+                
+                val localCalendar = Calendar.getInstance()
+                localCalendar.set(Calendar.YEAR, utcCalendar.get(Calendar.YEAR))
+                localCalendar.set(Calendar.MONTH, utcCalendar.get(Calendar.MONTH))
+                localCalendar.set(Calendar.DAY_OF_MONTH, utcCalendar.get(Calendar.DAY_OF_MONTH))
+                localCalendar.set(Calendar.HOUR_OF_DAY, selectedHour)
+                localCalendar.set(Calendar.MINUTE, selectedMinute)
+                localCalendar.set(Calendar.SECOND, 0)
+                localCalendar.set(Calendar.MILLISECOND, 0)
+                
+                dueDateMillis = localCalendar.timeInMillis
             }
         }
         
