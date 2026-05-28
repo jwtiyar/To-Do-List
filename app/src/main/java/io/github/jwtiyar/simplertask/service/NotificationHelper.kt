@@ -86,9 +86,14 @@ class NotificationHelper @Inject constructor(
 
         try {
             if (canScheduleExact) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    scheduledMillis,
+                val showIntent = PendingIntent.getActivity(
+                    context,
+                    task.id,
+                    Intent(context, MainActivity::class.java),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                alarmManager.setAlarmClock(
+                    AlarmManager.AlarmClockInfo(scheduledMillis, showIntent),
                     pendingIntent
                 )
             } else {
