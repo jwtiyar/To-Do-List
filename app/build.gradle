@@ -5,12 +5,13 @@ plugins {
     id 'com.google.dagger.hilt.android'
 }
 
-// Apply google-services plugin if JSON is present
+// Apply google-services and crashlytics plugins if JSON is present
 def googleServicesJson = file("google-services.json")
 if (googleServicesJson.exists()) {
     apply plugin: 'com.google.gms.google-services'
+    apply plugin: 'com.google.firebase.crashlytics'
 } else {
-    println "⚠️ Skipping Google Services plugin: google-services.json not found"
+    println "⚠️ Skipping Google Services & Crashlytics plugins: google-services.json not found"
 }
 
 // Load signing config from keystore.properties (not tracked by git)
@@ -186,4 +187,5 @@ dependencies {
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-crashlytics")
 }
