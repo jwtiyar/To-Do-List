@@ -2,9 +2,9 @@ name: Android CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop, f-droid ]
+    branches: [ main, develop, f-droid, google-play ]
   pull_request:
-    branches: [ main, develop, f-droid ]
+    branches: [ main, develop, f-droid, google-play ]
   workflow_dispatch:
     inputs:
       build_variant:
@@ -41,7 +41,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Run lint
-        run: ./gradlew lintFdroidDebug --no-daemon
+        run: ./gradlew lintDebug --no-daemon
 
       - name: Upload lint report
         if: always()
@@ -78,18 +78,18 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Run unit tests
-        run: ./gradlew testFdroidDebugUnitTest --no-daemon
+        run: ./gradlew testDebugUnitTest --no-daemon
 
       - name: Generate test report
         if: always()
-        run: ./gradlew testFdroidDebugUnitTest --no-daemon --info | grep -E "tests|passed|failed" || true
+        run: ./gradlew testDebugUnitTest --no-daemon --info | grep -E "tests|passed|failed" || true
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
-          path: app/build/reports/tests/testFdroidDebugUnitTest/
+          path: app/build/reports/tests/testDebugUnitTest/
 
       - name: Upload test coverage
         if: always()
@@ -127,23 +127,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build F-Droid Debug
-        run: ./gradlew assembleFdroidDebug --no-daemon
+      - name: Build Debug
+        run: ./gradlew assembleDebug --no-daemon
 
-      - name: Build F-Droid Release
-        run: ./gradlew assembleFdroidRelease --no-daemon
+      - name: Build Release
+        run: ./gradlew assembleRelease --no-daemon
 
-      - name: Upload F-Droid Debug APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: simplertask-fdroid-debug.apk
-          path: app/build/outputs/apk/fdroid/debug/
+          name: simplertask-debug.apk
+          path: app/build/outputs/apk/debug/
 
-      - name: Upload F-Droid Release APK
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: simplertask-fdroid-release.apk
-          path: app/build/outputs/apk/fdroid/release/
+          name: simplertask-release.apk
+          path: app/build/outputs/apk/release/
 
   notify:
     name: Notify on Failure
