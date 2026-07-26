@@ -11,7 +11,7 @@ class TaskTest {
     fun getNextDueDate_dailyRecurrence_calculatesCorrectly() {
         // Arrange
         val calendar = Calendar.getInstance()
-        calendar.set(2026, Calendar.MARCH, 1, 10, 0, 0) // March 1, 2026
+        calendar.set(2027, Calendar.MARCH, 1, 10, 0, 0) // March 1, 2027
         calendar.set(Calendar.MILLISECOND, 0)
         
         val task = Task(
@@ -37,7 +37,7 @@ class TaskTest {
     fun getNextDueDate_weeklyRecurrence_calculatesCorrectly() {
         // Arrange
         val calendar = Calendar.getInstance()
-        calendar.set(2026, Calendar.MARCH, 1, 10, 0, 0)
+        calendar.set(2027, Calendar.MARCH, 1, 10, 0, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         
         val task = Task(
@@ -63,7 +63,7 @@ class TaskTest {
     fun getNextDueDate_monthlyRecurrence_calculatesCorrectly() {
         // Arrange
         val calendar = Calendar.getInstance()
-        calendar.set(2026, Calendar.JANUARY, 31, 10, 0, 0) // Jan 31
+        calendar.set(2027, Calendar.JANUARY, 31, 10, 0, 0) // Jan 31
         calendar.set(Calendar.MILLISECOND, 0)
         
         val task = Task(
