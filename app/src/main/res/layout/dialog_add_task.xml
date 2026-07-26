@@ -421,39 +421,29 @@
                             android:checked="true"
                             android:text="Never (repeat indefinitely)" />
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioEndDate"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <com.google.android.material.radiobutton.MaterialRadioButton
-                                android:id="@+id/radioEndDate"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" />
-
-                            <TextView
-                                android:id="@+id/tvOnDateLabel"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
-                                android:text="On date:"
-                                android:textAppearance="?attr/textAppearanceBodyMedium"
-                                android:clickable="true"
-                                android:focusable="true" />
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnRecurrenceEndDate"
-                                style="@style/Widget.Material3.Button.TextButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
-                                android:text="Select date"
-                                android:textSize="12sp" />
-
-                        </LinearLayout>
+                            android:text="On date:" />
 
                     </RadioGroup>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:layout_marginStart="48dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnRecurrenceEndDate"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Select date"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 

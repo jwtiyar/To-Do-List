@@ -189,20 +189,25 @@ class TaskDialogManager @Inject constructor() {
 
         val radioNever = view.findViewById<MaterialRadioButton>(R.id.radioNever)
         val radioEndDate = view.findViewById<MaterialRadioButton>(R.id.radioEndDate)
-        val tvOnDateLabel = view.findViewById<TextView>(R.id.tvOnDateLabel)
 
-        fun updateRecurrenceEndStates(isNever: Boolean) {
-            radioNever.isChecked = isNever
-            radioEndDate.isChecked = !isNever
-            btnRecurrenceEndDate.isEnabled = !isNever
+        fun applyNever() {
+            btnRecurrenceEndDate.isEnabled = false
+            selectedRecurrenceEndDate = null
+        }
+        fun applyOnDate() {
+            btnRecurrenceEndDate.isEnabled = true
         }
 
-        radioNever.setOnClickListener { updateRecurrenceEndStates(true) }
-        radioEndDate.setOnClickListener { updateRecurrenceEndStates(false) }
-        tvOnDateLabel.setOnClickListener { updateRecurrenceEndStates(false) }
+        radioGroupRecurrenceEnd.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.radioNever -> applyNever()
+                R.id.radioEndDate -> applyOnDate()
+            }
+        }
 
         // Initial state
-        updateRecurrenceEndStates(true)
+        radioNever.isChecked = true
+        applyNever()
 
         MaterialAlertDialogBuilder(activity)
             .setView(view)
@@ -285,7 +290,8 @@ class TaskDialogManager @Inject constructor() {
         val btnRecurrenceEndDate = view.findViewById<MaterialButton>(R.id.btnRecurrenceEndDate)
         val radioNever = view.findViewById<MaterialRadioButton>(R.id.radioNever)
         val radioEndDate = view.findViewById<MaterialRadioButton>(R.id.radioEndDate)
-        val tvOnDateLabel = view.findViewById<TextView>(R.id.tvOnDateLabel)
+        val radioGroupRecurrenceEnd = view.findViewById<RadioGroup>(R.id.radioGroupRecurrenceEnd)
+
 
         // Category selection
         val spinnerCategory = view.findViewById<AutoCompleteTextView>(R.id.spinnerCategory)
@@ -491,19 +497,17 @@ class TaskDialogManager @Inject constructor() {
             datePicker.show(activity.supportFragmentManager, "RECURRENCE_DATE_PICKER")
         }
 
-        fun updateRecurrenceEndStates(isNever: Boolean) {
-            radioNever.isChecked = isNever
-            radioEndDate.isChecked = !isNever
-            btnRecurrenceEndDate.isEnabled = !isNever
+
+        radioGroupRecurrenceEnd.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.radioNever -> {
+                    btnRecurrenceEndDate.isEnabled = false
+                    selectedRecurrenceEndDate = null
+                }
+                R.id.radioEndDate -> btnRecurrenceEndDate.isEnabled = true
+            }
         }
 
-        radioNever.setOnClickListener {
-            updateRecurrenceEndStates(true)
-            selectedRecurrenceEndDate = null
-        }
-        radioEndDate.setOnClickListener { updateRecurrenceEndStates(false) }
-        tvOnDateLabel.setOnClickListener { updateRecurrenceEndStates(false) }
-        
         updateButtonTexts()
 
         MaterialAlertDialogBuilder(activity)

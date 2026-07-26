@@ -102,23 +102,21 @@ fun Task.getNextDueDate(): Long? {
         timeInMillis = currentDueDate
     }
 
-    when (recurrenceType) {
-        RecurrenceType.DAILY -> {
-            calendar.add(java.util.Calendar.DAY_OF_MONTH, recurrenceInterval)
-        }
-        RecurrenceType.WEEKLY -> {
-            calendar.add(java.util.Calendar.WEEK_OF_YEAR, recurrenceInterval)
-        }
-        RecurrenceType.MONTHLY -> {
-            calendar.add(java.util.Calendar.MONTH, recurrenceInterval)
-        }
-        RecurrenceType.CUSTOM -> {
-            // For custom recurrence, we could implement more complex logic here
-            // For now, treat as daily
-            calendar.add(java.util.Calendar.DAY_OF_MONTH, recurrenceInterval)
-        }
+    val (calField, calAmount) = when (recurrenceType) {
+        RecurrenceType.DAILY  -> java.util.Calendar.DAY_OF_MONTH to recurrenceInterval
+        RecurrenceType.WEEKLY -> java.util.Calendar.WEEK_OF_YEAR to recurrenceInterval
+        RecurrenceType.MONTHLY -> java.util.Calendar.MONTH to recurrenceInterval
+        RecurrenceType.CUSTOM -> java.util.Calendar.DAY_OF_MONTH to recurrenceInterval
         null -> return null
     }
+
+    // Advance at least once, then keep advancing until the result is in the future.
+    // This prevents the next occurrence from appearing immediately when the task had
+    // no due date or a past due date.
+    val now = System.currentTimeMillis()
+    do {
+        calendar.add(calField, calAmount)
+    } while (calendar.timeInMillis <= now)
 
     val nextDueDate = calendar.timeInMillis
 
@@ -129,3 +127,4 @@ fun Task.getNextDueDate(): Long? {
         nextDueDate
     }
 }
+
