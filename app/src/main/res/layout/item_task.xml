@@ -2,163 +2,168 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardTask"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    android:layout_marginTop="6dp"
-    android:layout_marginBottom="6dp"
+    android:layout_marginStart="4dp"
+    android:layout_marginEnd="4dp"
+    android:layout_marginTop="3dp"
+    android:layout_marginBottom="3dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="1dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="0.5dp"
     app:strokeWidth="1dp"
-    app:strokeColor="?attr/colorOutlineVariant"
-    app:cardBackgroundColor="?attr/colorSurfaceContainerLow">
+    app:strokeColor="@color/outline_variant"
+    app:cardBackgroundColor="@color/surface">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="4dp"
-        android:paddingTop="8dp"
         android:paddingEnd="4dp"
+        android:paddingTop="8dp"
         android:paddingBottom="8dp">
 
-        <!-- Main content container -->
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- Checkbox with comfortable touch target -->
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkboxComplete"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:gravity="center"
+            app:buttonTint="?attr/colorPrimary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Main content column: title, description, and metadata row -->
+        <LinearLayout
+            android:id="@+id/contentColumn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:orientation="vertical"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="4dp"
+            app:layout_constraintStart_toEndOf="@id/checkboxComplete"
+            app:layout_constraintEnd_toStartOf="@id/btnTaskActions"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
-            <!-- Header row: Priority chip, title, icons -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/headerRow"
+            <!-- Title & optional priority dot -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:layout_marginBottom="4dp">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-                <!-- Priority chip -->
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipPriority"
-                    style="@style/Widget.TaskManager.PriorityChip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:text="Medium" />
-
-                <!-- Category indicator (small colored circle) -->
+                <!-- Subtle category indicator dot -->
                 <View
                     android:id="@+id/categoryIndicator"
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:layout_marginStart="8dp"
+                    android:layout_width="7dp"
+                    android:layout_height="7dp"
+                    android:layout_marginEnd="6dp"
                     android:background="@drawable/shape_circle"
                     android:visibility="gone"
-                    app:layout_constraintStart_toEndOf="@id/chipPriority"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
+                    tools:visibility="visible" />
 
-                <!-- Task title -->
+                <!-- Task Title: clear, prominent, uncrowded -->
                 <TextView
                     android:id="@+id/taskTitle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    app:layout_constraintStart_toEndOf="@id/categoryIndicator"
-                    app:layout_constraintEnd_toStartOf="@id/iconContainer"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginBottom="2dp"
-                    android:text="Task Title"
-                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                    android:layout_weight="1"
+                    android:text="@string/task_title_preview"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textSize="15sp"
+                    android:textStyle="normal"
                     android:textColor="?attr/colorOnSurface"
                     android:maxLines="2"
                     android:ellipsize="end" />
 
-                <!-- Icon container -->
-                <LinearLayout
-                    android:id="@+id/iconContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+            </LinearLayout>
 
-                    <!-- Recurring icon -->
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/iconRecurring"
-                        style="@style/Widget.TaskManager.RecurringChip"
-                        android:layout_width="wrap_content"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="4dp"
-                        android:visibility="gone"
-                        app:chipIcon="@drawable/ic_menu_saved_tasks"
-                        android:text="Repeat" />
-
-                    <!-- Edit button -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEditTask"
-                        style="@style/Widget.Material3.Button.IconButton"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:icon="@drawable/ic_settings_24dp"
-                        app:iconTint="?attr/colorOnSurfaceVariant"
-                        android:contentDescription="Edit Task"
-                        app:iconSize="20dp" />
-
-                </LinearLayout>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Description -->
+            <!-- Description: compact secondary preview -->
             <TextView
                 android:id="@+id/taskDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/headerRow"
-                android:layout_marginBottom="6dp"
-                android:text="Task description goes here"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:layout_marginTop="2dp"
+                android:text="@string/task_description_preview"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textSize="13sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:visibility="gone"
                 tools:visibility="visible" />
 
-            <!-- Due date/time -->
-            <TextView
-                android:id="@+id/taskScheduledTime"
+            <!-- Compact metadata row (due date, recurring, priority badges) -->
+            <LinearLayout
+                android:id="@+id/metadataContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/taskDescription"
-                android:text=""
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textSize="11sp"
-                android:textColor="?attr/colorPrimary"
-                android:drawableStart="@drawable/ic_notification_reminder"
-                android:drawablePadding="4dp"
-                android:drawableTint="?attr/colorPrimary"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="5dp">
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <!-- Priority badge -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipPriority"
+                    style="@style/Widget.TaskManager.PriorityChip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="22dp"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/priority_high"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <!-- Recurring badge -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/iconRecurring"
+                    style="@style/Widget.TaskManager.RecurringChip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="22dp"
+                    android:layout_marginEnd="6dp"
+                    app:chipIcon="@drawable/ic_repeat_24dp"
+                    app:chipIconSize="13dp"
+                    android:text="@string/repeat_preview"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <!-- Due date / reminder text -->
+                <TextView
+                    android:id="@+id/taskScheduledTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceLabelSmall"
+                    android:textSize="11.5sp"
+                    android:textColor="?attr/colorPrimary"
+                    android:drawableStart="@drawable/ic_notification_reminder"
+                    android:drawablePadding="3dp"
+                    android:drawableTint="?attr/colorPrimary"
+                    android:gravity="center_vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    tools:text="Today, 5:00 PM" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Task actions button (3-dots) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTaskActions"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="@string/task_actions_title"
+            app:icon="@drawable/ic_more_vert_24"
+            app:iconSize="20dp"
+            app:iconTint="?attr/colorOnSurfaceVariant"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</com.google.android.material.card.MaterialCardView> 
+</com.google.android.material.card.MaterialCardView>

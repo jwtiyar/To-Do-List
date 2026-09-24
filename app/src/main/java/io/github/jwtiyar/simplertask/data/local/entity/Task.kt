@@ -3,6 +3,8 @@ package io.github.jwtiyar.simplertask.data.local.entity
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.time.Instant
+import java.time.ZoneId
 
 @Entity(
     tableName = "task",
@@ -95,6 +97,7 @@ fun Task.isRecurring(): Boolean = recurrenceType != null
 
 fun Task.getNextDueDate(): Long? {
     if (!isRecurring()) return null
+    require(recurrenceInterval > 0) { "Recurrence interval must be greater than zero" }
 
     // If the task had no due date, calculate the next one based on right now
     val currentDueDate = dueDateMillis ?: System.currentTimeMillis()
@@ -120,11 +123,16 @@ fun Task.getNextDueDate(): Long? {
 
     val nextDueDate = calendar.timeInMillis
 
-    // Check if we've exceeded the end date
-    return if (recurrenceEndDate != null && nextDueDate > recurrenceEndDate!!) {
+    // Recurrence end dates store the date picker's UTC-midnight calendar date.
+    // Compare calendar dates so occurrences at any time on the selected day are included.
+    val isAfterEndDate = recurrenceEndDate?.let { endDate ->
+        val occurrenceDate = Instant.ofEpochMilli(nextDueDate).atZone(ZoneId.systemDefault()).toLocalDate()
+        val inclusiveEndDate = Instant.ofEpochMilli(endDate).atZone(ZoneId.of("UTC")).toLocalDate()
+        occurrenceDate.isAfter(inclusiveEndDate)
+    } ?: false
+    return if (isAfterEndDate) {
         null // No more occurrences
     } else {
         nextDueDate
     }
 }
-

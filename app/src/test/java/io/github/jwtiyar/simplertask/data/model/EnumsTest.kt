@@ -11,7 +11,8 @@ class TaskActionTest {
     @Test
     fun `TaskAction has all expected values`() {
         val values = TaskAction.values()
-        assertEquals(4, values.size)
+        assertEquals(5, values.size)
+        assertTrue(values.contains(TaskAction.DELETE))
     }
 
     @Test

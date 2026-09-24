@@ -31,12 +31,12 @@
         
     <item
         android:id="@+id/action_export_backup"
-        android:title="Export Backup"
+        android:title="@string/export_backup"
         android:icon="@android:drawable/ic_menu_save"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_import_backup"
-        android:title="Import Backup"
+        android:title="@string/import_backup"
         android:icon="@android:drawable/ic_menu_upload"
         app:showAsAction="never" />
     <item

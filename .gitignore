@@ -35,3 +35,9 @@ gha-creds-*.json
 
 # Firebase configuration
 google-services.json
+
+# Tool artifacts
+.codegraph/
+graphify-out/
+skills/
+tasks/

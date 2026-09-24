@@ -19,8 +19,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_pending_24dp"
-            android:contentDescription="@string/app_name"
-            android:tint="@color/widget_text_primary_color" />
+            android:contentDescription="@string/app_name" />
 
         <TextView
             android:layout_width="0dp"

@@ -4,9 +4,48 @@ import androidx.room.*
 import androidx.paging.PagingSource
 import kotlinx.coroutines.flow.Flow
 import io.github.jwtiyar.simplertask.data.local.entity.Task
+import io.github.jwtiyar.simplertask.data.local.entity.getNextDueDate
+import io.github.jwtiyar.simplertask.data.local.entity.isRecurring
 
 @Dao
 interface TaskDao {
+    @Transaction
+    suspend fun completeTask(id: Long): Completion? {
+        val task = getTaskById(id) ?: return null
+        if (task.isCompleted || task.isArchived) return null
+
+        val nextDue = if (task.isRecurring()) task.getNextDueDate() else null
+        updateTask(task.copy(isCompleted = true))
+        val next = nextDue?.let { due ->
+            val occurrence = task.copy(
+                id = 0,
+                isCompleted = false,
+                dueDateMillis = due,
+                notificationId = null,
+                parentTaskId = task.parentTaskId ?: task.id
+            )
+            occurrence.copy(id = insertTask(occurrence).toInt())
+        }
+        return Completion(task, next)
+    }
+
+    data class Completion(val original: Task, val next: Task?)
+
+    @Transaction
+    suspend fun undoCompletion(id: Long, nextId: Long?): Undo? {
+        val task = getTaskById(id) ?: return null
+        if (!task.isCompleted) return null
+        val next = nextId?.let { getTaskById(it) }
+        if (next != null && (next.parentTaskId != (task.parentTaskId ?: task.id) || next.isCompleted)) {
+            return null
+        }
+        updateTask(task.copy(isCompleted = false))
+        next?.let { deleteTask(it) }
+        return Undo(task.copy(isCompleted = false), next)
+    }
+
+    data class Undo(val restored: Task, val removedNext: Task?)
+
     // Efficient count queries for UI indicators
     @Query("SELECT COUNT(*) FROM task WHERE isCompleted = 0 AND isArchived = 0")
     fun getPendingTasksCount(): Flow<Int>
@@ -35,6 +74,9 @@ interface TaskDao {
 
     @Query("SELECT * FROM task WHERE isArchived = 0 ORDER BY id DESC")
     fun pagingAllTasks(): PagingSource<Int, Task>
+
+    @RawQuery(observedEntities = [Task::class])
+    fun pagingSortedTasks(query: androidx.sqlite.db.SupportSQLiteQuery): PagingSource<Int, Task>
 
 
     @Query("SELECT * FROM task WHERE isCompleted = 0 AND isArchived = 0 ORDER BY id DESC")
@@ -91,6 +133,9 @@ interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: Task): Long
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertRestoredTask(task: Task): Long
+
     @Update
     suspend fun updateTask(task: Task): Int
 
@@ -114,6 +159,9 @@ interface TaskDao {
     
     @Query("DELETE FROM task")
     suspend fun clearAllTasks()
+
+    @Query("UPDATE task SET categoryId = NULL")
+    suspend fun clearTaskCategoryReferences()
 
     // For backup operations only - loads all tasks (use sparingly)
     @Query("SELECT * FROM task ORDER BY id DESC")

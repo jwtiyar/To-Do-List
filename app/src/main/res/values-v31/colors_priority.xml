@@ -1,0 +1,5 @@
+<resources>
+    <color name="priority_low">@android:color/system_accent1_400</color>
+    <color name="priority_medium">@android:color/system_accent2_400</color>
+    <color name="priority_high">@android:color/system_accent3_400</color>
+</resources>

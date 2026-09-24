@@ -5,13 +5,17 @@ plugins {
     id 'com.google.dagger.hilt.android'
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 // Apply google-services and crashlytics plugins if JSON is present
 def googleServicesJson = file("google-services.json")
 if (googleServicesJson.exists()) {
     apply plugin: 'com.google.gms.google-services'
     apply plugin: 'com.google.firebase.crashlytics'
 } else {
-    println "⚠️ Skipping Google Services & Crashlytics plugins: google-services.json not found"
+    println "Skipping Google Services & Crashlytics plugins for this build"
 }
 
 // Load signing config from keystore.properties (not tracked by git)
@@ -114,9 +118,7 @@ android {
         buildConfig = true
     }
     lint {
-        // Temporarily allow build to succeed while backfilling missing translations
-        disable 'MissingTranslation'
-        abortOnError = false
+        abortOnError = true
     }
 }
 

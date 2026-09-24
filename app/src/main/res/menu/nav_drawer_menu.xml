@@ -16,6 +16,6 @@
         <item
             android:id="@+id/nav_recurring"
             android:title="@string/nav_recurring_tasks"
-            android:icon="@drawable/ic_menu_saved_tasks" />
+            android:icon="@drawable/ic_repeat_24dp" />
     </group>
 </menu>

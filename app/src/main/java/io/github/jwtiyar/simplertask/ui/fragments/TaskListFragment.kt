@@ -15,10 +15,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.jwtiyar.simplertask.R
+import io.github.jwtiyar.simplertask.MainActivity
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import io.github.jwtiyar.simplertask.data.model.TaskAction
 import io.github.jwtiyar.simplertask.databinding.FragmentTaskListBinding
-import io.github.jwtiyar.simplertask.service.NotificationHelper
 import io.github.jwtiyar.simplertask.ui.adapters.TaskPagingAdapter
 import io.github.jwtiyar.simplertask.ui.adapters.TaskSwipeCallback
 import io.github.jwtiyar.simplertask.ui.dialogs.TaskDialogManager
@@ -45,9 +45,6 @@ class TaskListFragment : Fragment() {
     private lateinit var taskAdapter: TaskPagingAdapter
     private var swipeCallback: TaskSwipeCallback? = null
     private var itemTouchHelper: ItemTouchHelper? = null
-    
-    @Inject
-    lateinit var notificationHelper: NotificationHelper
     
     @Inject
     lateinit var dialogManager: TaskDialogManager
@@ -92,98 +89,45 @@ class TaskListFragment : Fragment() {
     private fun setupRecyclerView() {
         taskAdapter = TaskPagingAdapter(
             onTaskClick = { task ->
-                taskViewModel.updateTask(task)
-                val message = if (task.isCompleted) {
-                    notificationHelper.cancelNotification(task)
-                    getString(R.string.task_completed, task.title)
-                } else {
-                    if (task.dueDateMillis != null) notificationHelper.scheduleNotification(task)
-                    getString(R.string.task_pending, task.title)
+                viewLifecycleOwner.lifecycleScope.launch {
+                    taskViewModel.toggleTaskCompletion(task)
                 }
-                taskViewModel.postToast(message)
             },
             onEditClick = { task ->
-                dialogManager.showEditTaskDialog(task) { updatedTask ->
-                    // Cancel old notification before updating
-                    notificationHelper.cancelNotification(task)
-
-                    // Auto-complete: if recurrence was removed and due date already passed,
-                    // there is nothing left to do — mark it complete immediately.
-                    val recurrenceRemoved = task.recurrenceType != null && updatedTask.recurrenceType == null
-                    val dueDatePassed = updatedTask.dueDateMillis?.let { it < System.currentTimeMillis() } ?: true
-                    val finalTask = if (recurrenceRemoved && dueDatePassed) {
-                        updatedTask.copy(isCompleted = true)
-                    } else {
-                        updatedTask
-                    }
-
-                    // Update the task in database
-                    taskViewModel.updateTask(finalTask)
-
-                    // Reschedule notification only if task is still pending and has a future due date
-                    if (!finalTask.isCompleted) {
-                        NotificationHelper.scheduleOrToggle(notificationHelper, finalTask)
-                    }
-
-                    if (recurrenceRemoved && dueDatePassed) {
-                        taskViewModel.postToast("Recurrence removed — task marked as completed.")
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val categories = taskViewModel.getCategoriesForEditor()
+                    dialogManager.showEditTaskDialog(task, categories) { updatedTask ->
+                        val saved = taskViewModel.saveTask(updatedTask)
+                        if (saved && updatedTask.dueDateMillis != null) {
+                            (activity as? MainActivity)?.requestReminderPermissions()
+                        }
+                        saved
                     }
                 }
             },
             onTaskAction = { task, action ->
-                val updated = when (action) {
-                    TaskAction.SAVE -> task.copy(isSaved = true)
-                    TaskAction.UNSAVE -> task.copy(isSaved = false)
-                    TaskAction.ARCHIVE -> task.copy(isArchived = true, isSaved = false)
-                    TaskAction.UNARCHIVE -> task.copy(isArchived = false)
-                }
-                taskViewModel.updateTask(updated)
-                val msgRes = when (action) {
-                    TaskAction.SAVE -> R.string.task_saved
-                    TaskAction.UNSAVE -> R.string.task_unsaved
-                    TaskAction.ARCHIVE -> R.string.task_archived
-                    TaskAction.UNARCHIVE -> R.string.task_unarchived
-                }
-                taskViewModel.postToast(getString(msgRes))
-            },
-            onSwipeComplete = { task, position ->
-                viewLifecycleOwner.lifecycleScope.launch {
-                    // Toggle completion
-                    val wasCompleted = task.isCompleted
-                    val nextTaskId = taskViewModel.toggleTaskCompletion(task)
-                    
-                    val message = if (!wasCompleted) 
-                        getString(R.string.task_completed, task.title) 
-                    else 
-                        getString(R.string.task_pending, task.title)
-
-                    taskViewModel.postSnackbar(
-                        message = message,
-                        actionLabel = getString(R.string.undo),
-                        action = { 
-                            // 1. Explicitly set the task back to its original completion state
-                            taskViewModel.setTaskCompletion(task, wasCompleted) 
-                            
-                            // 2. If a next occurrence was created, remove it
-                            nextTaskId?.let { id ->
-                                taskViewModel.deleteTaskById(id)
-                            }
-                        }
-                    )
-                }
-            },
-            onSwipeDelete = { task, position ->
-                // Delete immediately and provide Undo option
-                taskViewModel.deleteTask(task)
-                taskViewModel.postSnackbar(
-                    message = getString(R.string.task_deleted, task.title),
-                    actionLabel = getString(R.string.undo),
-                    action = { 
-                        // Restore the exact task object (preserving ID and metadata)
-                        taskViewModel.insertTask(task)
+                if (action == TaskAction.DELETE) {
+                    deleteTaskWithUndo(task)
+                } else {
+                    val updated = when (action) {
+                        TaskAction.SAVE -> task.copy(isSaved = true)
+                        TaskAction.UNSAVE -> task.copy(isSaved = false)
+                        TaskAction.ARCHIVE -> task.copy(isArchived = true, isSaved = false)
+                        TaskAction.UNARCHIVE -> task.copy(isArchived = false)
+                        TaskAction.DELETE -> task
                     }
-                )
-            }
+                    taskViewModel.updateTask(updated)
+                    val msgRes = when (action) {
+                        TaskAction.SAVE -> R.string.task_saved
+                        TaskAction.UNSAVE -> R.string.task_unsaved
+                        TaskAction.ARCHIVE -> R.string.task_archived
+                        TaskAction.UNARCHIVE -> R.string.task_unarchived
+                        TaskAction.DELETE -> R.string.task_deleted
+                    }
+                    taskViewModel.postToast(getString(msgRes))
+                }
+            },
+            categories = { taskViewModel.categories.value }
         )
 
         binding.recyclerView.setupVertical(taskAdapter)
@@ -198,11 +142,7 @@ class TaskListFragment : Fragment() {
             R.color.tertiary
         )
 
-        var refreshStartTime = 0L
-        val minShowTimeMs = 900L
-
         binding.swipeRefresh.setOnRefreshListener {
-            refreshStartTime = System.currentTimeMillis()
             taskAdapter.refresh()
         }
 
@@ -211,22 +151,9 @@ class TaskListFragment : Fragment() {
                 val currentBinding = _binding ?: return@collect
                 val isLoading = loadStates.refresh is LoadState.Loading
                 if (isLoading) {
-                    if (!currentBinding.swipeRefresh.isRefreshing) {
-                        refreshStartTime = System.currentTimeMillis()
-                        currentBinding.swipeRefresh.isRefreshing = true
-                    }
+                    currentBinding.swipeRefresh.isRefreshing = true
                 } else {
-                    if (currentBinding.swipeRefresh.isRefreshing) {
-                        val elapsed = System.currentTimeMillis() - refreshStartTime
-                        val remaining = minShowTimeMs - elapsed
-                        if (remaining > 0) {
-                            currentBinding.swipeRefresh.postDelayed({
-                                _binding?.swipeRefresh?.isRefreshing = false
-                            }, remaining)
-                        } else {
-                            currentBinding.swipeRefresh.isRefreshing = false
-                        }
-                    }
+                    currentBinding.swipeRefresh.isRefreshing = false
                 }
 
                 val errorState = loadStates.refresh as? LoadState.Error
@@ -243,7 +170,7 @@ class TaskListFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    taskViewModel.uiState.map { it.currentFilter }.distinctUntilChanged().collectLatest { globalFilter ->
+                    taskViewModel.uiState.map { it.currentFilter to it.sortBy }.distinctUntilChanged().collectLatest { (globalFilter, _) ->
                         // If global filter is a drawer-only item, everyone shows it.
                         // If global filter is PENDING/COMPLETED, we stay in tabbed mode.
                         val effectiveFilter = when (globalFilter) {
@@ -323,28 +250,33 @@ class TaskListFragment : Fragment() {
                     taskViewModel.postSnackbar(
                         message = message,
                         actionLabel = getString(R.string.undo),
-                        action = { 
-                            taskViewModel.setTaskCompletion(task, wasCompleted) 
-                            nextTaskId?.let { id -> taskViewModel.deleteTaskById(id) }
+                        action = {
+                            if (wasCompleted) taskViewModel.setTaskCompletion(task, true)
+                            else taskViewModel.undoCompletion(task, nextTaskId)
                         }
                     )
                 }
             },
             onSwipeDelete = { task, position ->
-                taskViewModel.deleteTask(task)
-                taskViewModel.postSnackbar(
-                    message = getString(R.string.task_deleted, task.title),
-                    actionLabel = getString(R.string.undo),
-                    action = { 
-                        taskViewModel.insertTask(task)
-                    }
-                )
+                deleteTaskWithUndo(task, position)
             }
         )
         this.swipeCallback = callback
         val helper = ItemTouchHelper(callback)
         this.itemTouchHelper = helper
         helper.attachToRecyclerView(binding.recyclerView)
+    }
+
+    private fun deleteTaskWithUndo(task: Task, position: Int? = null) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            if (taskViewModel.deleteTaskForUndo(task)) {
+                taskViewModel.postSnackbar(
+                    message = getString(R.string.task_deleted, task.title),
+                    actionLabel = getString(R.string.undo),
+                    action = { taskViewModel.insertTask(task) }
+                )
+            } else position?.let(taskAdapter::notifyItemChanged)
+        }
     }
 
     override fun onDestroyView() {

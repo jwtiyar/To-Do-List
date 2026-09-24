@@ -2,10 +2,56 @@ package io.github.jwtiyar.simplertask.data.local.entity
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.util.Calendar
 
 class TaskTest {
+
+    @Test
+    fun getNextDueDate_includesOccurrencesOnTheSelectedEndCalendarDate() {
+        val due = Calendar.getInstance().apply {
+            set(2027, Calendar.MARCH, 2, 10, 0, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val endDate = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC")).apply {
+            clear()
+            set(2027, Calendar.MARCH, 3, 0, 0, 0)
+        }.timeInMillis
+        val expected = (due.clone() as Calendar).apply { add(Calendar.DAY_OF_MONTH, 1) }.timeInMillis
+        val task = Task(
+            title = "Daily task", description = "", dueDateMillis = due.timeInMillis,
+            recurrenceType = RecurrenceType.DAILY, recurrenceEndDate = endDate
+        )
+
+        assertEquals(expected, task.getNextDueDate())
+    }
+
+    @Test(timeout = 1000)
+    fun getNextDueDate_zeroInterval_rejectsInsteadOfLooping() {
+        val task = Task(
+            title = "Recurring task",
+            description = "",
+            dueDateMillis = 0L,
+            recurrenceType = RecurrenceType.DAILY,
+            recurrenceInterval = 0
+        )
+
+        assertThrows(IllegalArgumentException::class.java) { task.getNextDueDate() }
+    }
+
+    @Test(timeout = 1000)
+    fun getNextDueDate_negativeInterval_rejectsInsteadOfLooping() {
+        val task = Task(
+            title = "Recurring task",
+            description = "",
+            dueDateMillis = 0L,
+            recurrenceType = RecurrenceType.WEEKLY,
+            recurrenceInterval = -1
+        )
+
+        assertThrows(IllegalArgumentException::class.java) { task.getNextDueDate() }
+    }
 
     @Test
     fun getNextDueDate_dailyRecurrence_calculatesCorrectly() {

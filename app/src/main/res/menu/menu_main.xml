@@ -2,23 +2,43 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_sort"
+        android:title="@string/menu_sort"
+        app:showAsAction="never">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item android:id="@+id/sort_by_date" android:title="@string/sort_by_date" />
+                <item android:id="@+id/sort_by_name" android:title="@string/sort_by_name" />
+                <item android:id="@+id/sort_by_priority" android:title="@string/sort_by_priority" />
+            </group>
+        </menu>
+    </item>
+    <item
         android:id="@+id/action_theme"
         android:title="@string/menu_theme"
         android:icon="@android:drawable/ic_menu_manage"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_notification_settings"
-        android:title="Notification Settings"
+        android:title="@string/notification_settings"
         android:icon="@android:drawable/ic_lock_idle_alarm"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_clear_completed"
+        android:title="@string/clear_completed"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_reset_tasks"
+        android:title="@string/reset_tasks"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_export_backup"
-        android:title="Export Backup"
+        android:title="@string/export_backup"
         android:icon="@android:drawable/ic_menu_save"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_import_backup"
-        android:title="Import Backup"
+        android:title="@string/import_backup"
         android:icon="@android:drawable/ic_menu_upload"
         app:showAsAction="never" />
      <item

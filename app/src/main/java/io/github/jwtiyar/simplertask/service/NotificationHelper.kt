@@ -28,15 +28,6 @@ class NotificationHelper @Inject constructor(
         const val GROUP_KEY_TASKS = "io.github.jwtiyar.simplertask.TASK_GROUP"
         const val SUMMARY_ID = 0
         
-        fun scheduleOrToggle(helper: NotificationHelper, task: Task) {
-            if (task.isCompleted) {
-                helper.cancelNotification(task)
-            } else {
-                task.dueDateMillis?.let {
-                    helper.scheduleNotification(task)
-                }
-            }
-        }
     }
     
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -63,12 +54,14 @@ class NotificationHelper @Inject constructor(
     
     fun scheduleNotification(task: Task) {
         val scheduledMillis = task.dueDateMillis ?: return
+        if (task.isCompleted || task.isArchived || scheduledMillis <= System.currentTimeMillis()) return
         
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("task_id", task.id)
             putExtra("task_title", task.title)
             putExtra("task_description", task.description)
             putExtra("task_priority", task.priority.name)
+            putExtra("scheduled_due", scheduledMillis)
         }
         
         val pendingIntent = PendingIntent.getBroadcast(
@@ -103,7 +96,6 @@ class NotificationHelper @Inject constructor(
                     pendingIntent
                 )
             }
-            task.notificationId = task.id
         } catch (e: SecurityException) {
             // Fallback for unexpected security exceptions
             alarmManager.setAndAllowWhileIdle(
@@ -111,28 +103,23 @@ class NotificationHelper @Inject constructor(
                 scheduledMillis,
                 pendingIntent
             )
-            task.notificationId = task.id
         }
     }
     
     fun cancelNotification(task: Task) {
-        task.notificationId?.let { notificationId ->
-            val intent = Intent(context, NotificationReceiver::class.java)
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                notificationId,
-                intent,
-                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-            )
-            
-            pendingIntent?.let {
-                alarmManager.cancel(it)
-                it.cancel()
-            }
-            
-            dismissNotification(notificationId)
-            task.notificationId = null
+        val intent = Intent(context, NotificationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            task.id,
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        pendingIntent?.let {
+            alarmManager.cancel(it)
+            it.cancel()
         }
+        dismissNotification(task.id)
     }
 
     fun dismissNotification(taskId: Int) {
@@ -201,8 +188,8 @@ class NotificationHelper @Inject constructor(
             .setGroup(GROUP_KEY_TASKS)
             .setContentIntent(openAppPendingIntent)
             .setAutoCancel(true)
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Complete", completePendingIntent)
-            .addAction(android.R.drawable.ic_menu_recent_history, "Snooze 10m", snoozePendingIntent)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, context.getString(R.string.notification_action_complete), completePendingIntent)
+            .addAction(android.R.drawable.ic_menu_recent_history, context.getString(R.string.notification_action_snooze), snoozePendingIntent)
             .build()
         
         notificationManager.notify(taskId, notification)
@@ -210,7 +197,7 @@ class NotificationHelper @Inject constructor(
         val summaryNotification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(context.getString(R.string.app_name))
             .setSmallIcon(R.drawable.ic_notification_reminder)
-            .setStyle(NotificationCompat.InboxStyle().setSummaryText("Task Reminders"))
+            .setStyle(NotificationCompat.InboxStyle().setSummaryText(context.getString(R.string.notification_summary_title)))
             .setGroup(GROUP_KEY_TASKS)
             .setGroupSummary(true)
             .setAutoCancel(true)

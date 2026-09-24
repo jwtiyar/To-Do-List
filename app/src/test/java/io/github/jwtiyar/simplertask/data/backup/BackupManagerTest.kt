@@ -1,16 +1,57 @@
 package io.github.jwtiyar.simplertask.data.backup
 
 import android.content.Context
+import android.content.ContentResolver
+import android.net.Uri
 import io.github.jwtiyar.simplertask.data.local.entity.Priority
+import io.github.jwtiyar.simplertask.data.local.entity.Category
+import io.github.jwtiyar.simplertask.data.local.entity.RecurrenceType
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import io.mockk.mockk
+import io.mockk.every
 import kotlinx.coroutines.test.runTest
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.ByteArrayInputStream
 
 class BackupManagerTest {
+
+    @Test
+    fun `encrypted backup preserves category and recurrence relationships`() = runTest {
+        val parent = sampleTasks.first().copy(
+            recurrenceType = RecurrenceType.MONTHLY,
+            recurrenceInterval = 2,
+            recurrenceEndDate = 1_234_567L,
+            categoryId = 17
+        )
+        val child = sampleTasks.last().copy(parentTaskId = parent.id, categoryId = 17, isArchived = true)
+        val category = Category(id = 17, name = "Bills", color = 0xff8822aa.toInt())
+
+        val exported = backupManager.exportBackup(
+            BackupManager.BackupData(listOf(parent, child), listOf(category)), "password".toCharArray()
+        )
+        val restored = backupManager.importBackup(exported, "password".toCharArray())
+
+        assertEquals(listOf(parent, child), restored.tasks)
+        assertEquals(listOf(category), restored.categories)
+        assertEquals(true, restored.includesCategories)
+    }
+
+    @Test
+    fun `URI import rejects content exceeding the backup size limit`() = runTest {
+        val uri = mockk<Uri>()
+        val resolver = mockk<ContentResolver>()
+        val context = mockk<Context>()
+        every { context.contentResolver } returns resolver
+        every { resolver.openInputStream(uri) } returns ByteArrayInputStream(ByteArray(10 * 1024 * 1024 + 1))
+
+        val error = runCatching { BackupManager(context).readFromUri(uri) }.exceptionOrNull()
+
+        assertTrue(error is IllegalArgumentException)
+        assertEquals("Backup file is too large", error?.message)
+    }
 
     private val backupManager = BackupManager(mockk<Context>(relaxed = true))
 

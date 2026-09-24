@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Pre-existing locale files lag behind values/strings.xml by ~150 strings.
+         Treat as warnings so abortOnError still fails on real errors. -->
+    <issue id="MissingTranslation" severity="warning" />
+</lint>

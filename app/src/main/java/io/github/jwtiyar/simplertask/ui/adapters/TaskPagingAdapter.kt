@@ -3,10 +3,13 @@ package io.github.jwtiyar.simplertask.ui.adapters
 import io.github.jwtiyar.simplertask.data.model.TaskAction
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import io.github.jwtiyar.simplertask.data.local.entity.Priority
+import io.github.jwtiyar.simplertask.data.local.entity.Category
+import io.github.jwtiyar.simplertask.data.local.entity.isRecurring
 import io.github.jwtiyar.simplertask.R
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -21,8 +24,7 @@ class TaskPagingAdapter(
     private val onTaskClick: (Task) -> Unit,
     private val onEditClick: (Task) -> Unit,
     private val onTaskAction: (Task, TaskAction) -> Unit,
-    private val onSwipeComplete: (Task, Int) -> Unit = { _, _ -> },
-    private val onSwipeDelete: (Task, Int) -> Unit = { _, _ -> }
+    private val categories: () -> List<Category> = { emptyList() }
 ) : PagingDataAdapter<Task, TaskPagingAdapter.TaskVH>(DIFF) {
 
     companion object {
@@ -36,9 +38,6 @@ class TaskPagingAdapter(
         }
     }
 
-    // Instance variable to avoid memory leaks (was in companion object)
-    private var currentDialog: androidx.appcompat.app.AlertDialog? = null
-
     fun getTaskAtPosition(position: Int): Task? {
         return getItem(position)
     }
@@ -46,17 +45,19 @@ class TaskPagingAdapter(
     private val timeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' HH:mm", Locale.getDefault())
 
     inner class TaskVH(private val binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root) {
-        private var isExpanded = false
-
         fun bind(task: Task?) {
             if (task == null) return
             
-            // Reset state on recycle
-            isExpanded = false
-            binding.taskTitle.maxLines = 2
-            binding.taskDescription.maxLines = 2
-            
             binding.taskTitle.text = task.title
+            binding.checkboxComplete.isChecked = task.isCompleted
+            binding.checkboxComplete.contentDescription = binding.root.context.getString(
+                if (task.isCompleted) R.string.mark_task_pending else R.string.mark_task_complete,
+                task.title
+            )
+            binding.checkboxComplete.setOnClickListener {
+                binding.checkboxComplete.isChecked = task.isCompleted
+                onTaskClick(task)
+            }
             
             if (task.description.isNotBlank()) {
                 binding.taskDescription.text = task.description
@@ -69,59 +70,105 @@ class TaskPagingAdapter(
                 Priority.MEDIUM -> binding.root.context.getString(R.string.priority_medium)
                 Priority.HIGH -> binding.root.context.getString(R.string.priority_high)
             }
+            binding.chipPriority.visibility = if (task.priority != Priority.MEDIUM) android.view.View.VISIBLE else android.view.View.GONE
             val chipColor = when (task.priority) {
                 Priority.LOW -> R.color.priority_low
                 Priority.MEDIUM -> R.color.priority_medium
                 Priority.HIGH -> R.color.priority_high
             }
-            binding.chipPriority.setBackgroundResource(R.drawable.chip_priority_bg)
-            binding.chipPriority.background.setTint(binding.root.context.getColor(chipColor))
+            binding.chipPriority.setChipBackgroundColorResource(chipColor)
+
+            if (task.isRecurring()) {
+                val unit = when (task.recurrenceType) {
+                    io.github.jwtiyar.simplertask.data.local.entity.RecurrenceType.DAILY,
+                    io.github.jwtiyar.simplertask.data.local.entity.RecurrenceType.CUSTOM -> R.string.recurrence_daily
+                    io.github.jwtiyar.simplertask.data.local.entity.RecurrenceType.WEEKLY -> R.string.recurrence_weekly
+                    io.github.jwtiyar.simplertask.data.local.entity.RecurrenceType.MONTHLY -> R.string.recurrence_monthly
+                    null -> null
+                }
+                val summary = if (unit != null) {
+                    binding.root.context.getString(
+                        R.string.task_repeats_summary, task.recurrenceInterval, binding.root.context.getString(unit)
+                    )
+                } else {
+                    binding.root.context.getString(R.string.repeat_preview)
+                }
+                binding.iconRecurring.text = summary
+                binding.iconRecurring.visibility = android.view.View.VISIBLE
+            } else {
+                binding.iconRecurring.visibility = android.view.View.GONE
+            }
+
+            val category = categories().firstOrNull { it.id == task.categoryId }
+            binding.categoryIndicator.visibility = if (category != null) android.view.View.VISIBLE else android.view.View.GONE
+            category?.let {
+                binding.categoryIndicator.backgroundTintList = android.content.res.ColorStateList.valueOf(it.color)
+            }
+            binding.btnTaskActions.contentDescription = binding.root.context.getString(
+                R.string.task_actions_for, task.title
+            )
+
             if (task.dueDateMillis != null) {
-                val ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.dueDateMillis!!), ZoneId.systemDefault())
-                binding.taskScheduledTime.text = binding.root.context.getString(R.string.due_prefix, ldt.format(timeFormatter))
+                val context = binding.root.context
+                val now = LocalDateTime.now()
+                val dueLdt = LocalDateTime.ofInstant(Instant.ofEpochMilli(task.dueDateMillis!!), ZoneId.systemDefault())
+                val timeOnly = dueLdt.format(DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault()))
+                val dateOnly = dueLdt.toLocalDate()
+                val today = now.toLocalDate()
+
+                val dueText = when {
+                    dateOnly == today -> context.getString(R.string.due_today, timeOnly)
+                    dateOnly == today.plusDays(1) -> context.getString(R.string.due_tomorrow, timeOnly)
+                    dueLdt.isBefore(now) && !task.isCompleted -> context.getString(
+                        R.string.due_overdue,
+                        dueLdt.format(DateTimeFormatter.ofPattern("MMM dd, HH:mm", Locale.getDefault()))
+                    )
+                    else -> context.getString(R.string.due_prefix, dueLdt.format(timeFormatter))
+                }
+                binding.taskScheduledTime.text = dueText
+                val textColor = if (dueLdt.isBefore(now) && !task.isCompleted) {
+                    context.getColor(R.color.error)
+                } else {
+                    context.getColor(R.color.primary)
+                }
+                binding.taskScheduledTime.setTextColor(textColor)
+                binding.taskScheduledTime.compoundDrawablesRelative[0]?.setTint(textColor)
                 binding.taskScheduledTime.visibility = android.view.View.VISIBLE
-            } else binding.taskScheduledTime.visibility = android.view.View.GONE
+            } else {
+                binding.taskScheduledTime.visibility = android.view.View.GONE
+            }
 
             updateVisualState(task)
-            binding.root.setOnLongClickListener { showActions(task); true }
-            binding.btnEditTask.setOnClickListener { onEditClick(task) }
-            
-            binding.root.setOnClickListener {
-                isExpanded = !isExpanded
-                val newMaxLines = if (isExpanded) Integer.MAX_VALUE else 2
-                binding.taskTitle.maxLines = newMaxLines
-                binding.taskDescription.maxLines = newMaxLines
-                
-                // Add a small layout transition automatically if the parent has default animations
-            }
+            binding.btnTaskActions.setOnClickListener { showActions(task) }
+            binding.root.setOnClickListener { onEditClick(task) }
         }
 
         private fun showActions(task: Task) {
             val ctx = itemView.context
-            currentDialog?.dismiss()
             val actionItems = buildList {
                 add(if (task.isSaved) ctx.getString(R.string.action_unsave) to TaskAction.UNSAVE else ctx.getString(R.string.action_save) to TaskAction.SAVE)
                 add(if (task.isArchived) ctx.getString(R.string.action_unarchive) to TaskAction.UNARCHIVE else ctx.getString(R.string.action_archive) to TaskAction.ARCHIVE)
+                add(ctx.getString(R.string.delete) to TaskAction.DELETE)
             }
-            val labels = actionItems.map { it.first }.toTypedArray()
-            currentDialog = androidx.appcompat.app.AlertDialog.Builder(ctx)
-                .setTitle(ctx.getString(R.string.task_actions_title))
-                .setItems(labels) { _, which -> onTaskAction(task, actionItems[which].second) }
-                .create()
-            currentDialog?.setOnDismissListener { if (currentDialog?.isShowing != true) currentDialog = null }
-            currentDialog?.show()
+            PopupMenu(ctx, binding.btnTaskActions).apply {
+                actionItems.forEach { (label, action) ->
+                    menu.add(label).setOnMenuItemClickListener {
+                        onTaskAction(task, action)
+                        true
+                    }
+                }
+                show()
+            }
         }
 
         private fun updateVisualState(task: Task) {
-            val title = itemView.findViewById<android.widget.TextView>(R.id.taskTitle)
-            val desc = itemView.findViewById<android.widget.TextView>(R.id.taskDescription)
             if (task.isCompleted) {
-                title.paintFlags = title.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
-                desc.paintFlags = desc.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                binding.taskTitle.paintFlags = binding.taskTitle.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                binding.taskDescription.paintFlags = binding.taskDescription.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
                 itemView.alpha = 0.6f
             } else {
-                title.paintFlags = title.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                desc.paintFlags = desc.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                binding.taskTitle.paintFlags = binding.taskTitle.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                binding.taskDescription.paintFlags = binding.taskDescription.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 itemView.alpha = 1f
             }
         }

@@ -5,9 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.jwtiyar.simplertask.data.repository.TaskRepository
-import io.github.jwtiyar.simplertask.data.local.entity.isRecurring
-import io.github.jwtiyar.simplertask.data.local.entity.getNextDueDate
+import io.github.jwtiyar.simplertask.task.TaskLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,10 +19,10 @@ import javax.inject.Inject
 class NotificationActionReceiver : BroadcastReceiver() {
 
     @Inject
-    lateinit var repository: TaskRepository
-    
-    @Inject
     lateinit var notificationHelper: NotificationHelper
+
+    @Inject
+    lateinit var taskLifecycle: TaskLifecycle
 
     companion object {
         const val ACTION_COMPLETE = "io.github.jwtiyar.simplertask.ACTION_COMPLETE"
@@ -49,8 +47,8 @@ class NotificationActionReceiver : BroadcastReceiver() {
         scope.launch {
             try {
                 when (intent.action) {
-                    ACTION_COMPLETE -> handleComplete(context, taskId)
-                    ACTION_SNOOZE -> handleSnooze(context, taskId)
+                    ACTION_COMPLETE -> taskLifecycle.complete(taskId.toLong())
+                    ACTION_SNOOZE -> taskLifecycle.snooze(taskId.toLong(), System.currentTimeMillis() + SNOOZE_DURATION_MILLIS)
                 }
             } catch (e: Exception) {
                 Log.e("NotificationAction", "Error handling action: ${e.message}")
@@ -60,49 +58,4 @@ class NotificationActionReceiver : BroadcastReceiver() {
         }
     }
 
-    private suspend fun handleComplete(context: Context, taskId: Int) {
-        Log.d("NotificationAction", "Completing task $taskId")
-
-        // Get the task and mark it as completed in database
-        val task = repository.getTaskById(taskId.toLong())
-        task?.let {
-            val wasCompleted = it.isCompleted
-            val completedTask = it.copy(isCompleted = true)
-            repository.updateTask(completedTask)
-            Log.d("NotificationAction", "Task $taskId marked as completed (wasCompleted=$wasCompleted, isRecurring=${it.isRecurring()})")
-            
-            // If this was a recurring task that just got completed, create the next occurrence
-            if (!wasCompleted && it.isRecurring()) {
-                val nextTaskId = repository.createNextRecurringTask(it)
-                if (nextTaskId != null) {
-                    // Schedule notification for the new occurrence
-                    val nextTask = repository.getTaskById(nextTaskId)
-                    nextTask?.let { newTask ->
-                        notificationHelper.scheduleNotification(newTask)
-                        Log.d("NotificationAction", "Next recurring occurrence created with id $nextTaskId")
-                    }
-                }
-            }
-        } ?: Log.e("NotificationAction", "Task $taskId not found")
-    }
-
-    private suspend fun handleSnooze(context: Context, taskId: Int) {
-        Log.d("NotificationAction", "Snoozing task $taskId")
-        
-        // Get the task
-        val task = repository.getTaskById(taskId.toLong())
-        task?.let {
-            // Update task with new due date (10 minutes from now)
-            val newDueDate = System.currentTimeMillis() + SNOOZE_DURATION_MILLIS
-            val snoozedTask = it.copy(dueDateMillis = newDueDate)
-            
-            // Persist the new time so it survives reboots
-            repository.updateTask(snoozedTask)
-            
-            // Re-schedule the alarm
-            notificationHelper.scheduleNotification(snoozedTask)
-            
-            Log.d("NotificationAction", "Task $taskId snoozed for 10 minutes (New time: $newDueDate)")
-        } ?: Log.e("NotificationAction", "Task $taskId not found")
-    }
 }

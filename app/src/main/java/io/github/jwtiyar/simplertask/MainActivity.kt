@@ -1,7 +1,6 @@
 package io.github.jwtiyar.simplertask
 
 import android.Manifest
-import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -89,8 +88,7 @@ class MainActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val density = resources.displayMetrics.density
-            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-            val baseFabBottomMarginDp = if (isLandscape) 96 else 112
+            val baseFabBottomMarginDp = 16
             val baseFabBottomMarginPx = (baseFabBottomMarginDp * density).toInt()
 
             (binding.topAppBar.parent as? View)?.setPadding(0, systemBars.top, 0, 0)
@@ -107,8 +105,6 @@ class MainActivity : AppCompatActivity() {
         binding.fabAddTask.post { binding.root.requestApplyInsets() }
 
         observeViewModel()
-        requestNotificationPermission()
-        permissionManager.checkAndRequestExactAlarmPermission(binding.root)
 
         // Setup UI through delegates
         uiDelegate.setupViewPager()
@@ -117,6 +113,12 @@ class MainActivity : AppCompatActivity() {
         navigationDelegate.setupNavigationDrawer()
         searchDelegate.observeSearchResults()
         setupBackPressHandler()
+        uiDelegate.restoreDraft(savedInstanceState)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        dialogManager.saveDraft(outState)
+        super.onSaveInstanceState(outState)
     }
 
     private fun observeViewModel() {
@@ -146,7 +148,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * Request notification permission using modern ActivityResultContracts API
      */
-    private fun requestNotificationPermission() {
+    fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (androidx.core.content.ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -154,12 +156,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun requestReminderPermissions() {
+        requestNotificationPermission()
+        permissionManager.checkAndRequestExactAlarmPermission(binding.root)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.action_clear_completed)?.isVisible = uiDelegate.isCompletedView()
+        val selected = when (taskViewModel.uiState.value.sortBy) {
+            TaskViewModel.SortBy.DATE -> R.id.sort_by_date
+            TaskViewModel.SortBy.NAME -> R.id.sort_by_name
+            TaskViewModel.SortBy.PRIORITY -> R.id.sort_by_priority
+        }
+        menu.findItem(selected)?.isChecked = true
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.sort_by_date -> { taskViewModel.updateSortBy(TaskViewModel.SortBy.DATE); item.isChecked = true; true }
+        R.id.sort_by_name -> { taskViewModel.updateSortBy(TaskViewModel.SortBy.NAME); item.isChecked = true; true }
+        R.id.sort_by_priority -> { taskViewModel.updateSortBy(TaskViewModel.SortBy.PRIORITY); item.isChecked = true; true }
+        R.id.action_clear_completed -> { uiDelegate.confirmClearCompleted(); true }
+        R.id.action_reset_tasks -> { uiDelegate.confirmResetTasks(); true }
         R.id.action_theme -> { navigationDelegate.showThemeSelectionDialog(); true }
         R.id.action_notification_settings -> { navigationDelegate.handleNotificationSettings(); true }
         R.id.action_about -> { navigationDelegate.showAboutDialog(); true }
@@ -168,12 +191,19 @@ class MainActivity : AppCompatActivity() {
         else -> super.onOptionsItemSelected(item)
     }
 
-    private fun setupBackPressHandler() { 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) { 
-            override fun handleOnBackPressed() { 
+    private fun setupBackPressHandler() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
                 val drawer = binding.drawerLayout
-                if (drawer.isDrawerOpen(GravityCompat.START)) drawer.closeDrawer(GravityCompat.START) else finish() 
-            } 
-        }) 
+                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    drawer.closeDrawer(GravityCompat.START)
+                } else if (binding.searchView.isShowing) {
+                    binding.searchView.hide()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 }

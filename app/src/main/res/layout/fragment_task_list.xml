@@ -5,20 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <FrameLayout
         android:id="@+id/emptyStateView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintVertical_bias="0.35"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp">
 
@@ -27,23 +25,17 @@
                 android:id="@+id/emptyIllustration"
                 android:layout_width="160dp"
                 android:layout_height="160dp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
                 android:src="@drawable/ic_empty_state_illustration"
-                android:contentDescription="Empty tasks illustration"
+                android:contentDescription="@null"
                 android:alpha="0.8" />
 
             <!-- Title -->
             <TextView
                 android:id="@+id/emptyTitle"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/emptyIllustration"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="16dp"
-                android:text="No tasks yet"
+                android:text="@string/empty_tasks_title"
                 android:textAlignment="center"
                 android:textAppearance="?attr/textAppearanceHeadlineSmall"
                 android:textColor="?attr/colorOnSurface" />
@@ -51,65 +43,18 @@
             <!-- Subtitle -->
             <TextView
                 android:id="@+id/emptySubtitle"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/emptyTitle"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="8dp"
-                android:text="Tap the + button to create your first task and start being productive!"
+                android:text="@string/empty_tasks_subtitle"
                 android:textAlignment="center"
                 android:textAppearance="?attr/textAppearanceBodyLarge"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:lineSpacingExtra="4dp" />
 
-            <!-- Action hint -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/emptyTipCard"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/emptySubtitle"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="?attr/colorPrimaryContainer"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp">
+        </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingStart="16dp"
-                    android:paddingTop="12dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="12dp"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="💡 Tip: "
-                        android:textAppearance="?attr/textAppearanceBodyMedium"
-                        android:textColor="?attr/colorOnPrimaryContainer"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Break big tasks into smaller ones"
-                        android:textAppearance="?attr/textAppearanceBodyMedium"
-                        android:textColor="?attr/colorOnPrimaryContainer" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
@@ -121,10 +66,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="120dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="88dp"
             tools:itemCount="3"
             tools:listitem="@layout/item_task"
             tools:orientation="vertical" />

@@ -1,7 +1,12 @@
 package io.github.jwtiyar.simplertask.ui.dialogs
 
 import android.view.LayoutInflater
+import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import android.animation.ValueAnimator
+import android.transition.AutoTransition
+import android.transition.TransitionManager
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.EditText
@@ -10,7 +15,9 @@ import android.widget.Spinner
 import android.widget.TextView
 import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -20,26 +27,139 @@ import com.google.android.material.timepicker.TimeFormat
 import dagger.hilt.android.scopes.ActivityScoped
 import io.github.jwtiyar.simplertask.R
 import io.github.jwtiyar.simplertask.data.local.entity.Priority
+import io.github.jwtiyar.simplertask.data.local.entity.Category
 import io.github.jwtiyar.simplertask.data.local.entity.RecurrenceType
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @ActivityScoped
 class TaskDialogManager @Inject constructor() {
     
     private lateinit var activity: FragmentActivity
-    private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    private var activeDraft: (() -> Bundle)? = null
+
+    /** Guards against rapid double taps opening two sheets at once. */
+    private var sheetOpen = false
+
+    fun saveDraft(outState: Bundle) {
+        activeDraft?.invoke()?.let { outState.putBundle("task_editor_draft", it) }
+    }
+
+    fun savedDraft(state: Bundle?): Bundle? = state?.getBundle("task_editor_draft")
+
+    /** True while an editor sheet is on screen; callers skip a second open. */
+    fun isEditorOpen(): Boolean = sheetOpen
+
+    private fun draft(view: View, taskId: Int, selectedDate: Long?, hour: Int, minute: Int,
+                      recurrenceEndDate: Long?): Bundle = Bundle().apply {
+        putInt("taskId", taskId)
+        putString("title", view.findViewById<EditText>(R.id.editTextTitle).text.toString())
+        putString("description", view.findViewById<EditText>(R.id.editTextDescription).text.toString())
+        putInt("priority", view.findViewById<ChipGroup>(R.id.chipGroupPriority).checkedChipId)
+        putBoolean("reminder", view.findViewById<MaterialSwitch>(R.id.switchReminder).isChecked)
+        selectedDate?.let { putLong("selectedDate", it) }
+        putInt("hour", hour)
+        putInt("minute", minute)
+        putBoolean("recurring", view.findViewById<MaterialSwitch>(R.id.switchRecurring).isChecked)
+        putString("recurrenceType", view.findViewById<AutoCompleteTextView>(R.id.spinnerRecurrenceType).text.toString())
+        putString("interval", view.findViewById<EditText>(R.id.editRecurrenceInterval).text.toString())
+        putBoolean("endDateSelected", view.findViewById<MaterialRadioButton>(R.id.radioEndDate).isChecked)
+        recurrenceEndDate?.let { putLong("recurrenceEndDate", it) }
+        putString("category", view.findViewById<AutoCompleteTextView>(R.id.spinnerCategory).text.toString())
+        putBoolean("expanded", view.findViewById<View>(R.id.advancedTaskOptions).visibility == View.VISIBLE)
+    }
+
+    private fun restoreFields(view: View, state: Bundle) {
+        view.findViewById<EditText>(R.id.editTextTitle).setText(state.getString("title"))
+        view.findViewById<EditText>(R.id.editTextDescription).setText(state.getString("description"))
+        view.findViewById<ChipGroup>(R.id.chipGroupPriority).check(state.getInt("priority", R.id.chipMedium))
+        view.findViewById<AutoCompleteTextView>(R.id.spinnerCategory).setText(state.getString("category"), false)
+        view.findViewById<AutoCompleteTextView>(R.id.spinnerRecurrenceType).setText(state.getString("recurrenceType"), false)
+        view.findViewById<EditText>(R.id.editRecurrenceInterval).setText(state.getString("interval"))
+        setupAdvancedOptions(view, state.getBoolean("expanded"))
+    }
+
+    private fun protectedDialog(view: View, currentDraft: () -> Bundle): BottomSheetDialog =
+        object : BottomSheetDialog(activity) {
+            private var original: Bundle? = null
+
+            override fun onStart() {
+                super.onStart()
+                original = currentDraft()
+            }
+
+            override fun cancel() {
+                val before = original
+                val after = currentDraft()
+                if (before == null || before.keySet().all { key ->
+                        when (key) {
+                            "taskId", "priority", "hour", "minute" -> before.getInt(key) == after.getInt(key)
+                            "reminder", "recurring", "endDateSelected", "expanded" -> before.getBoolean(key) == after.getBoolean(key)
+                            "selectedDate", "recurrenceEndDate" -> before.containsKey(key) == after.containsKey(key) &&
+                                before.getLong(key) == after.getLong(key)
+                            else -> before.getString(key) == after.getString(key)
+                        }
+                    }) {
+                    super.cancel()
+                } else {
+                    MaterialAlertDialogBuilder(activity)
+                        .setMessage(R.string.discard_task_changes)
+                        .setNegativeButton(R.string.keep_editing, null)
+                        .setPositiveButton(R.string.discard_changes) { _, _ -> super.cancel() }
+                        .show()
+                }
+            }
+        }.apply { setContentView(view) }
+    private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }
 
     fun attach(activity: FragmentActivity) {
         this.activity = activity
     }
+
+    private fun setupAdvancedOptions(view: View, expanded: Boolean) {
+        val options = view.findViewById<View>(R.id.advancedTaskOptions)
+        val button = view.findViewById<MaterialButton>(R.id.btnMoreOptions)
+        options.visibility = if (expanded) View.VISIBLE else View.GONE
+        button.setText(if (expanded) R.string.fewer_task_options else R.string.more_task_options)
+        button.setOnClickListener {
+            if (ValueAnimator.areAnimatorsEnabled()) {
+                TransitionManager.beginDelayedTransition(view as ViewGroup, AutoTransition().apply { duration = 180 })
+            }
+            val nowExpanded = options.visibility != View.VISIBLE
+            options.visibility = if (nowExpanded) View.VISIBLE else View.GONE
+            button.setText(if (nowExpanded) R.string.fewer_task_options else R.string.more_task_options)
+        }
+    }
+
+    private fun submitTask(
+        dialog: BottomSheetDialog,
+        saveButton: MaterialButton,
+        task: Task,
+        onSave: suspend (Task) -> Boolean
+    ) {
+        if (!saveButton.isEnabled) return
+        saveButton.isEnabled = false
+        activity.lifecycleScope.launch {
+            try {
+                if (onSave(task)) dialog.dismiss()
+            } finally {
+                saveButton.isEnabled = true
+            }
+        }
+    }
     
-    fun showAddTaskDialog(onTaskAdded: (Task) -> Unit) {
+    fun showAddTaskDialog(categories: List<Category>, initial: Bundle? = null, onTaskAdded: suspend (Task) -> Boolean) {
+        if (sheetOpen) return
         val view = LayoutInflater.from(activity).inflate(R.layout.dialog_add_task, null)
+        setupAdvancedOptions(view, false)
         val titleInput = view.findViewById<EditText>(R.id.editTextTitle)
         val descInput = view.findViewById<EditText>(R.id.editTextDescription)
         val chipGroup = view.findViewById<ChipGroup>(R.id.chipGroupPriority)
@@ -57,10 +177,11 @@ class TaskDialogManager @Inject constructor() {
 
         // Category selection
         val spinnerCategory = view.findViewById<AutoCompleteTextView>(R.id.spinnerCategory)
-        val categoryNames = arrayOf("No Category", "Work", "Personal", "Health", "Learning", "Shopping", "Home")
+        val noCategory = activity.getString(R.string.no_category)
+        val categoryNames = listOf(noCategory) + categories.map { it.name }
         val categoryAdapter = ArrayAdapter(activity, android.R.layout.simple_dropdown_item_1line, categoryNames)
         spinnerCategory.setAdapter(categoryAdapter)
-        spinnerCategory.setText("No Category", false)
+        spinnerCategory.setText(noCategory, false)
 
         // Set default priority to MEDIUM
         chipGroup.check(R.id.chipMedium)
@@ -113,7 +234,12 @@ class TaskDialogManager @Inject constructor() {
             } ?: run {
                 btnDate.setText(R.string.select_date)
             }
-            btnTime.text = String.format("%02d:%02d", selectedHour, selectedMinute)
+            btnTime.text = android.text.format.DateFormat.getTimeFormat(activity).format(
+                Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, selectedHour)
+                    set(Calendar.MINUTE, selectedMinute)
+                }.time
+            )
         }
         
         switchReminder.setOnCheckedChangeListener { _, checked ->
@@ -130,7 +256,7 @@ class TaskDialogManager @Inject constructor() {
         
         btnDate.setOnClickListener {
             val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Select date")
+                .setTitleText(R.string.select_date)
                 .setSelection(selectedDate ?: MaterialDatePicker.todayInUtcMilliseconds())
                 .build()
             
@@ -145,10 +271,10 @@ class TaskDialogManager @Inject constructor() {
         btnTime.setOnClickListener {
             val timePicker = MaterialTimePicker.Builder()
                 .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK)
-                .setTimeFormat(TimeFormat.CLOCK_24H)
+                .setTimeFormat(if (android.text.format.DateFormat.is24HourFormat(activity)) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H)
                 .setHour(selectedHour)
                 .setMinute(selectedMinute)
-                .setTitleText("Select time")
+                .setTitleText(R.string.select_time)
                 .build()
             
             timePicker.addOnPositiveButtonClickListener {
@@ -176,7 +302,7 @@ class TaskDialogManager @Inject constructor() {
         val btnRecurrenceEndDate = view.findViewById<MaterialButton>(R.id.btnRecurrenceEndDate)
         btnRecurrenceEndDate.setOnClickListener {
             val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Select recurrence end date")
+                .setTitleText(R.string.select_end_date)
                 .setSelection(selectedRecurrenceEndDate ?: MaterialDatePicker.todayInUtcMilliseconds())
                 .build()
 
@@ -209,9 +335,9 @@ class TaskDialogManager @Inject constructor() {
         radioNever.isChecked = true
         applyNever()
 
-        MaterialAlertDialogBuilder(activity)
-            .setView(view)
-            .setPositiveButton(R.string.add) { _, _ ->
+        val dialog = protectedDialog(view) { draft(view, 0, selectedDate, selectedHour, selectedMinute, selectedRecurrenceEndDate) }
+        view.findViewById<MaterialButton>(R.id.btnCancelTask).setOnClickListener { dialog.cancel() }
+        view.findViewById<MaterialButton>(R.id.btnSaveTask).setOnClickListener {
                 val title = titleInput.text?.toString()?.trim().orEmpty()
                 if (title.isNotBlank()) {
                     val desc = descInput.text?.toString()?.trim().orEmpty()
@@ -230,22 +356,20 @@ class TaskDialogManager @Inject constructor() {
                             activity.getString(R.string.recurrence_monthly) -> RecurrenceType.MONTHLY
                             else -> RecurrenceType.DAILY
                         }
-                        recurrenceInterval = editRecurrenceInterval.text?.toString()?.toIntOrNull() ?: 1
+                        val interval = editRecurrenceInterval.text?.toString()?.toIntOrNull()
+                        if (interval == null || interval < 1) {
+                            editRecurrenceInterval.error = activity.getString(R.string.recurrence_interval_error)
+                            editRecurrenceInterval.requestFocus()
+                            return@setOnClickListener
+                        }
+                        recurrenceInterval = interval
                         recurrenceEndDate = if (radioEndDate.isChecked) {
                             selectedRecurrenceEndDate
                         } else null
                     }
 
                     // Handle category selection
-                    val selectedCategory = when (spinnerCategory.text.toString()) {
-                        "Work" -> 1
-                        "Personal" -> 2
-                        "Health" -> 3
-                        "Learning" -> 4
-                        "Shopping" -> 5
-                        "Home" -> 6
-                        else -> null
-                    }
+                    val selectedCategory = categories.firstOrNull { it.name == spinnerCategory.text.toString() }?.id
 
                     // Create the task with recurrence and category settings
                     val task = if (recurrenceType != null) {
@@ -264,15 +388,41 @@ class TaskDialogManager @Inject constructor() {
                         Task(id = 0, title = title, description = desc, priority = priority, dueDateMillis = dueDateMillis, categoryId = selectedCategory)
                     }
 
-                    onTaskAdded(task)
+                    submitTask(dialog, view.findViewById(R.id.btnSaveTask), task, onTaskAdded)
+                } else {
+                    titleInput.error = activity.getString(R.string.task_title_required)
+                    titleInput.requestFocus()
                 }
+        }
+        initial?.let { state ->
+            restoreFields(view, state)
+            selectedHour = state.getInt("hour", selectedHour)
+            selectedMinute = state.getInt("minute", selectedMinute)
+            selectedDate = if (state.containsKey("selectedDate")) state.getLong("selectedDate") else null
+            switchReminder.isChecked = state.getBoolean("reminder")
+            if (switchReminder.isChecked) updateDueDateMillis()
+            updateButtonTexts()
+            switchRecurring.isChecked = state.getBoolean("recurring")
+            selectedRecurrenceEndDate = if (state.containsKey("recurrenceEndDate")) state.getLong("recurrenceEndDate") else null
+            if (state.getBoolean("endDateSelected")) {
+                radioEndDate.isChecked = true
+                selectedRecurrenceEndDate?.let { btnRecurrenceEndDate.text = dateFormat.format(Date(it)) }
             }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        }
+        activeDraft = { draft(view, 0, selectedDate, selectedHour, selectedMinute, selectedRecurrenceEndDate) }
+        dialog.setOnDismissListener {
+            activeDraft = null
+            sheetOpen = false
+        }
+        sheetOpen = true
+        dialog.show()
     }
 
-    fun showEditTaskDialog(task: Task, onTaskUpdated: (Task) -> Unit) {
+    fun showEditTaskDialog(task: Task, categories: List<Category>, initial: Bundle? = null, onTaskUpdated: suspend (Task) -> Boolean) {
+        if (sheetOpen) return
         val view = LayoutInflater.from(activity).inflate(R.layout.dialog_add_task, null)
+        setupAdvancedOptions(view, task.categoryId != null || task.dueDateMillis != null ||
+            task.recurrenceType != null || task.priority != Priority.MEDIUM)
         val titleInput = view.findViewById<EditText>(R.id.editTextTitle)
         val descInput = view.findViewById<EditText>(R.id.editTextDescription)
         val chipGroup = view.findViewById<ChipGroup>(R.id.chipGroupPriority)
@@ -295,12 +445,14 @@ class TaskDialogManager @Inject constructor() {
 
         // Category selection
         val spinnerCategory = view.findViewById<AutoCompleteTextView>(R.id.spinnerCategory)
-        val categoryNames = arrayOf("No Category", "Work", "Personal", "Health", "Learning", "Shopping", "Home")
+        val noCategory = activity.getString(R.string.no_category)
+        val categoryNames = listOf(noCategory) + categories.map { it.name }
         val categoryAdapter = ArrayAdapter(activity, android.R.layout.simple_dropdown_item_1line, categoryNames)
         spinnerCategory.setAdapter(categoryAdapter)
         
         // Setup initial values
         dialogTitle.setText(R.string.dialog_edit_task_title)
+        view.findViewById<MaterialButton>(R.id.btnSaveTask).setText(R.string.button_save)
         titleInput.setText(task.title)
         descInput.setText(task.description)
         
@@ -311,15 +463,7 @@ class TaskDialogManager @Inject constructor() {
         }
 
         // Set category
-        val categoryName = when (task.categoryId) {
-            1 -> "Work"
-            2 -> "Personal"
-            3 -> "Health"
-            4 -> "Learning"
-            5 -> "Shopping"
-            6 -> "Home"
-            else -> "No Category"
-        }
+        val categoryName = categories.firstOrNull { it.id == task.categoryId }?.name ?: noCategory
         spinnerCategory.setText(categoryName, false)
         
         var dueDateMillis: Long? = task.dueDateMillis
@@ -424,7 +568,12 @@ class TaskDialogManager @Inject constructor() {
             } ?: run {
                 btnDate.setText(R.string.select_date)
             }
-            btnTime.text = String.format("%02d:%02d", selectedHour, selectedMinute)
+            btnTime.text = android.text.format.DateFormat.getTimeFormat(activity).format(
+                Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, selectedHour)
+                    set(Calendar.MINUTE, selectedMinute)
+                }.time
+            )
         }
         
         switchReminder.setOnCheckedChangeListener { _, checked ->
@@ -441,7 +590,7 @@ class TaskDialogManager @Inject constructor() {
         
         btnDate.setOnClickListener {
             val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Select date")
+                .setTitleText(R.string.select_date)
                 .setSelection(selectedDate ?: MaterialDatePicker.todayInUtcMilliseconds())
                 .build()
             
@@ -456,10 +605,10 @@ class TaskDialogManager @Inject constructor() {
         btnTime.setOnClickListener {
             val timePicker = MaterialTimePicker.Builder()
                 .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK)
-                .setTimeFormat(TimeFormat.CLOCK_24H)
+                .setTimeFormat(if (android.text.format.DateFormat.is24HourFormat(activity)) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H)
                 .setHour(selectedHour)
                 .setMinute(selectedMinute)
-                .setTitleText("Select time")
+                .setTitleText(R.string.select_time)
                 .build()
             
             timePicker.addOnPositiveButtonClickListener {
@@ -486,7 +635,7 @@ class TaskDialogManager @Inject constructor() {
 
         btnRecurrenceEndDate.setOnClickListener {
             val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Select recurrence end date")
+                .setTitleText(R.string.select_end_date)
                 .setSelection(selectedRecurrenceEndDate ?: MaterialDatePicker.todayInUtcMilliseconds())
                 .build()
 
@@ -510,9 +659,9 @@ class TaskDialogManager @Inject constructor() {
 
         updateButtonTexts()
 
-        MaterialAlertDialogBuilder(activity)
-            .setView(view)
-            .setPositiveButton(R.string.button_save) { _, _ ->
+        val dialog = protectedDialog(view) { draft(view, task.id, selectedDate, selectedHour, selectedMinute, selectedRecurrenceEndDate) }
+        view.findViewById<MaterialButton>(R.id.btnCancelTask).setOnClickListener { dialog.cancel() }
+        view.findViewById<MaterialButton>(R.id.btnSaveTask).setOnClickListener {
                 val title = titleInput.text?.toString()?.trim().orEmpty()
                 if (title.isNotBlank()) {
                     val desc = descInput.text?.toString()?.trim().orEmpty()
@@ -534,22 +683,20 @@ class TaskDialogManager @Inject constructor() {
                             activity.getString(R.string.recurrence_monthly) -> RecurrenceType.MONTHLY
                             else -> RecurrenceType.DAILY
                         }
-                        finalRecurrenceInterval = editRecurrenceInterval.text?.toString()?.toIntOrNull() ?: 1
+                        val interval = editRecurrenceInterval.text?.toString()?.toIntOrNull()
+                        if (interval == null || interval < 1) {
+                            editRecurrenceInterval.error = activity.getString(R.string.recurrence_interval_error)
+                            editRecurrenceInterval.requestFocus()
+                            return@setOnClickListener
+                        }
+                        finalRecurrenceInterval = interval
                         finalRecurrenceEndDate = if (radioEndDate.isChecked) {
                             selectedRecurrenceEndDate
                         } else null
                     }
 
                     // Handle category
-                    val selectedCategory = when (spinnerCategory.text.toString()) {
-                        "Work" -> 1
-                        "Personal" -> 2
-                        "Health" -> 3
-                        "Learning" -> 4
-                        "Shopping" -> 5
-                        "Home" -> 6
-                        else -> null
-                    }
+                    val selectedCategory = categories.firstOrNull { it.name == spinnerCategory.text.toString() }?.id
 
                     val updated = task.copy(
                         title = title,
@@ -561,10 +708,33 @@ class TaskDialogManager @Inject constructor() {
                         recurrenceEndDate = finalRecurrenceEndDate,
                         categoryId = selectedCategory
                     )
-                    onTaskUpdated(updated)
+                    submitTask(dialog, view.findViewById(R.id.btnSaveTask), updated, onTaskUpdated)
+                } else {
+                    titleInput.error = activity.getString(R.string.task_title_required)
+                    titleInput.requestFocus()
                 }
+        }
+        initial?.let { state ->
+            restoreFields(view, state)
+            selectedHour = state.getInt("hour", selectedHour)
+            selectedMinute = state.getInt("minute", selectedMinute)
+            selectedDate = if (state.containsKey("selectedDate")) state.getLong("selectedDate") else null
+            switchReminder.isChecked = state.getBoolean("reminder")
+            if (switchReminder.isChecked) updateDueDateMillis()
+            updateButtonTexts()
+            switchRecurring.isChecked = state.getBoolean("recurring")
+            selectedRecurrenceEndDate = if (state.containsKey("recurrenceEndDate")) state.getLong("recurrenceEndDate") else null
+            if (state.getBoolean("endDateSelected")) {
+                radioEndDate.isChecked = true
+                selectedRecurrenceEndDate?.let { btnRecurrenceEndDate.text = dateFormat.format(Date(it)) }
             }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        }
+        activeDraft = { draft(view, task.id, selectedDate, selectedHour, selectedMinute, selectedRecurrenceEndDate) }
+        dialog.setOnDismissListener {
+            activeDraft = null
+            sheetOpen = false
+        }
+        sheetOpen = true
+        dialog.show()
     }
 }

@@ -29,7 +29,15 @@ class BootReceiver : BroadcastReceiver() {
     lateinit var notificationHelper: NotificationHelper
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != Intent.ACTION_BOOT_COMPLETED) {
+        // Alarms are cleared on reboot and upgrade; due times below were built in the
+        // current device zone, so a time or zone change can also make them stale.
+        val supported = setOf(
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED
+        )
+        if (intent.action !in supported) {
             return
         }
 

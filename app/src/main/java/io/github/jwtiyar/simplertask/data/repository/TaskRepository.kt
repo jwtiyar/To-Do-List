@@ -8,6 +8,7 @@ import io.github.jwtiyar.simplertask.data.local.dao.CategoryDao
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +36,33 @@ class TaskRepository @Inject constructor(
         initialLoadSize = 20,             // Initial load size
         maxSize = 200                     // Keep max 200 items in memory (5 pages)
     )
+
+    enum class TaskScope { ALL, PENDING, COMPLETED, SAVED, ARCHIVED, RECURRING, CATEGORY }
+    enum class TaskOrder { DATE, NAME, PRIORITY }
+
+    fun pageTasks(scope: TaskScope, order: TaskOrder, categoryId: Int? = null): Flow<PagingData<Task>> {
+        val query = sortedTaskQuery(scope, order, categoryId)
+        return Pager(pagingConfig) { taskDao.pagingSortedTasks(query) }.flow
+    }
+
+    fun sortedTaskQuery(scope: TaskScope, order: TaskOrder, categoryId: Int? = null): SimpleSQLiteQuery {
+        val where = when (scope) {
+            TaskScope.ALL -> "isArchived = 0"
+            TaskScope.PENDING -> "isCompleted = 0 AND isArchived = 0"
+            TaskScope.COMPLETED -> "isCompleted = 1 AND isArchived = 0"
+            TaskScope.SAVED -> "isSaved = 1 AND isArchived = 0"
+            TaskScope.ARCHIVED -> "isArchived = 1"
+            TaskScope.RECURRING -> "recurrenceType IS NOT NULL AND isArchived = 0"
+            TaskScope.CATEGORY -> if (categoryId == null) "isArchived = 0" else "categoryId = ? AND isArchived = 0"
+        }
+        val ordering = when (order) {
+            TaskOrder.DATE -> "dueDateMillis IS NULL, dueDateMillis ASC, id DESC"
+            TaskOrder.NAME -> "title COLLATE NOCASE ASC, id DESC"
+            TaskOrder.PRIORITY -> "CASE priority WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 ELSE 2 END, id DESC"
+        }
+        val args = if (scope == TaskScope.CATEGORY && categoryId != null) arrayOf<Any>(categoryId) else emptyArray()
+        return SimpleSQLiteQuery("SELECT * FROM task WHERE $where ORDER BY $ordering", args)
+    }
 
     // Paginated data flows for efficient UI rendering
     fun pageAllTasks(): Flow<PagingData<Task>> {
@@ -131,6 +159,14 @@ class TaskRepository @Inject constructor(
     suspend fun unarchiveTask(task: Task) = withContext(Dispatchers.IO) { taskDao.updateTask(task.copy(isArchived = false)) }
     /** Fetch single task by id or null if missing. */
     suspend fun getTaskById(taskId: Long): Task? = withContext(Dispatchers.IO) { taskDao.getTaskById(taskId) }
+
+    suspend fun completeTask(taskId: Long): TaskDao.Completion? = withContext(Dispatchers.IO) {
+        taskDao.completeTask(taskId)
+    }
+
+    suspend fun undoCompletion(taskId: Long, nextId: Long?): TaskDao.Undo? = withContext(Dispatchers.IO) {
+        taskDao.undoCompletion(taskId, nextId)
+    }
     
     /** Get all tasks as a list for backup purposes */
     suspend fun getAllTasksAsList(): List<Task> = withContext(Dispatchers.IO) {

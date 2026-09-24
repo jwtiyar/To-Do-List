@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last Updated: May 24, 2026**
+**Last Updated: September 24, 2026**
 
 This Privacy Policy describes how your information is collected, used, and safeguarded when you use **To-Do: Task List & Reminder** (the "Application"), an Android application developed by Jwtyar Nariman.
 
@@ -18,6 +18,7 @@ We are committed to protecting your privacy. The Application is built with a pri
 *   The Application provides an import/export feature to backup your tasks.
 *   Backups are encrypted locally on your device using industry-standard **AES-256-GCM** encryption with a password of your choice.
 *   Your backup password and the encrypted files are stored only where you choose to save them on your device or your personal storage providers; we never have access to your backups or passwords.
+*   The Application opts out of Android automatic cloud backup and excludes its task database from device-to-device transfer. To move your tasks to another device, export an encrypted backup and import it there. Backups created by older app versions may still exist in your Android account until removed through your device's backup settings.
 
 ### Diagnostics and Telemetry (Google Play Version Only)
 To help us improve the Application's stability and performance, the version distributed via the Google Play Store includes Firebase SDKs:

@@ -11,8 +11,11 @@
     @com.google.gson.annotations.SerializedName <fields>;
 }
 
-# Keep notification receivers
--keep class io.github.jwtiyar.simplertask.NotificationReceiver { *; }
+# Keep notification receivers and background services
+-keep class io.github.jwtiyar.simplertask.service.** { *; }
+
+# Keep home screen widgets and widget services
+-keep class io.github.jwtiyar.simplertask.widget.** { *; }
 
 # Keep application class
 -keep class io.github.jwtiyar.simplertask.TaskApp { *; }

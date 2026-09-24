@@ -31,7 +31,8 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class TaskViewModel @Inject constructor(
     private val repository: TaskRepository,
-    private val application: Application
+    private val application: Application,
+    private val taskLifecycle: io.github.jwtiyar.simplertask.task.TaskLifecycle
 ) : ViewModel() {
 
     // Single source of truth for UI state
@@ -72,7 +73,11 @@ class TaskViewModel @Inject constructor(
 
     // Category data
     val categories: StateFlow<List<io.github.jwtiyar.simplertask.data.local.entity.Category>> = repository.getAllCategories()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    suspend fun getCategoriesForEditor() = repository.getAllCategories().first()
+
+    suspend fun getTaskForEditor(id: Int): Task? = repository.getTaskById(id.toLong())
 
     // Paginated data flow - observes the global filter from uiState
     val pagedTasks: Flow<androidx.paging.PagingData<Task>> = combine(
@@ -89,18 +94,14 @@ class TaskViewModel @Inject constructor(
      * This allows multiple UI components to observe different filtered lists at once.
      */
     fun getPagedTasks(filter: TaskFilter): Flow<androidx.paging.PagingData<Task>> {
-        return _selectedCategoryId.flatMapLatest { categoryId ->
-            when (filter) {
-                TaskFilter.PENDING -> repository.pagePendingTasks()
-                TaskFilter.COMPLETED -> repository.pageCompletedTasks()
-                TaskFilter.SAVED -> repository.pageSavedTasks()
-                TaskFilter.ARCHIVED -> repository.pageArchivedTasks()
-                TaskFilter.RECURRING -> repository.pageRecurringTasks()
-                TaskFilter.CATEGORY -> {
-                    categoryId?.let { repository.pageTasksByCategory(it) } ?: repository.pageAllTasks()
-                }
-                TaskFilter.ALL -> repository.pageAllTasks()
-            }
+        return combine(_selectedCategoryId, _uiState.map { it.sortBy }.distinctUntilChanged()) { categoryId, sort ->
+            categoryId to sort
+        }.flatMapLatest { (categoryId, sort) ->
+            repository.pageTasks(
+                TaskRepository.TaskScope.valueOf(filter.name),
+                TaskRepository.TaskOrder.valueOf(sort.name),
+                categoryId
+            )
         }
     }
 
@@ -156,11 +157,9 @@ class TaskViewModel @Inject constructor(
             onError = { postSnackbar("Failed to add task: ${it.message}") }
         ) {
             val task = Task(title = title, description = description, priority = priority, dueDateMillis = dueDateMillis, categoryId = categoryId)
-            val insertedId = repository.insertTask(task)
-            val insertedTask = task.copy(id = insertedId.toInt())
+            val insertedTask = taskLifecycle.create(task)
 
             onTaskInserted?.invoke(insertedTask)
-            refreshWidgets()
             postToast("Task added successfully!")
         }
     }
@@ -172,8 +171,7 @@ class TaskViewModel @Inject constructor(
         launchWithError(
             onError = { postSnackbar("Failed to restore task: ${it.message}") }
         ) {
-            repository.insertTask(task)
-            refreshWidgets()
+            taskLifecycle.restore(task)
         }
     }
 
@@ -204,13 +202,28 @@ class TaskViewModel @Inject constructor(
                 recurrenceEndDate = recurrenceEndDate,
                 categoryId = categoryId
             )
-            val insertedId = repository.insertTask(task)
-            val insertedTask = task.copy(id = insertedId.toInt())
+            val insertedTask = taskLifecycle.create(task)
 
             onTaskInserted?.invoke(insertedTask)
-            refreshWidgets()
             postToast("Recurring task added successfully!")
         }
+    }
+
+    suspend fun createTask(task: Task): Boolean = try {
+        taskLifecycle.create(task)
+        postToast("Task added successfully!")
+        true
+    } catch (e: Exception) {
+        postSnackbar("Failed to add task: ${e.message}")
+        false
+    }
+
+    suspend fun saveTask(task: Task): Boolean = try {
+        taskLifecycle.update(task)
+        true
+    } catch (e: Exception) {
+        postSnackbar("Failed to update task: ${e.message}")
+        false
     }
     
     /**
@@ -218,8 +231,7 @@ class TaskViewModel @Inject constructor(
      */
     fun updateTask(task: Task) {
         launchWithError({ postSnackbar("Failed to update task: ${it.message}") }) {
-            repository.updateTask(task)
-            refreshWidgets()
+            taskLifecycle.update(task)
         }
     }
 
@@ -228,8 +240,14 @@ class TaskViewModel @Inject constructor(
      */
     fun setTaskCompletion(task: Task, isCompleted: Boolean) {
         launchWithError({ postSnackbar("Failed to update task: ${it.message}") }) {
-            repository.updateTask(task.copy(isCompleted = isCompleted))
-            refreshWidgets()
+            if (isCompleted) taskLifecycle.update(task.copy(isCompleted = true))
+            else taskLifecycle.reopen(task.id.toLong())
+        }
+    }
+
+    fun undoCompletion(task: Task, nextTaskId: Long?) {
+        launchWithError({ postSnackbar("Failed to undo completion: ${it.message}") }) {
+            taskLifecycle.undoCompletion(task.id.toLong(), nextTaskId)
         }
     }
 
@@ -237,17 +255,19 @@ class TaskViewModel @Inject constructor(
      * Toggle task completion status. Returns ID of next occurrence if created.
      */
     suspend fun toggleTaskCompletion(task: Task): Long? {
-        val wasCompleted = task.isCompleted
-        repository.toggleTaskCompletion(task)
-
-        var nextTaskId: Long? = null
-        // If this was a recurring task that just got completed, create the next occurrence
-        if (!wasCompleted && task.isRecurring()) {
-            nextTaskId = repository.createNextRecurringTask(task)
-            postToast("Task completed! Next occurrence created.")
+        return try {
+            if (task.isCompleted) {
+                taskLifecycle.reopen(task.id.toLong())
+                null
+            } else {
+                val nextTaskId = taskLifecycle.complete(task.id.toLong())
+                if (nextTaskId != null) postToast("Task completed! Next occurrence created.")
+                nextTaskId
+            }
+        } catch (e: Exception) {
+            postSnackbar("Failed to update task: ${e.message}")
+            null
         }
-        refreshWidgets()
-        return nextTaskId
     }
 
     /**
@@ -255,10 +275,7 @@ class TaskViewModel @Inject constructor(
      */
     fun deleteTaskById(id: Long) {
         viewModelScope.launch {
-            repository.getTaskById(id)?.let {
-                repository.deleteTask(it)
-                refreshWidgets()
-            }
+            taskLifecycle.delete(id)
         }
     }
 
@@ -277,8 +294,7 @@ class TaskViewModel @Inject constructor(
      */
     fun toggleTaskArchived(task: Task) {
         launchWithError({ postSnackbar("Failed to archive/unarchive task: ${it.message}") }) {
-            if (task.isArchived) repository.unarchiveTask(task) else repository.archiveTask(task)
-            refreshWidgets()
+            taskLifecycle.update(task.copy(isArchived = !task.isArchived, isSaved = if (task.isArchived) task.isSaved else false))
         }
     }
 
@@ -287,9 +303,16 @@ class TaskViewModel @Inject constructor(
      */
     fun deleteTask(task: Task) {
         launchWithError({ postSnackbar("Failed to delete task: ${it.message}") }) {
-            repository.deleteTask(task)
-            refreshWidgets()
+            taskLifecycle.delete(task.id.toLong())
         }
+    }
+
+    suspend fun deleteTaskForUndo(task: Task): Boolean = try {
+        taskLifecycle.delete(task.id.toLong())
+        true
+    } catch (e: Exception) {
+        postSnackbar("Failed to delete task: ${e.message}")
+        false
     }
 
     /**
@@ -297,8 +320,8 @@ class TaskViewModel @Inject constructor(
      */
     fun clearCompletedTasks() {
         launchWithError({ postSnackbar("Failed to clear completed tasks: ${it.message}") }) {
-            repository.deleteCompletedTasks()
-            refreshWidgets()
+            taskLifecycle.clearCompleted()
+            postToast("Completed tasks cleared")
         }
     }
 
@@ -307,8 +330,8 @@ class TaskViewModel @Inject constructor(
      */
     fun resetAllTasks() {
         launchWithError({ postSnackbar("Failed to reset tasks: ${it.message}") }) {
-            repository.resetAllTasksToPending()
-            refreshWidgets()
+            taskLifecycle.resetCompleted()
+            postToast("All tasks marked pending")
         }
     }
     
@@ -374,33 +397,19 @@ class TaskViewModel @Inject constructor(
      * Export all tasks for backup
      */
     suspend fun getAllTasksForBackup(): List<Task> {
-        return repository.getAllTasksAsList()
+        return repository.getAllTasksForBackup()
     }
+
+    suspend fun getBackupData() = taskLifecycle.backupData()
     
     /**
      * Import tasks from backup with specified mode
      */
-    fun importTasksFromBackup(tasks: List<Task>, replaceExisting: Boolean = false) {
-        launchWithError(
-            onError = { postSnackbar("Failed to import tasks: ${it.message}") }
-        ) {
-            if (replaceExisting) {
-                repository.clearAllTasks()
-            }
-
-            // Remove IDs to let the database assign new ones (avoiding conflicts)
-            val tasksWithoutIds = tasks.map { it.copy(id = 0) }
-            repository.insertTasks(tasksWithoutIds)
-            refreshWidgets()
-
-            val message = if (replaceExisting) {
-                "Successfully imported ${tasks.size} tasks (replaced existing)"
-            } else {
-                "Successfully imported ${tasks.size} tasks (added to existing)"
-            }
-            postToast(message)
-        }
+    suspend fun importTasksFromBackup(
+        data: io.github.jwtiyar.simplertask.data.backup.BackupManager.BackupData,
+        replaceExisting: Boolean = false
+    ) {
+        taskLifecycle.importBackup(data, replaceExisting)
+        postToast("Imported ${data.tasks.size} tasks")
     }
 }
-
-

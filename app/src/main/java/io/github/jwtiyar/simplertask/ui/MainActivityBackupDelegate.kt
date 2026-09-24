@@ -50,11 +50,11 @@ class MainActivityBackupDelegate @Inject constructor(
         ) { password ->
             currentActivity.lifecycleScope.launch {
                 try {
-                    val tasks = taskViewModel.getAllTasksForBackup()
-                    val backupJson = backupManager.exportTasks(tasks, password)
+                    val data = taskViewModel.getBackupData()
+                    val backupJson = backupManager.exportBackup(data, password)
                     backupManager.writeToUri(uri, backupJson)
 
-                    taskViewModel.postToast(currentActivity.getString(R.string.backup_exported, tasks.size))
+                    taskViewModel.postToast(currentActivity.getString(R.string.backup_exported, data.tasks.size))
                 } catch (e: Exception) {
                     taskViewModel.postSnackbar(currentActivity.getString(R.string.error_export_backup, e.message))
                 } finally {
@@ -208,8 +208,8 @@ class MainActivityBackupDelegate @Inject constructor(
     private fun performImport(backupContent: String, replaceExisting: Boolean, password: CharArray?) {
         activity?.lifecycleScope?.launch {
             try {
-                val tasks = backupManager.importTasks(backupContent, password)
-                taskViewModel.importTasksFromBackup(tasks, replaceExisting)
+                val data = backupManager.importBackup(backupContent, password)
+                taskViewModel.importTasksFromBackup(data, replaceExisting)
             } catch (e: Exception) {
                 val currentActivity = activity
                 if (currentActivity != null) {

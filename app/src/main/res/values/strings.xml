@@ -111,6 +111,12 @@
     <!-- Search string -->
     <string name="search">Search</string>
     <string name="due_prefix">Due: %1$s</string>
+    <string name="due_today">Today, %1$s</string>
+    <string name="due_tomorrow">Tomorrow, %1$s</string>
+    <string name="due_overdue">Overdue · %1$s</string>
+    <string name="notification_action_complete">Complete</string>
+    <string name="notification_action_snooze">Snooze 10m</string>
+    <string name="notification_summary_title">Task Reminders</string>
     <string name="action_save">Save Task</string>
     <string name="action_unsave">Remove from Saved</string>
     <string name="action_archive">Archive</string>
@@ -155,6 +161,36 @@
     <!-- Recurrence strings -->
     <string name="recurring_task">Make this task recurring</string>
     <string name="repeat_every">Repeat every:</string>
+    <string name="recurrence_interval_error">Enter a repeat interval of at least 1</string>
+    <string name="task_title_required">Enter a task title</string>
+    <string name="mark_task_complete">Complete %1$s</string>
+    <string name="mark_task_pending">Mark %1$s pending</string>
+    <string name="confirm_clear_completed">Delete %1$d completed tasks? This cannot be undone.</string>
+    <string name="confirm_reset_tasks">Mark all completed tasks as pending?</string>
+    <string name="more_task_options">More options</string>
+    <string name="fewer_task_options">Fewer options</string>
+    <string name="no_category">No category</string>
+    <string name="category_optional">Category (optional)</string>
+    <string name="select_category">Select category</string>
+    <string name="task_actions_for">Actions for %1$s</string>
+    <string name="task_repeats_summary">Every %1$d %2$s</string>
+    <string name="discard_task_changes">Discard changes?</string>
+    <string name="keep_editing">Keep editing</string>
+    <string name="discard_changes">Discard</string>
+    <string name="empty_tasks_title">No tasks yet</string>
+    <string name="empty_tasks_subtitle">Add a task to get started.</string>
+    <string name="notification_settings">Notification settings</string>
+    <string name="task_title_preview">Task title</string>
+    <string name="task_description_preview">Task description</string>
+    <string name="task_due_preview">Due: Jan 01, 12:00</string>
+    <string name="nav_header_title">Tasks</string>
+    <string name="nav_header_subtitle">Your lists and settings</string>
+    <string name="repeat_preview">Repeat</string>
+    <string name="default_recurrence_interval" translatable="false">1</string>
+    <string name="search_prompt">Search tasks by title or note</string>
+    <string name="search_loading">Searching…</string>
+    <string name="search_retry">Search failed. Tap to try again.</string>
+    <string name="search_no_results">No tasks match your search</string>
     <string name="end_recurrence">End recurrence:</string>
     <string name="never">Never (repeat indefinitely)</string>
     <string name="on_date">On date:</string>

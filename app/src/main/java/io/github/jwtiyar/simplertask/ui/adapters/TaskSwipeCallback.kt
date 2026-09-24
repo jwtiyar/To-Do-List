@@ -76,6 +76,7 @@ class TaskSwipeCallback(
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         val position = viewHolder.bindingAdapterPosition
+        if (position == RecyclerView.NO_POSITION) return
         val adapter = viewHolder.bindingAdapter as? TaskPagingAdapter ?: return
         val task = adapter.getTaskAtPosition(position) ?: return
 
@@ -188,7 +189,9 @@ class TaskSwipeCallback(
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
         val adapter = viewHolder.bindingAdapter as? TaskPagingAdapter ?: return makeMovementFlags(0, 0)
-        val task = adapter.getTaskAtPosition(viewHolder.bindingAdapterPosition) ?: return makeMovementFlags(0, 0)
+        val position = viewHolder.bindingAdapterPosition
+        if (position == RecyclerView.NO_POSITION) return makeMovementFlags(0, 0)
+        val task = adapter.getTaskAtPosition(position) ?: return makeMovementFlags(0, 0)
 
         val currentFilter = filterProvider()
         // Disable swipe for stable views (Saved, Archive, Recurring)

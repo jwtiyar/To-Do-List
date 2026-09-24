@@ -10,6 +10,9 @@ interface CategoryDao {
     @Query("SELECT * FROM category ORDER BY name ASC")
     fun getAllCategories(): Flow<List<Category>>
 
+    @Query("SELECT * FROM category ORDER BY name ASC")
+    suspend fun getAllCategoriesForBackup(): List<Category>
+
     @Query("SELECT * FROM category WHERE id = :id")
     suspend fun getCategoryById(id: Int): Category?
 
@@ -27,6 +30,9 @@ interface CategoryDao {
 
     @Query("SELECT COUNT(*) FROM category")
     suspend fun getCategoryCount(): Int
+
+    @Query("DELETE FROM category")
+    suspend fun clearAllCategories()
 
     @Query("SELECT * FROM category WHERE name = :name LIMIT 1")
     suspend fun getCategoryByName(name: String): Category?

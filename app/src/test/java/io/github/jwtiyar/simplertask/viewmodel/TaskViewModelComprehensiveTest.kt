@@ -8,6 +8,8 @@ import io.github.jwtiyar.simplertask.data.local.entity.Priority
 import io.github.jwtiyar.simplertask.data.local.entity.RecurrenceType
 import io.github.jwtiyar.simplertask.data.local.entity.Task
 import io.github.jwtiyar.simplertask.data.repository.TaskRepository
+import io.github.jwtiyar.simplertask.data.backup.BackupManager
+import io.github.jwtiyar.simplertask.task.TaskLifecycle
 import io.github.jwtiyar.simplertask.ui.UiEvent
 import io.github.jwtiyar.simplertask.widget.TaskWidgetProvider
 import io.mockk.*
@@ -33,6 +35,7 @@ class TaskViewModelComprehensiveTest {
 
     private lateinit var viewModel: TaskViewModel
     private lateinit var repository: TaskRepository
+    private lateinit var taskLifecycle: TaskLifecycle
     private lateinit var application: Application
     private val testDispatcher = StandardTestDispatcher()
 
@@ -51,6 +54,8 @@ class TaskViewModelComprehensiveTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         repository = mockk(relaxed = true)
+        taskLifecycle = mockk(relaxed = true)
+        coEvery { taskLifecycle.create(any()) } answers { firstArg<Task>().copy(id = 42) }
         application = mockk(relaxed = true)
 
         // Prevent TaskWidgetProvider.updateAllWidgets from touching real Android APIs
@@ -75,7 +80,7 @@ class TaskViewModelComprehensiveTest {
         every { repository.pageAllTasks() } returns flowOf(PagingData.empty())
         every { repository.searchTasksPaged(any()) } returns flowOf(PagingData.empty())
 
-        viewModel = TaskViewModel(repository, application)
+        viewModel = TaskViewModel(repository, application, taskLifecycle)
     }
 
     @After
@@ -96,16 +101,13 @@ class TaskViewModelComprehensiveTest {
 
     @Test
     fun `addTask inserts task and emits success toast`() = runTest {
-        val insertedId = 42L
-        coEvery { repository.insertTask(any()) } returns insertedId
-
         val events = mutableListOf<UiEvent>()
         val job = collectEvents(events, UnconfinedTestDispatcher(testScheduler))
 
         viewModel.addTask(title = "New Task", description = "Description", priority = Priority.HIGH)
         advanceUntilIdle()
 
-        coVerify { repository.insertTask(match { it.title == "New Task" && it.priority == Priority.HIGH }) }
+        coVerify { taskLifecycle.create(match { it.title == "New Task" && it.priority == Priority.HIGH }) }
         assertTrue("Expected ShowToast event", events.any { it is UiEvent.ShowToast && it.message.contains("added successfully") })
 
         job.cancel()
@@ -114,7 +116,6 @@ class TaskViewModelComprehensiveTest {
     @Test
     fun `addTask with callback invokes onTaskInserted`() = runTest {
         val insertedId = 42L
-        coEvery { repository.insertTask(any()) } returns insertedId
         var callbackInvoked = false
         var insertedTask: Task? = null
 
@@ -136,7 +137,7 @@ class TaskViewModelComprehensiveTest {
 
     @Test
     fun `addTask with error emits error snackbar`() = runTest {
-        coEvery { repository.insertTask(any()) } throws Exception("Database error")
+        coEvery { taskLifecycle.create(any()) } throws Exception("Database error")
 
         val events = mutableListOf<UiEvent>()
         val job = collectEvents(events, UnconfinedTestDispatcher(testScheduler))
@@ -153,8 +154,6 @@ class TaskViewModelComprehensiveTest {
 
     @Test
     fun `addRecurringTask creates task with recurrence settings`() = runTest {
-        coEvery { repository.insertTask(any()) } returns 10L
-
         viewModel.addRecurringTask(
             title = "Recurring Task",
             description = "Daily task",
@@ -165,7 +164,7 @@ class TaskViewModelComprehensiveTest {
         advanceUntilIdle()
 
         coVerify {
-            repository.insertTask(match {
+            taskLifecycle.create(match {
                 it.title == "Recurring Task" &&
                 it.recurrenceType == RecurrenceType.DAILY &&
                 it.recurrenceInterval == 2
@@ -176,18 +175,36 @@ class TaskViewModelComprehensiveTest {
     // ========== Task Update Tests ==========
 
     @Test
-    fun `updateTask calls repository updateTask`() = runTest {
+    fun `updateTask uses task lifecycle`() = runTest {
         val updatedTask = testTask.copy(title = "Updated Title")
 
         viewModel.updateTask(updatedTask)
         advanceUntilIdle()
 
-        coVerify { repository.updateTask(updatedTask) }
+        coVerify { taskLifecycle.update(updatedTask) }
+    }
+
+    @Test
+    fun `createTask waits for lifecycle write and reports success`() = runTest {
+        coEvery { taskLifecycle.create(testTask) } returns testTask.copy(id = 12)
+
+        assertTrue(viewModel.createTask(testTask))
+
+        coVerify(exactly = 1) { taskLifecycle.create(testTask) }
+    }
+
+    @Test
+    fun `saveTask keeps editor open when persistence fails`() = runTest {
+        coEvery { taskLifecycle.update(testTask) } throws Exception("Disk full")
+
+        assertFalse(viewModel.saveTask(testTask))
+
+        coVerify(exactly = 1) { taskLifecycle.update(testTask) }
     }
 
     @Test
     fun `updateTask with error emits error snackbar`() = runTest {
-        coEvery { repository.updateTask(any()) } throws Exception("Update failed")
+        coEvery { taskLifecycle.update(any()) } throws Exception("Update failed")
 
         val events = mutableListOf<UiEvent>()
         val job = collectEvents(events, UnconfinedTestDispatcher(testScheduler))
@@ -209,7 +226,7 @@ class TaskViewModelComprehensiveTest {
         viewModel.toggleTaskCompletion(incompleteTask)
         advanceUntilIdle()
 
-        coVerify { repository.toggleTaskCompletion(incompleteTask) }
+        coVerify { taskLifecycle.complete(incompleteTask.id.toLong()) }
     }
 
     @Test
@@ -219,6 +236,7 @@ class TaskViewModelComprehensiveTest {
             recurrenceType = RecurrenceType.DAILY,
             dueDateMillis = System.currentTimeMillis()
         )
+        coEvery { taskLifecycle.complete(recurringTask.id.toLong()) } returns 42L
 
         val events = mutableListOf<UiEvent>()
         val job = collectEvents(events, UnconfinedTestDispatcher(testScheduler))
@@ -226,7 +244,7 @@ class TaskViewModelComprehensiveTest {
         viewModel.toggleTaskCompletion(recurringTask)
         advanceUntilIdle()
 
-        coVerify { repository.createNextRecurringTask(recurringTask) }
+        coVerify { taskLifecycle.complete(recurringTask.id.toLong()) }
         assertTrue(events.any { it is UiEvent.ShowToast && it.message.contains("Next occurrence created") })
 
         job.cancel()
@@ -247,8 +265,7 @@ class TaskViewModelComprehensiveTest {
         viewModel.toggleTaskArchived(unarchivedTask)
         advanceUntilIdle()
 
-        coVerify { repository.archiveTask(unarchivedTask) }
-        coVerify(exactly = 0) { repository.unarchiveTask(any()) }
+        coVerify { taskLifecycle.update(unarchivedTask.copy(isArchived = true, isSaved = false)) }
     }
 
     @Test
@@ -258,18 +275,17 @@ class TaskViewModelComprehensiveTest {
         viewModel.toggleTaskArchived(archivedTask)
         advanceUntilIdle()
 
-        coVerify { repository.unarchiveTask(archivedTask) }
-        coVerify(exactly = 0) { repository.archiveTask(any()) }
+        coVerify { taskLifecycle.update(archivedTask.copy(isArchived = false)) }
     }
 
     // ========== Task Deletion Tests ==========
 
     @Test
-    fun `deleteTask calls repository deleteTask`() = runTest {
+    fun `deleteTask uses task lifecycle`() = runTest {
         viewModel.deleteTask(testTask)
         advanceUntilIdle()
 
-        coVerify { repository.deleteTask(testTask) }
+        coVerify { taskLifecycle.delete(testTask.id.toLong()) }
     }
 
     @Test
@@ -277,7 +293,7 @@ class TaskViewModelComprehensiveTest {
         viewModel.clearCompletedTasks()
         advanceUntilIdle()
 
-        coVerify { repository.deleteCompletedTasks() }
+        coVerify { taskLifecycle.clearCompleted() }
     }
 
     @Test
@@ -285,7 +301,7 @@ class TaskViewModelComprehensiveTest {
         viewModel.resetAllTasks()
         advanceUntilIdle()
 
-        coVerify { repository.resetAllTasksToPending() }
+        coVerify { taskLifecycle.resetCompleted() }
     }
 
     // ========== Search Tests ==========
@@ -354,34 +370,32 @@ class TaskViewModelComprehensiveTest {
     @Test
     fun `getAllTasksForBackup returns all tasks from repository`() = runTest {
         val tasks = listOf(testTask, testTask.copy(id = 2))
-        coEvery { repository.getAllTasksAsList() } returns tasks
+        coEvery { repository.getAllTasksForBackup() } returns tasks
 
         val result = viewModel.getAllTasksForBackup()
 
         assertEquals(tasks, result)
-        coVerify { repository.getAllTasksAsList() }
+        coVerify { repository.getAllTasksForBackup() }
     }
 
     @Test
-    fun `importTasksFromBackup with replaceExisting clears and imports`() = runTest {
+    fun `importTasksFromBackup with replaceExisting uses atomic lifecycle import`() = runTest {
         val tasksToImport = listOf(testTask, testTask.copy(id = 2))
+        val data = BackupManager.BackupData(tasksToImport, emptyList())
 
-        viewModel.importTasksFromBackup(tasksToImport, replaceExisting = true)
-        advanceUntilIdle()
+        viewModel.importTasksFromBackup(data, replaceExisting = true)
 
-        coVerify { repository.clearAllTasks() }
-        coVerify { repository.insertTasks(match { it.size == 2 && it.all { task -> task.id == 0 } }) }
+        coVerify { taskLifecycle.importBackup(data, true) }
     }
 
     @Test
-    fun `importTasksFromBackup without replaceExisting only imports`() = runTest {
+    fun `importTasksFromBackup without replaceExisting adds imported tasks`() = runTest {
         val tasksToImport = listOf(testTask)
+        val data = BackupManager.BackupData(tasksToImport, emptyList())
 
-        viewModel.importTasksFromBackup(tasksToImport, replaceExisting = false)
-        advanceUntilIdle()
+        viewModel.importTasksFromBackup(data, replaceExisting = false)
 
-        coVerify(exactly = 0) { repository.clearAllTasks() }
-        coVerify { repository.insertTasks(any()) }
+        coVerify { taskLifecycle.importBackup(data, false) }
     }
 
     // ========== Event Helper Tests ==========

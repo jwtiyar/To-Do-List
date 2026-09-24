@@ -40,6 +40,14 @@ class TaskDialogTest {
     }
 
     @Test
+    fun save_withBlankTitleKeepsDialogOpenAndShowsValidation() {
+        onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.btnSaveTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.editTextTitle))
+            .check(matches(ViewMatchers.hasErrorText("Enter a task title")))
+    }
+
+    @Test
     fun dialog_descriptionInputFieldExists() {
         onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
         onView(ViewMatchers.withId(R.id.editTextDescription))
@@ -49,40 +57,45 @@ class TaskDialogTest {
     @Test
     fun dialog_priorityChipsExist() {
         onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.btnMoreOptions)).perform(click())
         onView(ViewMatchers.withId(R.id.chipLow))
-            .check(matches(ViewMatchers.isDisplayed()))
+            .check(matches(ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
         onView(ViewMatchers.withId(R.id.chipMedium))
-            .check(matches(ViewMatchers.isDisplayed()))
+            .check(matches(ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
         onView(ViewMatchers.withId(R.id.chipHigh))
-            .check(matches(ViewMatchers.isDisplayed()))
+            .check(matches(ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
     }
 
     @Test
     fun dialog_categorySpinnerExists() {
         onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.btnMoreOptions)).perform(click())
         onView(ViewMatchers.withId(R.id.spinnerCategory))
-            .check(matches(ViewMatchers.isDisplayed()))
+            .check(matches(ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
     }
 
     @Test
     fun dialog_reminderSwitchExists() {
         onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.btnMoreOptions)).perform(click())
         onView(ViewMatchers.withId(R.id.switchReminder))
-            .check(matches(ViewMatchers.isDisplayed()))
+            .check(matches(ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
     }
 
     @Test
     fun dialog_recurringSwitchExists() {
         onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.btnMoreOptions)).perform(click())
         onView(ViewMatchers.withId(R.id.switchRecurring))
-            .check(matches(ViewMatchers.isDisplayed()))
+            .check(matches(ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
     }
 
     @Test
     fun dialog_defaultPriorityIsMedium() {
         onView(ViewMatchers.withId(R.id.fabAddTask)).perform(click())
+        onView(ViewMatchers.withId(R.id.btnMoreOptions)).perform(click())
         onView(ViewMatchers.withId(R.id.chipMedium))
-            .check(matches(ViewMatchers.isDisplayed()))
+            .check(matches(ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
     }
 
     @Test

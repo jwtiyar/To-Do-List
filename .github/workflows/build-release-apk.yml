@@ -54,7 +54,7 @@ jobs:
           # Find the built APK
           APK_FILE=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
           APK_NAME=$(basename "$APK_FILE")
-          
+
           # Upload using GitHub's package registry
           curl --verbose \
             --header "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \

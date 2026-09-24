@@ -57,18 +57,32 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
         
         // Add index on categoryId for faster lookups
         database.execSQL("CREATE INDEX IF NOT EXISTS `index_task_categoryId` ON `task` (`categoryId`)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS `index_task_isCompleted` ON `task` (`isCompleted`)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS `index_task_isArchived` ON `task` (`isArchived`)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS `index_task_isSaved` ON `task` (`isSaved`)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS `index_task_dueDateMillis` ON `task` (`dueDateMillis`)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS `index_task_recurrenceType` ON `task` (`recurrenceType`)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS `idx_task_archived_completed_id` ON `task` (`isArchived`, `isCompleted`, `id`)")
 
-        // Insert default categories
-        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Work', -4484344, 0)")     // Blue
-        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Personal', -11419112, 0)") // Green
-        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Health', -769226, 0)")    // Red
-        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Learning', -6543440, 0)")  // Purple
-        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Shopping', -26624, 0)")   // Orange
-        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Home', -13391360, 0)")    // Teal
+        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Work', -4484344, 0)")
+        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Personal', -11419112, 0)")
+        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Health', -769226, 0)")
+        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Learning', -6543440, 0)")
+        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Shopping', -26624, 0)")
+        database.execSQL("INSERT INTO category (name, color, createdAt) VALUES ('Home', -13391360, 0)")
     }
 }
 
-@Database(entities = [Task::class, Category::class], version = 6, exportSchema = false)
+private fun insertDefaultCategories(database: SupportSQLiteDatabase) {
+    Category.DEFAULT_CATEGORIES.forEach { category ->
+        database.execSQL(
+            "INSERT INTO category (name, color, createdAt) VALUES (?, ?, ?)",
+            arrayOf(category.name, category.color, 0L)
+        )
+    }
+}
+
+@Database(entities = [Task::class, Category::class], version = 6, exportSchema = true)
 abstract class TaskDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun categoryDao(): CategoryDao
@@ -83,7 +97,13 @@ abstract class TaskDatabase : RoomDatabase() {
                     context.applicationContext,
                     TaskDatabase::class.java,
                     "task_database"
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build()
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    .addCallback(object : Callback() {
+                        override fun onCreate(db: SupportSQLiteDatabase) {
+                            insertDefaultCategories(db)
+                        }
+                    })
+                    .build()
                 INSTANCE = instance
                 instance
             }
