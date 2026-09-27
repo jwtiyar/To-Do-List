@@ -58,6 +58,11 @@
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00000000</color>
 
+    <!-- Navigation Drawer Material 3 Colors -->
+    <color name="nav_item_selected">#1D192B</color>
+    <color name="nav_item_unselected">#49454F</color>
+    <color name="nav_item_indicator_bg">#E8DEF8</color>
+
     <!-- Card Colors -->
     <color name="card_stroke">#1F000000</color>
     <color name="card_completed_bg">#F5F5F5</color>

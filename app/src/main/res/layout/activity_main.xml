@@ -176,7 +176,7 @@
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
-        android:layout_width="wrap_content"
+        android:layout_width="320dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
@@ -185,6 +185,12 @@
         app:menu="@menu/nav_drawer_menu"
         app:itemTextColor="@color/nav_item_text_color"
         app:itemIconTint="@color/nav_item_text_color"
-        app:itemBackground="@drawable/bg_tab_rounded" />
+        app:itemShapeFillColor="@color/nav_item_indicator"
+        app:itemShapeAppearanceOverlay="@style/ShapeAppearance.TaskManager.FullPill"
+        app:itemShapeInsetStart="12dp"
+        app:itemShapeInsetEnd="12dp"
+        app:itemHorizontalPadding="16dp"
+        app:itemIconPadding="14dp"
+        app:itemMinHeight="52dp" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
