@@ -1,0 +1,5 @@
+• Redesigned UI: Fresh, compact Material 3 look with improved task cards, typography, and polished Dark Theme.
+• Android 15 & 16 Ready: Seamless Edge-to-Edge support with display cutout (notch) insets.
+• Enhanced Sidebar: Clean navigation with active pill indicators and improved contrast.
+• Performance: Advanced R8 code and resource shrinking for smaller download size and faster load times.
+• Bug fixes and stability improvements.
