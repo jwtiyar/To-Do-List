@@ -1,4 +1,0 @@
-• Material 3 UI update with improved dark theme contrast.
-• Edge-to-edge layout support for Android 15 and 16.
-• Reduced app size and optimized resource loading.
-• Bug fixes for recurring task selection.
