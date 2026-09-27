@@ -1,1 +1,0 @@
-Initial F-Droid release with complete FLOSS compliance and GPLv3 licensing.

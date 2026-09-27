@@ -2,15 +2,10 @@ name: Android CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop, f-droid, google-play ]
+    branches: [ main, develop, google-play ]
   pull_request:
-    branches: [ main, develop, f-droid, google-play ]
+    branches: [ main, develop, google-play ]
   workflow_dispatch:
-    inputs:
-      build_variant:
-        description: 'Build variant (fdroid)'
-        required: false
-        default: 'fdroid'
 
 jobs:
   lint:
@@ -98,8 +93,8 @@ jobs:
           name: test-coverage
           path: app/build/reports/jacoco/
 
-  build-fdroid:
-    name: Build F-Droid Variant
+  build:
+    name: Build APKs
     runs-on: ubuntu-latest
     needs: [lint, unit-tests]
     if: needs.lint.result == 'success' && needs.unit-tests.result == 'success'
@@ -148,7 +143,7 @@ jobs:
   notify:
     name: Notify on Failure
     runs-on: ubuntu-latest
-    needs: [build-fdroid]
+    needs: [build]
     if: failure()
     steps:
       - name: Send failure notification

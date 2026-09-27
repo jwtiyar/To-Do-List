@@ -45,7 +45,6 @@ An offline, privacy-first task and reminder app for Android.
   [<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="60">](https://play.google.com/store/apps/details?id=io.github.jwtiyar.simplertask)
 
 - **Direct APK:** Download from [GitHub Releases](https://github.com/jwtiyar/To-Do-List/releases/latest)
-- **F-Droid:** Available on [F-Droid](https://f-droid.org/packages/io.github.jwtiyar.simplertask/)
 
 ## Build
 
@@ -61,11 +60,6 @@ Compile with Gradle:
 # Release App Bundle for Google Play
 ./gradlew bundleRelease
 ```
-
-### Build variants
-
-- **`google-play` (this branch):** Configured for Google Play release with Firebase Crashlytics.
-- **`f-droid` branch:** Free and open source build without proprietary dependencies.
 
 ## Tech stack
 

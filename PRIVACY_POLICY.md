@@ -20,13 +20,11 @@ We are committed to protecting your privacy. The Application is built with a pri
 *   Your backup password and the encrypted files are stored only where you choose to save them on your device or your personal storage providers; we never have access to your backups or passwords.
 *   The Application opts out of Android automatic cloud backup and excludes its task database from device-to-device transfer. To move your tasks to another device, export an encrypted backup and import it there. Backups created by older app versions may still exist in your Android account until removed through your device's backup settings.
 
-### Diagnostics and Telemetry (Google Play Version Only)
-To help us improve the Application's stability and performance, the version distributed via the Google Play Store includes Firebase SDKs:
+### Diagnostics and Telemetry
+To help us improve the Application's stability and performance, the Application includes Firebase SDKs:
 *   **Firebase Crashlytics:** Collects anonymized crash reports and stack traces when the Application encounters an error or crash.
 *   **Firebase Analytics:** Collects anonymous telemetry (such as screen views, session duration, and app opens) to understand how the Application is used. This includes the collection of the **Android Advertising ID (AD_ID)** to analyze demographic details, user retention, and feature usage.
 *   **Usage Limitations:** The Advertising ID is used solely for analytics and app optimization. The Application does not contain advertisements, and the Advertising ID is not used for targeted or personalized advertising campaigns.
-
-*(Note: The F-Droid version of this Application is completely FOSS and does not contain any Firebase SDKs, crash reporting, or analytics).*
 
 ---
 
@@ -37,7 +35,7 @@ The Application requests the following permissions to support core features:
 *   **Post Notifications (`POST_NOTIFICATIONS`):** Used to display task reminders on your device.
 *   **Receive Boot Completed (`RECEIVE_BOOT_COMPLETED`):** Used to reschedule alarms automatically after your device reboots so you do not miss any reminders.
 *   **Vibrate (`VIBRATE`):** Used to vibrate the device when a reminder notification is delivered.
-*   **Advertising ID (`com.google.android.gms.permission.AD_ID` / `ACCESS_ADSERVICES_AD_ID`):** Used in the Google Play version only by Firebase SDKs to facilitate anonymous analytics (such as demographics and usage attribution).
+*   **Advertising ID (`com.google.android.gms.permission.AD_ID` / `ACCESS_ADSERVICES_AD_ID`):** Used by Firebase SDKs to facilitate anonymous analytics (such as demographics and usage attribution).
 
 ---
 
@@ -45,7 +43,7 @@ The Application requests the following permissions to support core features:
 
 We do not sell, trade, or otherwise transfer your personal information to outside parties. 
 
-For the Google Play version, anonymous crash logs and telemetry are processed by Google Firebase in accordance with Google's Privacy Policy. You can read more about how Google uses data here:
+Anonymous crash logs and telemetry are processed by Google Firebase in accordance with Google's Privacy Policy. You can read more about how Google uses data here:
 *   [Google Privacy & Terms](https://policies.google.com/privacy)
 *   [Firebase Privacy and Security](https://firebase.google.com/support/privacy)
 
