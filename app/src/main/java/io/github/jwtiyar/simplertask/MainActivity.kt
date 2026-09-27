@@ -86,7 +86,9 @@ class MainActivity : AppCompatActivity() {
 
         // Apply window insets
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val systemBars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
             val density = resources.displayMetrics.density
             val baseFabBottomMarginDp = 16
             val baseFabBottomMarginPx = (baseFabBottomMarginDp * density).toInt()

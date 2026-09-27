@@ -35,11 +35,8 @@
         
         <!-- Window attributes -->
         <item name="android:windowBackground">@color/background</item>
+        <!-- Window insets and edge-to-edge handled via enableEdgeToEdge() -->
         <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
-        <!-- <item name="android:windowLightNavigationBar">?attr/isLightTheme</item> -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <!-- <item name="android:enforceNavigationBarContrast">false</item> -->
         
         <!-- Text appearance -->
         <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Material3.HeadlineSmall</item>

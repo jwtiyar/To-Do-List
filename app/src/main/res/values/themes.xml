@@ -39,11 +39,8 @@
         <item name="android:colorForeground">@color/on_background</item>
         <item name="android:colorBackgroundFloating">?attr/colorSurface</item>
         
-        <!-- Status bar and navigation bar -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Window insets and edge-to-edge handled via enableEdgeToEdge() -->
         <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
-        <!-- <item name="android:windowLightNavigationBar">?attr/isLightTheme</item> -->
         
         <!-- Window configuration -->
         <item name="android:windowBackground">@color/background</item>
