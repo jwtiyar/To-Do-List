@@ -32,6 +32,8 @@ GEMINI.md
 .claude/
 .cursor/
 .gemini/
+.qwen/
+.kilocodemodes
 gha-creds-*.json
 
 # Firebase configuration
