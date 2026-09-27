@@ -1,6 +1,6 @@
 # To-Do: Task List & Reminder
 
-A professional-grade, privacy-focused task management application for Android built with modern Material 3 and Kotlin.
+An offline, privacy-first task and reminder app for Android.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Latest Release](https://img.shields.io/github/v/release/jwtiyar/To-Do-List?label=Release&color=blue)](https://github.com/jwtiyar/To-Do-List/releases/latest)
@@ -9,41 +9,37 @@ A professional-grade, privacy-focused task management application for Android bu
 
 ## Features
 
-### 🎨 Modern Design & Experience
-- **Material 3 Interface** - Compact, friendly, and clean layout with standardized corner curves and elevation.
-- **Polished Dark Mode** - Thoughtfully tuned dark theme with high-contrast surfaces and comfortable typography.
-- **Android 15 & 16 Ready** - Full native Edge-to-Edge display with display cutout (notch) and gesture navigation insets.
+### Design and layout
+- **Material 3 layout.** Standardized 12dp and 16dp corners, low surface elevation, and dynamic color on Android 12+.
+- **Dark theme.** Dedicated container tones and high-contrast text.
+- **Android 15 and 16 edge to edge.** Draws behind the status bar and navigation pill, padding toolbars and buttons around camera cutouts.
 
-### 📝 Task Management
-- **Create, Edit, Delete** - Fast, responsive task management.
-- **Priority Levels** - Color-coded Low, Medium, and High priorities.
-- **Task Descriptions** - Add optional notes and details to any task.
-- **Real-Time Search** - Instant filtering across all your tasks.
+### Task management
+- **Task tracking.** Create, edit, and delete tasks with low, medium, or high priority.
+- **Notes and details.** Add optional descriptions to tasks. Tap any card to expand notes inline.
+- **Search.** Filter tasks across all lists as you type.
 
-### 📂 Organization
-- **Home Screen Widget** - Scrollable widget tracking Pending tasks directly from your home screen (supports Dynamic Theming).
-- **Expandable Tasks** - Tap-to-expand any task to read notes inline.
-- **Navigation Categories** - Pending, Completed, Saved Tasks, Archive, Recurring, and Trash.
-- **Sorting** - Organize by due date, priority, or title.
-- **Swipe Gestures** - Complete or delete tasks quickly with intuitive swipe actions.
+### Organization
+- **Home screen widget.** Scrollable widget shows pending tasks directly on your home screen.
+- **Status lists.** Pending, Completed, Saved, Archive, Recurring, and Trash.
+- **Sorting.** Order tasks by due date, priority, or title.
+- **Gestures.** Swipe right to complete a task, or swipe left to delete it.
 
-### ⏰ Reminders & Recurring Tasks
-- **Exact Alarms & Notifications** - Reliable reminders scheduled via `AlarmManager.setAlarmClock()`, waking device even in Doze mode.
-- **Recurring Schedules** - Repeat tasks daily, weekdays, weekly, monthly, or yearly with customizable end dates.
+### Reminders and recurring tasks
+- **Exact alarms.** Schedules notifications through `AlarmManager.setAlarmClock()`, delivering alerts during Doze mode.
+- **Repetition rules.** Repeat tasks daily, on weekdays, weekly, monthly, or yearly with optional end dates.
 
-### 🔒 Backup & Security
-- **AES-256 Encryption** - Encrypt and password-protect your backups.
-- **Export & Import** - Save to JSON files and restore anytime (supports additive and replace modes).
-- **100% Offline & Private** - Your tasks never leave your device without your explicit export.
+### Backup and security
+- **AES-256 encryption.** Password-protect backup files.
+- **Local export and import.** Save to JSON files and restore anytime using additive or replacement import.
+- **Offline storage.** Task data stays on your device.
 
 ## Requirements
 
 - Android 8.0 (API 26) or higher
-- Notification permission for reminders (Android 13+)
+- Notification permission for reminders on Android 13+
 
 ## Download
-
-Get the latest version:
 
 - **Google Play:**
   [<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="60">](https://play.google.com/store/apps/details?id=io.github.jwtiyar.simplertask)
@@ -53,42 +49,40 @@ Get the latest version:
 
 ## Build
 
-Built with standard Gradle. You can compile using:
+Compile with Gradle:
 
 ```bash
-# Debug build (APK)
+# Debug APK
 ./gradlew assembleDebug
 
 # Release APK
 ./gradlew assembleRelease
 
-# Release App Bundle (for Google Play)
+# Release App Bundle for Google Play
 ./gradlew bundleRelease
 ```
 
-### Build Variants
+### Build variants
 
-- **`google-play` (this branch):** Configured for Google Play release, incorporating Firebase Crashlytics & Analytics diagnostics.
-- **`f-droid` branch:** 100% Free and Open Source (FLOSS) build without proprietary services.
+- **`google-play` (this branch):** Configured for Google Play release with Firebase Crashlytics.
+- **`f-droid` branch:** Free and open source build without proprietary dependencies.
 
-## Tech Stack
+## Tech stack
 
-- **Language**: Kotlin 2.0
-- **Architecture**: MVVM with Repository Pattern
-- **UI**: Material Design 3, ViewBinding, Dynamic Color
-- **Database**: Room (with KSP)
-- **Dependency Injection**: Dagger Hilt
-- **Async & Concurrency**: Coroutines, Kotlin Flow
-- **Paging**: Jetpack Paging 3
+- **Language:** Kotlin 2.0
+- **Architecture:** MVVM with repository pattern
+- **UI:** Material Design 3, ViewBinding, dynamic color
+- **Database:** Room with KSP
+- **Dependency injection:** Dagger Hilt
+- **Concurrency:** Coroutines, Kotlin Flow
+- **Paging:** Jetpack Paging 3
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create your feature branch (`git checkout -b feature/my-feature`)
+3. Commit your changes (`git commit -m 'Add my feature'`)
+4. Push to the branch (`git push origin feature/my-feature`)
 5. Open a Pull Request
 
 ## Author
@@ -100,4 +94,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE) for details.

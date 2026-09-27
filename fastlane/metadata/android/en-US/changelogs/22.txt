@@ -1,4 +1,4 @@
-• Fresh, modern Material 3 redesign with polished Dark Mode.
-• Full Android 15 & 16 Edge-to-Edge support.
-• Faster app startup and smaller download size.
-• Bug fixes and stability improvements.
+• Material 3 UI update with improved dark theme contrast.
+• Edge-to-edge layout support for Android 15 and 16.
+• Reduced app size and optimized resource loading.
+• Bug fixes for recurring task selection.

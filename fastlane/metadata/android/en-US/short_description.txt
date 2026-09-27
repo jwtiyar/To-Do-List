@@ -1,1 +1,1 @@
-A modern, feature-rich task management app.
+Offline to-do list and reminder app with encrypted local backups.

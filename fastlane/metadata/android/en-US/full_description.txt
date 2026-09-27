@@ -1,14 +1,10 @@
-To-Do: Task List & Reminder is a professional-grade task management application designed for simplicity and efficiency.
+To-Do: Task List & Reminder is an offline task manager and reminder app. It stores your tasks locally on your device without an account or cloud sync.
 
 Features:
-- Complete task management (CRUD operations)
-- Task reminders with local notifications
-- Encrypted Backup & Restore functionality
-- Modern Material Design 3 interface
-- Multiple themes (Light, Dark, and System Auto)
-- Multi-language support
-- Advanced search and filtering
-- Fully offline and privacy-focused
-- Open source (GPLv3)
-
-Built with modern Android architecture (MVVM, Hilt, Room, Paging 3).
+- Create, edit, and organize tasks by status and priority
+- Set one-time or repeating reminders with exact alarms
+- Encrypt and export backups with AES-256
+- View pending tasks from your home screen with a resizable widget
+- Search tasks by title and notes
+- Choose light, dark, or system theme
+- Free and open source under GPLv3
